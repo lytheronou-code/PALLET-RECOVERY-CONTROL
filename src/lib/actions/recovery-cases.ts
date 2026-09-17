@@ -45,6 +45,34 @@ export async function createRecoveryCaseAction(
     return { error: "Tipo pallet non trovato." };
   }
 
+  // counterparty_id/voucher_id foreign keys are validated across the whole
+  // table regardless of RLS, so without this check a crafted request could
+  // link a case to another organization's counterparty/voucher row even
+  // though the insert itself stays scoped to this organization_id.
+  const { data: counterparty, error: counterpartyError } = await supabase
+    .from("counterparties")
+    .select("id")
+    .eq("organization_id", membership.organizationId)
+    .eq("id", parsed.data.counterpartyId)
+    .maybeSingle();
+
+  if (counterpartyError || !counterparty) {
+    return { error: "Controparte non trovata." };
+  }
+
+  if (parsed.data.voucherId) {
+    const { data: voucher, error: voucherError } = await supabase
+      .from("vouchers")
+      .select("id")
+      .eq("organization_id", membership.organizationId)
+      .eq("id", parsed.data.voucherId)
+      .maybeSingle();
+
+    if (voucherError || !voucher) {
+      return { error: "Buono non trovato." };
+    }
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser();

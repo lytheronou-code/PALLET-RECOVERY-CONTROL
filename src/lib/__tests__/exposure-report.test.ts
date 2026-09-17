@@ -167,4 +167,16 @@ describe("exposureReportToCsv", () => {
     const csv = exposureReportToCsv(report);
     expect(csv).toContain('"Acme, Inc."');
   });
+
+  it("neutralizes a counterparty name that looks like a spreadsheet formula", () => {
+    const report = buildExposureReport(
+      [makeCase({ counterpartyName: "=HYPERLINK(\"http://evil\",\"click\")" })],
+      [],
+      new Date("2026-01-01"),
+      new Date("2026-03-31"),
+    );
+    const csv = exposureReportToCsv(report);
+    const firstDataLine = csv.split("\n")[1];
+    expect(firstDataLine.startsWith("'=") || firstDataLine.startsWith("\"'=")).toBe(true);
+  });
 });

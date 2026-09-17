@@ -214,9 +214,16 @@ export function exposureReportToCsv(report: ExposureReport): string {
   return lines.join("\n");
 }
 
+// counterpartyName is user-controlled (set via the counterparties CRUD form)
+// and lands in a file operators will typically open in Excel/Sheets. A name
+// starting with =, +, -, @, or a tab/CR would otherwise be interpreted as a
+// formula by those tools (CSV/formula injection) — neutralize it by
+// prefixing a single quote, which spreadsheet apps render as plain text and
+// CSV parsers ignore.
 function csvEscape(value: string): string {
-  if (value.includes(",") || value.includes('"') || value.includes("\n")) {
-    return `"${value.replace(/"/g, '""')}"`;
+  const neutralized = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
+  if (neutralized.includes(",") || neutralized.includes('"') || neutralized.includes("\n")) {
+    return `"${neutralized.replace(/"/g, '""')}"`;
   }
-  return value;
+  return neutralized;
 }
