@@ -112,6 +112,8 @@ export async function createRecoveryCaseAction(
 const RPC_ERROR_MESSAGES: Record<string, string> = {
   "quantity must be a positive integer": "Inserisci una quantità intera positiva.",
   "would exceed claimed quantity": "La quantità recuperata supererebbe quella richiesta.",
+  "full_recovery quantity must equal remaining quantity": "Il recupero completo deve coprire tutto il residuo.",
+  "closed recovery case only accepts note events": "La pratica è chiusa; puoi aggiungere solo una nota.",
   "recovery case not found or not accessible": "Pratica non trovata.",
   "update blocked": "Permessi insufficienti per aggiornare questa pratica.",
 };
