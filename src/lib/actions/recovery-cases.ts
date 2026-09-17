@@ -73,10 +73,10 @@ export async function createRecoveryCaseAction(
     }
   }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  // The database trigger `trg_audit_recovery_case_created` writes the
+  // corresponding `created` recovery event in the same transaction. If the
+  // audit insert fails, this insert is rolled back too, so a case can never
+  // exist without its initial timeline event.
   const { data: created, error } = await supabase
     .from("recovery_cases")
     .insert({
@@ -97,13 +97,6 @@ export async function createRecoveryCaseAction(
   if (error || !created) {
     return { error: "Impossibile creare la pratica. Verifica i permessi." };
   }
-
-  await supabase.from("recovery_events").insert({
-    organization_id: membership.organizationId,
-    recovery_case_id: created.id,
-    event_type: "created",
-    actor_user_id: user?.id ?? null,
-  });
 
   revalidatePath("/recovery-cases");
   redirect(`/recovery-cases/${created.id}`);
