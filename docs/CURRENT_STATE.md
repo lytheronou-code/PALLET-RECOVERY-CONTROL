@@ -11,10 +11,11 @@ Milestones M1–M8 (per `CLAUDE.md`) are implemented on `claude/pallet-recovery-
   - `20260917204307_revoke_anon_bootstrap_organization`
   - `20260917210833_record_recovery_event_rpc`
   - `20260917214250_guard_bootstrap_single_initial_org`
-- The three application migrations are mirrored under `supabase/migrations/` with timestamps matching Supabase migration history.
+  - `20260917214731_harden_recovery_event_terminal_states`
+- The five application-level migrations after the initial schema/RLS baseline are mirrored under `supabase/migrations/` with timestamps matching Supabase migration history.
 - The first two schema/RLS migrations predate repository initialization and are still a remote baseline; materializing them into the repository remains a reproducibility task before handing the codebase to another development team.
-- `bootstrap_organization` is a `SECURITY DEFINER` RPC intentionally callable only by `authenticated`. It now rejects repeat bootstrap attempts by a user who already has any organization membership.
-- `record_recovery_event` is `SECURITY INVOKER`, row-locks the recovery case and applies case state + audit event atomically.
+- `bootstrap_organization` is a `SECURITY DEFINER` RPC intentionally callable only by `authenticated`. It rejects repeat bootstrap attempts by a user who already has an organization membership.
+- `record_recovery_event` is `SECURITY INVOKER`, row-locks the recovery case and applies case state + audit event atomically. Terminal cases (`recovered`, `closed_unrecovered`, `cancelled`) accept notes only, and `full_recovery` must consume the full remaining quantity.
 
 ## Frontend
 Next.js 16 App Router, React 19, TypeScript strict, `@supabase/ssr`, Zod, Vitest and a plain CSS B2B design system.
@@ -36,7 +37,7 @@ The client configuration uses Vercel env vars when present, with a checked-in fa
 Claude's development pass reported:
 - `npm run typecheck` — pass
 - `npm run lint` — pass
-- `npm run test` — 72/72 pass
+- `npm run test` — 72/72 pass before the independent hardening tests were added
 - `npm run build` — pass
 
 Independent verification after handoff:
@@ -47,7 +48,11 @@ Independent verification after handoff:
   - authenticated user sees only its own recovery case — pass;
   - cross-tenant counterparty insert blocked by RLS — pass;
   - partial recovery updates quantity/status — pass;
-  - over-recovery rejected — pass.
+  - over-recovery rejected — pass;
+  - partial quantity tagged as `full_recovery` rejected — pass;
+  - terminal case rejects state-changing events — pass;
+  - terminal case accepts note events — pass.
+- Additional unit tests were added for the new terminal/full-recovery invariants; final CI/build verification is required on the branch head.
 - Security Advisor: one intentional warning only — authenticated users can execute the `SECURITY DEFINER` `bootstrap_organization` RPC. This is required for first-org onboarding and guarded by `auth.uid()`, repeat-membership rejection, fixed `search_path`, and explicit privilege revocation from `anon`/`PUBLIC`.
 - Performance Advisor: only unused-index INFO findings, expected before real traffic.
 
@@ -57,7 +62,7 @@ Independent verification after handoff:
 - Git repo: `lytheronou-code/PALLET-RECOVERY-CONTROL`
 - Production branch: `main`
 - Preview deployment from the PR branch builds successfully.
-- Vercel Deployment Protection is currently enabled on the preview. Unauthenticated external checks are redirected to Vercel login, so browser E2E cannot be completed from the available unauthenticated automation session yet.
+- Vercel Deployment Protection is enabled on the preview. Unauthenticated external checks are redirected to Vercel login, so browser E2E cannot be completed from the available unauthenticated automation session yet.
 
 ## Remaining gate before merge
 Do not merge PR #1 until a real browser flow has been exercised on the preview (or equivalent unprotected staging deployment):
