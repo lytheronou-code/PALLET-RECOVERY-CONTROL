@@ -526,6 +526,34 @@ export type Database = {
           role: string
         }[]
       }
+      record_recovery_event: {
+        Args: {
+          p_case_id: string
+          p_event_type: string
+          p_notes?: string
+          p_occurred_at?: string
+          p_quantity?: number
+        }
+        Returns: {
+          assignee_user_id: string | null
+          counterparty_id: string
+          created_at: string
+          due_date: string | null
+          id: string
+          notes: string | null
+          opened_at: string
+          organization_id: string
+          pallet_type_id: string
+          priority: string
+          quantity_claimed: number
+          quantity_recovered: number
+          reference: string
+          status: string
+          unit_value_snapshot: number
+          updated_at: string
+          voucher_id: string | null
+        }
+      }
     }
     Enums: {
       [_ in never]: never

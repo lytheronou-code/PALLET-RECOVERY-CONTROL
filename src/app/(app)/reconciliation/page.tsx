@@ -1,7 +1,29 @@
+import Link from "next/link";
 import { requireMembership } from "@/lib/data/organization";
 import { getReconciliation } from "@/lib/data/reconciliation";
 import { formatCurrency, formatNumber } from "@/lib/format";
 import type { Finding } from "@/lib/reconciliation/engine";
+
+function createCaseHref(finding: Finding): string | null {
+  if (finding.type === "unbalanced_movements") {
+    const params = new URLSearchParams({
+      counterpartyId: finding.counterpartyId,
+      palletTypeId: finding.palletTypeId,
+      quantity: String(finding.outstandingQuantity),
+    });
+    return `/recovery-cases/new?${params.toString()}`;
+  }
+  if (finding.type === "open_voucher") {
+    const params = new URLSearchParams({
+      counterpartyId: finding.counterpartyId,
+      palletTypeId: finding.palletTypeId,
+      voucherId: finding.voucherId,
+      quantity: String(finding.outstandingQuantity),
+    });
+    return `/recovery-cases/new?${params.toString()}`;
+  }
+  return null;
+}
 
 const FINDING_LABELS: Record<Finding["type"], string> = {
   unbalanced_movements: "Movimenti non bilanciati (OUT > IN)",
@@ -115,11 +137,21 @@ export default async function ReconciliationPage() {
             </h3>
             <table className="data-table">
               <tbody>
-                {items.slice(0, 50).map((finding, idx) => (
-                  <tr key={idx}>
-                    <td>{describeFinding(finding, names)}</td>
-                  </tr>
-                ))}
+                {items.slice(0, 50).map((finding, idx) => {
+                  const href = createCaseHref(finding);
+                  return (
+                    <tr key={idx}>
+                      <td>{describeFinding(finding, names)}</td>
+                      <td>
+                        {href ? (
+                          <Link href={href} className="btn btn-secondary" style={{ width: "auto", padding: "4px 10px", fontSize: 12 }}>
+                            Crea pratica
+                          </Link>
+                        ) : null}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
             {items.length > 50 ? <p className="muted">+{items.length - 50} altre</p> : null}
