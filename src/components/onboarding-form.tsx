@@ -2,12 +2,10 @@
 
 import { useActionState } from "react";
 import { createOrganizationAction } from "@/lib/actions/onboarding";
-import type { AuthActionState } from "@/lib/actions/auth";
-
-const initialState: AuthActionState = {};
+import { emptyFormState } from "@/lib/actions/form-state";
 
 export function OnboardingForm() {
-  const [state, formAction, pending] = useActionState(createOrganizationAction, initialState);
+  const [state, formAction, pending] = useActionState(createOrganizationAction, emptyFormState);
 
   return (
     <form action={formAction}>

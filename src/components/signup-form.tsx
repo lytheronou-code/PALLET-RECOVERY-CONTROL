@@ -1,12 +1,11 @@
 "use client";
 
 import { useActionState } from "react";
-import { signUpAction, type AuthActionState } from "@/lib/actions/auth";
-
-const initialState: AuthActionState = {};
+import { signUpAction } from "@/lib/actions/auth";
+import { emptyFormState } from "@/lib/actions/form-state";
 
 export function SignupForm() {
-  const [state, formAction, pending] = useActionState(signUpAction, initialState);
+  const [state, formAction, pending] = useActionState(signUpAction, emptyFormState);
 
   if (state.message) {
     return <div className="form-message">{state.message}</div>;

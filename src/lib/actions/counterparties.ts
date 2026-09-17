@@ -1,0 +1,110 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { requireMembership } from "@/lib/data/organization";
+import { counterpartySchema } from "@/lib/validation/master-data";
+import type { FormState } from "@/lib/actions/form-state";
+
+function parseCounterpartyForm(formData: FormData) {
+  return counterpartySchema.safeParse({
+    legalName: formData.get("legalName"),
+    code: formData.get("code"),
+    vatNumber: formData.get("vatNumber"),
+    counterpartyType: formData.get("counterpartyType"),
+    addressLine: formData.get("addressLine"),
+    postalCode: formData.get("postalCode"),
+    city: formData.get("city"),
+    province: formData.get("province"),
+    countryCode: formData.get("countryCode") || "IT",
+    email: formData.get("email"),
+    phone: formData.get("phone"),
+  });
+}
+
+export async function createCounterpartyAction(
+  _prevState: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const membership = await requireMembership();
+  const parsed = parseCounterpartyForm(formData);
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Dati non validi" };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("counterparties").insert({
+    organization_id: membership.organizationId,
+    legal_name: parsed.data.legalName,
+    code: parsed.data.code || null,
+    vat_number: parsed.data.vatNumber || null,
+    counterparty_type: parsed.data.counterpartyType,
+    address_line: parsed.data.addressLine || null,
+    postal_code: parsed.data.postalCode || null,
+    city: parsed.data.city || null,
+    province: parsed.data.province || null,
+    country_code: parsed.data.countryCode,
+    email: parsed.data.email || null,
+    phone: parsed.data.phone || null,
+  });
+
+  if (error) {
+    return { error: "Impossibile creare la controparte. Verifica i permessi." };
+  }
+
+  revalidatePath("/counterparties");
+  redirect("/counterparties");
+}
+
+export async function updateCounterpartyAction(
+  id: string,
+  _prevState: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const membership = await requireMembership();
+  const parsed = parseCounterpartyForm(formData);
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Dati non validi" };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("counterparties")
+    .update({
+      legal_name: parsed.data.legalName,
+      code: parsed.data.code || null,
+      vat_number: parsed.data.vatNumber || null,
+      counterparty_type: parsed.data.counterpartyType,
+      address_line: parsed.data.addressLine || null,
+      postal_code: parsed.data.postalCode || null,
+      city: parsed.data.city || null,
+      province: parsed.data.province || null,
+      country_code: parsed.data.countryCode,
+      email: parsed.data.email || null,
+      phone: parsed.data.phone || null,
+    })
+    .eq("id", id)
+    .eq("organization_id", membership.organizationId);
+
+  if (error) {
+    return { error: "Impossibile aggiornare la controparte. Verifica i permessi." };
+  }
+
+  revalidatePath("/counterparties");
+  redirect("/counterparties");
+}
+
+export async function setCounterpartyActiveAction(id: string, active: boolean): Promise<void> {
+  const membership = await requireMembership();
+  const supabase = await createClient();
+  await supabase
+    .from("counterparties")
+    .update({ active })
+    .eq("id", id)
+    .eq("organization_id", membership.organizationId);
+
+  revalidatePath("/counterparties");
+}

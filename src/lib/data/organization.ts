@@ -1,4 +1,5 @@
 import "server-only";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 export type CurrentMembership = {
@@ -32,4 +33,15 @@ export async function getCurrentMemberships(): Promise<CurrentMembership[]> {
 export async function getPrimaryMembership(): Promise<CurrentMembership | null> {
   const memberships = await getCurrentMemberships();
   return memberships[0] ?? null;
+}
+
+// For use inside Server Actions, which render no fallback UI of their own:
+// bail out to onboarding/login rather than letting a mutation run without a
+// tenant to scope it to.
+export async function requireMembership(): Promise<CurrentMembership> {
+  const membership = await getPrimaryMembership();
+  if (!membership) {
+    redirect("/onboarding");
+  }
+  return membership;
 }

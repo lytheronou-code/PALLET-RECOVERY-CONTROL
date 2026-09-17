@@ -1,12 +1,11 @@
 "use client";
 
 import { useActionState } from "react";
-import { signInAction, type AuthActionState } from "@/lib/actions/auth";
-
-const initialState: AuthActionState = {};
+import { signInAction } from "@/lib/actions/auth";
+import { emptyFormState } from "@/lib/actions/form-state";
 
 export function LoginForm({ next }: { next: string }) {
-  const [state, formAction, pending] = useActionState(signInAction, initialState);
+  const [state, formAction, pending] = useActionState(signInAction, emptyFormState);
 
   return (
     <form action={formAction}>

@@ -4,11 +4,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { loginSchema, signupSchema } from "@/lib/validation/auth";
-
-export type AuthActionState = {
-  error?: string;
-  message?: string;
-};
+import type { FormState } from "@/lib/actions/form-state";
 
 function sanitizeNextPath(next: FormDataEntryValue | null): string {
   if (typeof next !== "string" || !next.startsWith("/") || next.startsWith("//")) {
@@ -18,9 +14,9 @@ function sanitizeNextPath(next: FormDataEntryValue | null): string {
 }
 
 export async function signInAction(
-  _prevState: AuthActionState,
+  _prevState: FormState,
   formData: FormData,
-): Promise<AuthActionState> {
+): Promise<FormState> {
   const parsed = loginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
@@ -41,9 +37,9 @@ export async function signInAction(
 }
 
 export async function signUpAction(
-  _prevState: AuthActionState,
+  _prevState: FormState,
   formData: FormData,
-): Promise<AuthActionState> {
+): Promise<FormState> {
   const parsed = signupSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),

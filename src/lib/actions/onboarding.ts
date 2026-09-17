@@ -3,12 +3,12 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { onboardingSchema } from "@/lib/validation/auth";
-import type { AuthActionState } from "@/lib/actions/auth";
+import type { FormState } from "@/lib/actions/form-state";
 
 export async function createOrganizationAction(
-  _prevState: AuthActionState,
+  _prevState: FormState,
   formData: FormData,
-): Promise<AuthActionState> {
+): Promise<FormState> {
   const parsed = onboardingSchema.safeParse({
     organizationName: formData.get("organizationName"),
   });
