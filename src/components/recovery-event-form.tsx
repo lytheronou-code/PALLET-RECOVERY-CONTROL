@@ -7,7 +7,8 @@ import { RECOVERY_EVENT_TYPES } from "@/lib/validation/recovery-case";
 import { computeRecoveryUpdate, remainingQuantity, type RecoveryEventType } from "@/lib/recovery/quantity";
 import { EVENT_LABELS } from "@/lib/recovery/labels";
 
-const QUANTITY_EVENTS = new Set(["partial_recovery", "full_recovery"]);
+const QUANTITY_EVENTS = new Set<RecoveryEventType>(["partial_recovery", "full_recovery"]);
+const TERMINAL_STATUSES = new Set(["recovered", "closed_unrecovered", "cancelled"]);
 
 export function RecoveryEventForm({
   caseId,
@@ -22,16 +23,25 @@ export function RecoveryEventForm({
 }) {
   const action = addRecoveryEventAction.bind(null, caseId);
   const [state, formAction, pending] = useActionState(action, emptyFormState);
-  const [eventType, setEventType] = useState<RecoveryEventType>("contact_attempt");
+  const isClosedCase = TERMINAL_STATUSES.has(status);
+  const [eventType, setEventType] = useState<RecoveryEventType>(isClosedCase ? "note" : "contact_attempt");
   const [quantity, setQuantity] = useState<number | "">("");
 
   const remaining = remainingQuantity({ quantityClaimed, quantityRecovered, status });
+  const availableEventTypes: readonly RecoveryEventType[] = isClosedCase ? ["note"] : RECOVERY_EVENT_TYPES;
   const preview =
     QUANTITY_EVENTS.has(eventType) && typeof quantity === "number"
       ? computeRecoveryUpdate({ quantityClaimed, quantityRecovered, status }, { type: eventType, quantity })
       : null;
 
-  const isClosedCase = status === "recovered" || status === "closed_unrecovered" || status === "cancelled";
+  function handleEventTypeChange(next: RecoveryEventType) {
+    setEventType(next);
+    if (next === "full_recovery") {
+      setQuantity(remaining);
+    } else if (!QUANTITY_EVENTS.has(next)) {
+      setQuantity("");
+    }
+  }
 
   return (
     <form action={formAction}>
@@ -49,9 +59,9 @@ export function RecoveryEventForm({
           id="eventType"
           name="eventType"
           value={eventType}
-          onChange={(e) => setEventType(e.target.value as RecoveryEventType)}
+          onChange={(e) => handleEventTypeChange(e.target.value as RecoveryEventType)}
         >
-          {RECOVERY_EVENT_TYPES.map((type) => (
+          {availableEventTypes.map((type) => (
             <option key={type} value={type}>
               {EVENT_LABELS[type]}
             </option>
