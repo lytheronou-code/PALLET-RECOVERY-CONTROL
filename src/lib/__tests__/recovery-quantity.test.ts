@@ -63,9 +63,44 @@ describe("computeRecoveryUpdate — full_recovery", () => {
     expect(result).toEqual({ ok: true, update: { quantityRecovered: 20, status: "recovered" } });
   });
 
+  it("rejects a full_recovery event that does not cover the full remaining quantity", () => {
+    const result = computeRecoveryUpdate(
+      { quantityClaimed: 20, quantityRecovered: 8, status: "partial" },
+      { type: "full_recovery", quantity: 5 },
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toMatch(/tutto il residuo/);
+  });
+
   it("still rejects over-recovery for a full_recovery event too", () => {
     const result = computeRecoveryUpdate(openCase, { type: "full_recovery", quantity: 21 });
     expect(result.ok).toBe(false);
+  });
+});
+
+describe("computeRecoveryUpdate — terminal states", () => {
+  it("rejects recovery events after a case is recovered", () => {
+    const result = computeRecoveryUpdate(
+      { quantityClaimed: 20, quantityRecovered: 20, status: "recovered" },
+      { type: "partial_recovery", quantity: 1 },
+    );
+    expect(result.ok).toBe(false);
+  });
+
+  it("rejects state-changing events after a case is closed unrecovered", () => {
+    const result = computeRecoveryUpdate(
+      { quantityClaimed: 20, quantityRecovered: 3, status: "closed_unrecovered" },
+      { type: "dispute" },
+    );
+    expect(result.ok).toBe(false);
+  });
+
+  it("allows notes on terminal cases without changing quantity or status", () => {
+    const state = { quantityClaimed: 20, quantityRecovered: 20, status: "recovered" };
+    expect(computeRecoveryUpdate(state, { type: "note" })).toEqual({
+      ok: true,
+      update: { quantityRecovered: 20, status: "recovered" },
+    });
   });
 });
 
