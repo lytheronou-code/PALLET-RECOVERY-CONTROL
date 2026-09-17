@@ -12,10 +12,14 @@ Milestones M1–M8 (per `CLAUDE.md`) are implemented on `claude/pallet-recovery-
   - `20260917210833_record_recovery_event_rpc`
   - `20260917214250_guard_bootstrap_single_initial_org`
   - `20260917214731_harden_recovery_event_terminal_states`
-- The five application-level migrations after the initial schema/RLS baseline are mirrored under `supabase/migrations/` with timestamps matching Supabase migration history.
+  - `20260917215301_audit_recovery_case_creation`
+  - `20260917215538_enforce_tenant_scoped_foreign_keys`
+- The seven application-level migrations after the initial schema/RLS baseline are mirrored under `supabase/migrations/` with timestamps matching Supabase migration history.
 - The first two schema/RLS migrations predate repository initialization and are still a remote baseline; materializing them into the repository remains a reproducibility task before handing the codebase to another development team.
 - `bootstrap_organization` is a `SECURITY DEFINER` RPC intentionally callable only by `authenticated`. It rejects repeat bootstrap attempts by a user who already has an organization membership.
 - `record_recovery_event` is `SECURITY INVOKER`, row-locks the recovery case and applies case state + audit event atomically. Terminal cases (`recovered`, `closed_unrecovered`, `cancelled`) accept notes only, and `full_recovery` must consume the full remaining quantity.
+- New recovery cases create their initial `created` audit event via a database trigger in the same transaction; a case can no longer be committed without its opening timeline event.
+- Tenant ownership is enforced at both RLS and referential-integrity level: movements, vouchers, recovery cases and recovery events cannot reference records belonging to another organization, even if a foreign UUID is known.
 
 ## Frontend
 Next.js 16 App Router, React 19, TypeScript strict, `@supabase/ssr`, Zod, Vitest and a plain CSS B2B design system.
@@ -34,35 +38,39 @@ Implemented:
 The client configuration uses Vercel env vars when present, with a checked-in fallback to the Supabase URL + publishable key. The fallback contains no service-role credential; the publishable key is the same public credential shipped to browser clients. Never add a service-role key to source control.
 
 ## Verification
-Claude's development pass reported:
-- `npm run typecheck` — pass
-- `npm run lint` — pass
-- `npm run test` — 72/72 pass before the independent hardening tests were added
-- `npm run build` — pass
+Claude's development pass originally reported 72/72 tests. Independent review added four regression tests around terminal/full-recovery behavior.
 
-Independent verification after handoff:
-- GitHub/Vercel integration confirmed by real preview deployments from the PR branch.
-- Vercel build initially failed because required public Supabase env vars were absent; code was changed to allow public fallback configuration and subsequent Vercel builds pass.
-- Supabase transaction QA (rolled back, no persistent QA data):
-  - authenticated user sees only its own organization — pass;
-  - authenticated user sees only its own recovery case — pass;
-  - cross-tenant counterparty insert blocked by RLS — pass;
-  - partial recovery updates quantity/status — pass;
-  - over-recovery rejected — pass;
-  - partial quantity tagged as `full_recovery` rejected — pass;
-  - terminal case rejects state-changing events — pass;
-  - terminal case accepts note events — pass.
-- Additional unit tests were added for the new terminal/full-recovery invariants; final CI/build verification is required on the branch head.
-- Security Advisor: one intentional warning only — authenticated users can execute the `SECURITY DEFINER` `bootstrap_organization` RPC. This is required for first-org onboarding and guarded by `auth.uid()`, repeat-membership rejection, fixed `search_path`, and explicit privilege revocation from `anon`/`PUBLIC`.
-- Performance Advisor: only unused-index INFO findings, expected before real traffic.
+GitHub CI now runs automatically and has independently verified on the PR branch:
+- `npm ci` — pass, 0 npm audit vulnerabilities;
+- `npm run typecheck` — pass;
+- `npm run lint` — pass;
+- `npm run test` — **76/76 pass** across 7 test files;
+- `npm run build` — pass, all Next.js routes compile.
+
+Independent Supabase QA was performed in transactions with `ROLLBACK`; no QA fixtures remain in the project. Verified:
+- authenticated user sees only its own organization — pass;
+- authenticated user sees only its own recovery case — pass;
+- cross-tenant row insert blocked by RLS — pass;
+- partial recovery updates quantity/status — pass;
+- over-recovery rejected — pass;
+- partial quantity tagged as `full_recovery` rejected — pass;
+- terminal case rejects state-changing events — pass;
+- terminal case accepts note events — pass;
+- new recovery case gets exactly one `created` audit event — pass;
+- cross-tenant FK references are rejected even when RLS is bypassed — pass;
+- legacy `SET NULL` and `CASCADE` delete behaviors still work with tenant-scoped FKs — pass.
+
+Security Advisor: one intentional warning only — authenticated users can execute the `SECURITY DEFINER` `bootstrap_organization` RPC. This is required for first-org onboarding and guarded by `auth.uid()`, repeat-membership rejection, fixed `search_path`, and explicit privilege revocation from `anon`/`PUBLIC`.
+
+Performance Advisor: only unused-index INFO findings, expected before real traffic.
 
 ## Deployment
 - Vercel project: `pallet-recovery-control`
 - Team: `Marcos' projects`
 - Git repo: `lytheronou-code/PALLET-RECOVERY-CONTROL`
 - Production branch: `main`
-- Preview deployment from the PR branch builds successfully.
-- Vercel Deployment Protection is enabled on the preview. Unauthenticated external checks are redirected to Vercel login, so browser E2E cannot be completed from the available unauthenticated automation session yet.
+- Preview deployments from the PR branch build successfully.
+- Vercel Deployment Protection is enabled on the preview. Unauthenticated external checks are redirected to Vercel login, so full browser E2E cannot be completed from the available unauthenticated automation session yet.
 
 ## Remaining gate before merge
 Do not merge PR #1 until a real browser flow has been exercised on the preview (or equivalent unprotected staging deployment):
