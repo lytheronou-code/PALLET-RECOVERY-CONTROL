@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowUpRight, CalendarDays, Ticket } from "lucide-react";
+import { ArrowUpRight, CalendarDays, Pencil, Ticket } from "lucide-react";
 import { requireMembership } from "@/lib/data/organization";
 import { getVoucherDetail } from "@/lib/data/vouchers";
+import { cancelVoucherAction } from "@/lib/actions/vouchers";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
 import { PriorityBadge, StatusBadge, VoucherStatusBadge } from "@/components/status-badge";
+import { VoucherCancelForm } from "@/components/voucher-cancel-form";
 
 export default async function VoucherDetailPage({
   params,
@@ -19,6 +21,8 @@ export default async function VoucherDetailPage({
 
   const estimatedResidualValue = voucher.outstandingQuantity * voucher.unitValue;
   const canRecover = voucher.outstandingQuantity > 0 && !["closed", "cancelled"].includes(voucher.status);
+  const canEdit = voucher.status !== "cancelled";
+  const canCancel = voucher.status !== "cancelled" && voucher.recoveredQuantity === 0 && voucher.recoveryCases.length === 0;
   const createParams = new URLSearchParams({
     counterpartyId: voucher.counterpartyId,
     palletTypeId: voucher.palletTypeId,
@@ -32,12 +36,16 @@ export default async function VoucherDetailPage({
         <div className="page-heading">
           <div className="eyebrow">Pallet credit</div>
           <h1 className="page-title">{voucher.voucherNumber}</h1>
-          <div className="page-subtitle">
-            {voucher.counterpartyName} · {voucher.palletTypeCode}
-          </div>
+          <div className="page-subtitle">{voucher.counterpartyName} · {voucher.palletTypeCode}</div>
         </div>
         <div className="header-actions">
           <VoucherStatusBadge status={voucher.status} />
+          {canEdit ? (
+            <Link href={"/vouchers/" + voucher.id + "/edit"} className="btn btn-secondary">
+              <Pencil size={14} />
+              Modifica
+            </Link>
+          ) : null}
           {canRecover ? (
             <Link href={"/recovery-cases/new?" + createParams.toString()} className="btn btn-primary">
               Apri recovery
@@ -84,13 +92,7 @@ export default async function VoucherDetailPage({
             <div className="table-wrap">
               <table className="data-table">
                 <thead>
-                  <tr>
-                    <th>Pratica</th>
-                    <th>Recupero</th>
-                    <th>Scadenza</th>
-                    <th>Priorità</th>
-                    <th>Stato</th>
-                  </tr>
+                  <tr><th>Pratica</th><th>Recupero</th><th>Scadenza</th><th>Priorità</th><th>Stato</th></tr>
                 </thead>
                 <tbody>
                   {voucher.recoveryCases.map((item) => (
@@ -118,13 +120,24 @@ export default async function VoucherDetailPage({
           </div>
           <div className="panel-body">
             <dl className="definition-list">
-              <dt>Controparte</dt>
-              <dd><Link href={"/counterparties/" + voucher.counterpartyId}>{voucher.counterpartyName}</Link></dd>
+              <dt>Controparte</dt><dd><Link href={"/counterparties/" + voucher.counterpartyId}>{voucher.counterpartyName}</Link></dd>
               <dt>Emissione</dt><dd>{formatDate(voucher.issueDate)}</dd>
               <dt>Scadenza</dt><dd>{formatDate(voucher.recoveryDueDate)}</dd>
               <dt>Valore pallet</dt><dd>{formatCurrency(voucher.unitValue)}</dd>
               <dt>Note</dt><dd style={{ whiteSpace: "pre-wrap" }}>{voucher.notes ?? "—"}</dd>
             </dl>
+
+            <div style={{ marginTop: 18, paddingTop: 16, borderTop: "1px solid var(--border)" }}>
+              <VoucherCancelForm
+                action={cancelVoucherAction.bind(null, voucher.id)}
+                disabled={!canCancel}
+              />
+              {!canCancel && voucher.status !== "cancelled" ? (
+                <p className="muted" style={{ fontSize: 10, marginBottom: 0 }}>
+                  L&apos;annullamento è bloccato se esistono pratiche collegate o recuperi già registrati.
+                </p>
+              ) : null}
+            </div>
           </div>
         </aside>
       </div>

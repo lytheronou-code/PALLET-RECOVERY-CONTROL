@@ -28,4 +28,15 @@ describe("voucherSchema", () => {
   it("allows an empty recovery due date", () => {
     expect(voucherSchema.safeParse({ ...valid, recoveryDueDate: "" }).success).toBe(true);
   });
+
+  it("keeps date validation for edit payloads", async () => {
+    const { voucherEditSchema } = await import("@/lib/validation/voucher");
+    expect(voucherEditSchema.safeParse({
+      voucherNumber: "BV-EDIT",
+      issueDate: "2026-09-18",
+      recoveryDueDate: "2026-09-17",
+      quantity: 10,
+      notes: "",
+    }).success).toBe(false);
+  });
 });
