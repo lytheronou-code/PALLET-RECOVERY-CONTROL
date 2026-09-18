@@ -7,6 +7,8 @@ import { requireMembership } from "@/lib/data/organization";
 import { voucherEditSchema, voucherSchema } from "@/lib/validation/voucher";
 import type { FormState } from "@/lib/actions/form-state";
 
+const ACTIVE_CASE_STATUSES = ["open", "contacted", "scheduled", "partial", "disputed"];
+
 function revalidateVoucherViews(id?: string) {
   revalidatePath("/vouchers");
   revalidatePath("/dashboard");
@@ -92,7 +94,7 @@ export async function updateVoucherAction(
   const supabase = await createClient();
   const { data: voucher } = await supabase
     .from("vouchers")
-    .select("recovered_quantity, status")
+    .select("recovered_quantity, quantity, status")
     .eq("organization_id", membership.organizationId)
     .eq("id", id)
     .maybeSingle();
@@ -101,6 +103,32 @@ export async function updateVoucherAction(
   if (voucher.status === "cancelled") return { error: "Un buono annullato non può essere modificato." };
   if (parsed.data.quantity < voucher.recovered_quantity) {
     return { error: "La quantità non può essere inferiore a quanto già recuperato." };
+  }
+
+  if (parsed.data.quantity !== voucher.quantity) {
+    const { data: activeCases } = await supabase
+      .from("recovery_cases")
+      .select("quantity_claimed, quantity_recovered")
+      .eq("organization_id", membership.organizationId)
+      .eq("voucher_id", id)
+      .in("status", ACTIVE_CASE_STATUSES);
+
+    const committedOutstanding = (activeCases ?? []).reduce(
+      (sum, item) => sum + (item.quantity_claimed - item.quantity_recovered),
+      0,
+    );
+    const newResidual = parsed.data.quantity - voucher.recovered_quantity;
+
+    if (committedOutstanding > newResidual) {
+      return {
+        error:
+          "La nuova quantità lascerebbe solo " +
+          newResidual +
+          " pallet residui, ma le pratiche attive ne impegnano " +
+          committedOutstanding +
+          ".",
+      };
+    }
   }
 
   const nextStatus =
@@ -126,9 +154,12 @@ export async function updateVoucherAction(
     .eq("id", id);
 
   if (error) {
-    return {
-      error: error.code === "23505" ? "Esiste già un buono con questo numero." : "Impossibile aggiornare il buono.",
-    };
+    const message = error.message.includes("outstanding linked recovery commitments")
+      ? "La quantità non può essere inferiore agli impegni delle pratiche attive."
+      : error.code === "23505"
+        ? "Esiste già un buono con questo numero."
+        : "Impossibile aggiornare il buono.";
+    return { error: message };
   }
 
   revalidateVoucherViews(id);
