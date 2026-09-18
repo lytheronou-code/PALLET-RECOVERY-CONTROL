@@ -14,6 +14,58 @@ export type Database = {
   }
   public: {
     Tables: {
+      client_portal_memberships: {
+        Row: {
+          active: boolean
+          counterparty_id: string
+          created_at: string
+          id: string
+          organization_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          counterparty_id: string
+          created_at?: string
+          id?: string
+          organization_id: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          counterparty_id?: string
+          created_at?: string
+          id?: string
+          organization_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_portal_memberships_org_counterparty_fk"
+            columns: ["organization_id", "counterparty_id"]
+            isOneToOne: false
+            referencedRelation: "counterparties"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "client_portal_memberships_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_portal_memberships_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       counterparties: {
         Row: {
           active: boolean
@@ -914,6 +966,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_grant_client_portal_access: {
+        Args: { p_counterparty_id: string; p_email: string }
+        Returns: {
+          active: boolean
+          email: string
+          id: string
+          user_id: string
+        }[]
+      }
       bootstrap_organization: {
         Args: { p_name: string }
         Returns: {
@@ -937,7 +998,105 @@ export type Database = {
           reversal_id: string
         }[]
       }
+      is_client_portal_member: {
+        Args: { p_counterparty_id: string; p_organization_id: string }
+        Returns: boolean
+      }
+      is_client_visible_document_path: {
+        Args: { p_storage_path: string }
+        Returns: boolean
+      }
       is_org_member: { Args: { p_organization_id: string }; Returns: boolean }
+      portal_counterparty_summary: {
+        Args: never
+        Returns: {
+          active_recovery_cases_count: number
+          estimated_exposure: number
+          next_due_date: string
+          open_vouchers_count: number
+          outstanding_pallets: number
+          recovered_pallets: number
+          recovered_value: number
+        }[]
+      }
+      portal_current_context: {
+        Args: never
+        Returns: {
+          counterparty_id: string
+          organization_id: string
+        }[]
+      }
+      portal_get_context: {
+        Args: never
+        Returns: {
+          counterparty_id: string
+          counterparty_name: string
+          organization_id: string
+          role: string
+        }[]
+      }
+      portal_get_document_storage_path: {
+        Args: { p_document_id: string }
+        Returns: string
+      }
+      portal_list_documents: {
+        Args: { p_page?: number; p_page_size?: number }
+        Returns: {
+          document_type: string
+          id: string
+          notes: string
+          original_filename: string
+          total_count: number
+          uploaded_at: string
+        }[]
+      }
+      portal_list_movements: {
+        Args: { p_page?: number; p_page_size?: number }
+        Returns: {
+          direction: string
+          document_number: string
+          document_type: string
+          id: string
+          movement_date: string
+          pallet_type_code: string
+          quantity: number
+          site_name: string
+          total_count: number
+        }[]
+      }
+      portal_list_recovery_cases: {
+        Args: { p_page?: number; p_page_size?: number }
+        Returns: {
+          due_date: string
+          id: string
+          opened_at: string
+          outstanding_quantity: number
+          outstanding_value: number
+          pallet_type_code: string
+          priority: string
+          quantity_claimed: number
+          quantity_recovered: number
+          reference: string
+          status: string
+          total_count: number
+        }[]
+      }
+      portal_list_vouchers: {
+        Args: { p_page?: number; p_page_size?: number }
+        Returns: {
+          id: string
+          issue_date: string
+          outstanding_quantity: number
+          pallet_type_code: string
+          quantity: number
+          recovered_quantity: number
+          recovery_due_date: string
+          site_name: string
+          status: string
+          total_count: number
+          voucher_number: string
+        }[]
+      }
       record_recovery_event: {
         Args: {
           p_case_id: string
