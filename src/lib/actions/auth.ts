@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { loginSchema, signupSchema } from "@/lib/validation/auth";
+import { mapSignupError } from "@/lib/auth/signup-error";
 import type { FormState } from "@/lib/actions/form-state";
 
 function sanitizeNextPath(next: FormDataEntryValue | null): string {
@@ -11,10 +12,6 @@ function sanitizeNextPath(next: FormDataEntryValue | null): string {
     return "/dashboard";
   }
   return next;
-}
-
-function isQaDiagnosticEmail(email: string): boolean {
-  return email.endsWith("@example.com") || email === "qa-e2e-20260918@lytheron.cloud";
 }
 
 export async function signInAction(
@@ -64,16 +61,7 @@ export async function signUpAction(
   });
 
   if (error) {
-    if (isQaDiagnosticEmail(parsed.data.email)) {
-      return { error: `QA_AUTH: ${error.message}` };
-    }
-
-    return {
-      error:
-        error.message === "User already registered"
-          ? "Utente già registrato"
-          : "Impossibile creare l'account",
-    };
+    return { error: mapSignupError(error.message) };
   }
 
   if (data.session) {

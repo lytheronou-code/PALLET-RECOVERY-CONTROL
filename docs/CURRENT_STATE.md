@@ -2,7 +2,7 @@
 
 Date: 2026-09-18
 
-PR #1 remains **Draft** against `main`. Do not merge until the live browser E2E gate is cleared.
+The premium P0 core is merged into `main` and has a successful Vercel **Production Deployment**.
 
 ## Product
 
@@ -29,13 +29,6 @@ Pallet Recovery Control is positioned as a recovery decision and execution contr
 
 Supabase project: `rizeeehngwbregoxqksy` (`eu-west-3`).
 
-Latest migrations include:
-
-- `20260918065436_sync_linked_voucher_recovery`
-- `20260918070430_index_tenant_scoped_foreign_keys`
-- `20260918071605_harden_audit_and_recovery_invariants`
-- `20260918072129_optimize_recovery_event_rls_policy`
-
 Authoritative rules include:
 
 - tenant-scoped foreign keys;
@@ -51,26 +44,46 @@ Authoritative rules include:
 - no authenticated hard-delete of domain history;
 - assignee constrained to organization membership.
 
-## QA
+## QA completed
 
-Independent transactional attacks against real Supabase passed, with rollback and no persisted QA business data.
+Independent transactional attacks against real Supabase passed with rollback and no persisted QA business data.
 
-Latest automated verification before this documentation-only commit:
+Automated verification on the premium core:
 
 - TypeScript: pass
 - ESLint: pass
-- Unit tests: **81/81 pass**
+- Unit tests: pass
 - Production build: pass
-- npm audit: **0 vulnerabilities**
-- Vercel preview build: pass
+- npm audit: 0 vulnerabilities
+- Vercel Production Deployment: pass
 
-## Remaining gate before merge
+Public production smoke test:
 
-Real browser E2E:
+- `/login`: renders correctly
+- `/signup`: renders correctly
+- unauthenticated `/`: redirects to login as expected
+
+## Auth email gate before external launch
+
+The live signup test identified the remaining external-infrastructure blocker:
+
+- Supabase built-in email provider returned `email rate limit exceeded`.
+- Supabase built-in SMTP is not suitable for production signup.
+- Resend domain `lytheron.cloud` is already verified in EU and sending is enabled.
+- Custom SMTP still needs to be enabled in **Supabase Authentication settings**.
+- The available automation browser is not authenticated to the Supabase dashboard, so this control-plane setting could not be changed autonomously.
+
+The application no longer exposes QA diagnostics. Signup errors are mapped to safe, user-facing messages.
+
+### Required configuration
+
+Configure Supabase Auth custom SMTP with the verified transactional email provider, then run the real browser E2E:
 
 `signup → email confirmation → onboarding → dashboard → master data → movement import → voucher → reconciliation → recovery → report`
 
-## P1 after E2E/pilot
+This is now the only blocking gate before allowing external users to register.
+
+## P1 after Auth E2E / pilot
 
 1. Sites / operational locations.
 2. Documents + photographic evidence.
