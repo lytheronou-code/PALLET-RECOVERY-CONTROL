@@ -7,6 +7,7 @@ import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
 import { PriorityBadge, StatusBadge } from "@/components/status-badge";
 import { RecoveryEventForm } from "@/components/recovery-event-form";
 import { AssigneePicker } from "@/components/assignee-picker";
+import { DocumentsPanel } from "@/components/documents-panel";
 import { EVENT_LABELS } from "@/lib/recovery/labels";
 
 export default async function RecoveryCaseDetailPage({
@@ -152,6 +153,17 @@ export default async function RecoveryCaseDetailPage({
           </div>
         )}
       </section>
+
+      <div style={{ marginTop: 16 }}>
+        <DocumentsPanel
+          link={{
+            counterpartyId: recoveryCase.counterpartyId,
+            entity: "recovery-case",
+            entityId: recoveryCase.id,
+            recoveryCaseId: recoveryCase.id,
+          }}
+        />
+      </div>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { requireMembership } from "@/lib/data/organization";
 import { getCounterpartyOverview } from "@/lib/data/counterparties";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
 import { PriorityBadge, StatusBadge, VoucherStatusBadge } from "@/components/status-badge";
+import { DocumentsPanel } from "@/components/documents-panel";
 
 const TYPE_LABELS: Record<string, string> = {
   customer: "Cliente",
@@ -240,6 +241,17 @@ export default async function CounterpartyDetailPage({
             </div>
           )}
         </section>
+      </div>
+
+      <div style={{ marginTop: 16 }}>
+        <DocumentsPanel
+          link={{
+            counterpartyId: cp.id,
+            entity: "counterparty",
+            entityId: cp.id,
+          }}
+          title="Documenti e prove della controparte"
+        />
       </div>
     </div>
   );

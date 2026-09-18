@@ -3,6 +3,7 @@ import { requireMembership } from "@/lib/data/organization";
 import { getMovement } from "@/lib/data/movements";
 import { formatDate, formatNumber } from "@/lib/format";
 import { CorrectMovementForm } from "@/components/correct-movement-form";
+import { DocumentsPanel } from "@/components/documents-panel";
 
 export default async function CorrectMovementPage({
   params,
@@ -55,6 +56,17 @@ export default async function CorrectMovementPage({
           <CorrectMovementForm movement={movement} />
         </div>
       </section>
+
+      <div style={{ marginTop: 16 }}>
+        <DocumentsPanel
+          link={{
+            counterpartyId: movement.counterpartyId,
+            entity: "movement",
+            entityId: movement.id,
+            movementId: movement.id,
+          }}
+        />
+      </div>
     </div>
   );
 }
