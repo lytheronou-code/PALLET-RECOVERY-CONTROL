@@ -1,80 +1,83 @@
-# Current state
+# Current state — Premium Core
 
-Milestones M1–M8 (per `CLAUDE.md`) are implemented on `claude/pallet-recovery-control-o7bssj` and PR #1 is open against `main`.
+Date: 2026-09-18
 
-## Backend
-- Dedicated Supabase project: `pallet-recovery-control` (`rizeeehngwbregoxqksy`), region `eu-west-3`.
-- Remote migration history currently applied:
-  - `20260917201815_create_recovery_core_schema`
-  - `20260917201847_optimize_indexes_and_rls`
-  - `20260917204239_bootstrap_organization_rpc`
-  - `20260917204307_revoke_anon_bootstrap_organization`
-  - `20260917210833_record_recovery_event_rpc`
-  - `20260917214250_guard_bootstrap_single_initial_org`
-  - `20260917214731_harden_recovery_event_terminal_states`
-  - `20260917215301_audit_recovery_case_creation`
-  - `20260917215538_enforce_tenant_scoped_foreign_keys`
-- The seven application-level migrations after the initial schema/RLS baseline are mirrored under `supabase/migrations/` with timestamps matching Supabase migration history.
-- The first two schema/RLS migrations predate repository initialization and are still a remote baseline; materializing them into the repository remains a reproducibility task before handing the codebase to another development team.
-- `bootstrap_organization` is a `SECURITY DEFINER` RPC intentionally callable only by `authenticated`. It rejects repeat bootstrap attempts by a user who already has an organization membership.
-- `record_recovery_event` is `SECURITY INVOKER`, row-locks the recovery case and applies case state + audit event atomically. Terminal cases (`recovered`, `closed_unrecovered`, `cancelled`) accept notes only, and `full_recovery` must consume the full remaining quantity.
-- New recovery cases create their initial `created` audit event via a database trigger in the same transaction; a case can no longer be committed without its opening timeline event.
-- Tenant ownership is enforced at both RLS and referential-integrity level: movements, vouchers, recovery cases and recovery events cannot reference records belonging to another organization, even if a foreign UUID is known.
+PR #1 remains **Draft** against `main`. Do not merge until the live browser E2E gate is cleared.
 
-## Frontend
-Next.js 16 App Router, React 19, TypeScript strict, `@supabase/ssr`, Zod, Vitest and a plain CSS B2B design system.
+## Product
 
-Implemented:
-- email/password auth + confirmation callback + logout;
-- organization onboarding;
-- application shell and dashboard;
-- counterparties and pallet-type CRUD;
-- CSV movement import with mapping/preview/server-side validation;
-- deterministic reconciliation engine;
-- recovery cases and transactional recovery events;
-- exposure report and CSV export;
-- settings page.
+Pallet Recovery Control is positioned as a recovery decision and execution control layer:
 
-The client configuration uses Vercel env vars when present, with a checked-in fallback to the Supabase URL + publishable key. The fallback contains no service-role credential; the publishable key is the same public credential shipped to browser clients. Never add a service-role key to source control.
+`movements + vouchers → reconciliation → exposure → priority → recovery → recovered value`
 
-## Verification
-Claude's development pass originally reported 72/72 tests. Independent review added four regression tests around terminal/full-recovery behavior.
+## Premium P0 implemented
 
-GitHub CI now runs automatically and has independently verified on the PR branch:
-- `npm ci` — pass, 0 npm audit vulnerabilities;
-- `npm run typecheck` — pass;
-- `npm run lint` — pass;
-- `npm run test` — **76/76 pass** across 7 test files;
-- `npm run build` — pass, all Next.js routes compile.
+- Auth, confirmation callback, protected routes and organization onboarding.
+- Recovery Command Center with exposure, recovery rate, recovered value, overdue exposure, ageing, action center and top counterparties.
+- Premium flat enterprise design: graphite navigation, teal accent, dense B2B tables, responsive layouts, no decorative gradients.
+- Counterparty CRUD + 360° detail.
+- Pallet type master data.
+- Movement ledger + validated CSV import.
+- Voucher workflow: create, list/filter, detail, controlled edit, safe cancellation, direct recovery-case creation.
+- Deterministic reconciliation.
+- Recovery cases with transactional events and immutable audit semantics.
+- Exposure reporting + CSV export.
+- Global search.
+- Workspace/settings.
 
-Independent Supabase QA was performed in transactions with `ROLLBACK`; no QA fixtures remain in the project. Verified:
-- authenticated user sees only its own organization — pass;
-- authenticated user sees only its own recovery case — pass;
-- cross-tenant row insert blocked by RLS — pass;
-- partial recovery updates quantity/status — pass;
-- over-recovery rejected — pass;
-- partial quantity tagged as `full_recovery` rejected — pass;
-- terminal case rejects state-changing events — pass;
-- terminal case accepts note events — pass;
-- new recovery case gets exactly one `created` audit event — pass;
-- cross-tenant FK references are rejected even when RLS is bypassed — pass;
-- legacy `SET NULL` and `CASCADE` delete behaviors still work with tenant-scoped FKs — pass.
+## Database integrity
 
-Security Advisor: one intentional warning only — authenticated users can execute the `SECURITY DEFINER` `bootstrap_organization` RPC. This is required for first-org onboarding and guarded by `auth.uid()`, repeat-membership rejection, fixed `search_path`, and explicit privilege revocation from `anon`/`PUBLIC`.
+Supabase project: `rizeeehngwbregoxqksy` (`eu-west-3`).
 
-Performance Advisor: only unused-index INFO findings, expected before real traffic.
+Latest migrations include:
 
-## Deployment
-- Vercel project: `pallet-recovery-control`
-- Team: `Marcos' projects`
-- Git repo: `lytheronou-code/PALLET-RECOVERY-CONTROL`
-- Production branch: `main`
-- Preview deployments from the PR branch build successfully.
-- Vercel Deployment Protection is enabled on the preview. Unauthenticated external checks are redirected to Vercel login, so full browser E2E cannot be completed from the available unauthenticated automation session yet.
+- `20260918065436_sync_linked_voucher_recovery`
+- `20260918070430_index_tenant_scoped_foreign_keys`
+- `20260918071605_harden_audit_and_recovery_invariants`
+- `20260918072129_optimize_recovery_event_rls_policy`
+
+Authoritative rules include:
+
+- tenant-scoped foreign keys;
+- recovery case ↔ voucher must match organization, counterparty and pallet type;
+- linked case cannot over-claim voucher residual;
+- one active recovery case per voucher;
+- server-enforced pallet-value snapshot;
+- recovery quantity/status changes only through `record_recovery_event`;
+- voucher recovered quantity changes only through recovery workflow;
+- voucher + case recovery update atomically;
+- recovery events append-only;
+- pallet movements immutable after insertion;
+- no authenticated hard-delete of domain history;
+- assignee constrained to organization membership.
+
+## QA
+
+Independent transactional attacks against real Supabase passed, with rollback and no persisted QA business data.
+
+Latest automated verification before this documentation-only commit:
+
+- TypeScript: pass
+- ESLint: pass
+- Unit tests: **81/81 pass**
+- Production build: pass
+- npm audit: **0 vulnerabilities**
+- Vercel preview build: pass
 
 ## Remaining gate before merge
-Do not merge PR #1 until a real browser flow has been exercised on the preview (or equivalent unprotected staging deployment):
 
-`signup → email confirm → onboarding → dashboard → CRUD → CSV import → reconciliation → recovery → report`
+Real browser E2E:
 
-No new product features should be added before this gate is cleared.
+`signup → email confirmation → onboarding → dashboard → master data → movement import → voucher → reconciliation → recovery → report`
+
+## P1 after E2E/pilot
+
+1. Sites / operational locations.
+2. Documents + photographic evidence.
+3. Team invites / roles / assignment queues.
+4. Recovery planning / trips / stops.
+5. Bulk voucher import.
+6. Additive movement correction/reversal workflow.
+7. Deadline notifications/digests.
+
+Out of scope until validated: AI, live GPS, full route optimization, marketplace, QR serialization, carbon certificates and billing administration.

@@ -106,3 +106,23 @@ Do not continue expanding the platform if a real pilot shows that:
 - recovered value cannot be measured reliably.
 
 New modules should be added only when they reduce recovery time, improve evidence, or increase measurable recovered value.
+
+
+## P0 freeze status
+
+The premium core is now functionally frozen pending real browser E2E and pilot feedback.
+
+Additional safeguards completed after the initial audit:
+
+- voucher correction and cancellation workflow with recovery-aware limits;
+- server-enforced voucher/case counterparty and pallet-type consistency;
+- one active recovery case per voucher at a time;
+- server-side pallet value snapshot on case creation;
+- recovery case state writable only through the transactional recovery RPC;
+- voucher recovered quantity writable only through the recovery workflow;
+- recovery events append-only;
+- pallet movements immutable after import;
+- authenticated hard delete removed from operational/master history;
+- movement ledger, voucher detail and global search added to the premium workspace.
+
+Do not start P1 until browser E2E is cleared and the pilot data model has been confirmed.
