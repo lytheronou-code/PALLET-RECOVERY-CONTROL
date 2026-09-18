@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CalendarDays, CircleDollarSign, PackageCheck } from "lucide-react";
-import { requireMembership } from "@/lib/data/organization";
+import { listOrganizationMembers, requireMembership } from "@/lib/data/organization";
 import { getRecoveryCase, listRecoveryEvents } from "@/lib/data/recovery-cases";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
 import { PriorityBadge, StatusBadge } from "@/components/status-badge";
 import { RecoveryEventForm } from "@/components/recovery-event-form";
+import { AssigneePicker } from "@/components/assignee-picker";
 import { EVENT_LABELS } from "@/lib/recovery/labels";
 
 export default async function RecoveryCaseDetailPage({
@@ -15,9 +16,10 @@ export default async function RecoveryCaseDetailPage({
 }) {
   const membership = await requireMembership();
   const { id } = await params;
-  const [recoveryCase, events] = await Promise.all([
+  const [recoveryCase, events, members] = await Promise.all([
     getRecoveryCase(membership.organizationId, id),
     listRecoveryEvents(membership.organizationId, id),
+    listOrganizationMembers(membership.organizationId),
   ]);
 
   if (!recoveryCase) notFound();
@@ -81,12 +83,17 @@ export default async function RecoveryCaseDetailPage({
             <dl className="definition-list">
               <dt>Data apertura</dt><dd>{formatDate(recoveryCase.openedAt)}</dd>
               <dt>Scadenza</dt><dd>{formatDate(recoveryCase.dueDate)}</dd>
+              <dt>Sito</dt><dd>{recoveryCase.siteName ?? "—"}</dd>
               <dt>Valore unitario</dt><dd>{formatCurrency(recoveryCase.unitValueSnapshot)}</dd>
               <dt>Buono collegato</dt>
               <dd>
                 {recoveryCase.voucherId
                   ? <Link href={"/vouchers/" + recoveryCase.voucherId}>Apri buono</Link>
                   : "—"}
+              </dd>
+              <dt>Assegnata a</dt>
+              <dd>
+                <AssigneePicker caseId={recoveryCase.id} assigneeUserId={recoveryCase.assigneeUserId} members={members} />
               </dd>
               <dt>Note</dt><dd style={{ whiteSpace: "pre-wrap" }}>{recoveryCase.notes ?? "—"}</dd>
             </dl>

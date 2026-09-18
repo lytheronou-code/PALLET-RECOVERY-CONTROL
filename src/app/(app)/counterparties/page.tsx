@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { Building2, Plus } from "lucide-react";
 import { requireMembership } from "@/lib/data/organization";
-import { listCounterparties } from "@/lib/data/counterparties";
+import { listCounterpartiesPage } from "@/lib/data/counterparties";
 import { setCounterpartyActiveAction } from "@/lib/actions/counterparties";
+import { parsePage } from "@/lib/pagination";
+import { Pagination } from "@/components/pagination";
 
 const TYPE_LABELS: Record<string, string> = {
   customer: "Cliente",
@@ -16,14 +18,18 @@ const TYPE_LABELS: Record<string, string> = {
 export default async function CounterpartiesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ inactive?: string }>;
+  searchParams: Promise<{ inactive?: string; q?: string; page?: string }>;
 }) {
   const membership = await requireMembership();
-  const { inactive } = await searchParams;
+  const { inactive, q, page: pageParam } = await searchParams;
   const showInactive = inactive === "1";
-  const counterparties = await listCounterparties(membership.organizationId, {
+  const page = parsePage(pageParam);
+  const result = await listCounterpartiesPage(membership.organizationId, {
     includeInactive: showInactive,
+    search: q,
+    page,
   });
+  const counterparties = result.items;
 
   return (
     <div className="shell">
@@ -41,8 +47,17 @@ export default async function CounterpartiesPage({
         </Link>
       </div>
 
+      <form method="get" className="search-bar">
+        {inactive ? <input type="hidden" name="inactive" value={inactive} /> : null}
+        <input type="search" name="q" placeholder="Cerca per nome, codice o P.IVA…" defaultValue={q ?? ""} />
+        <button type="submit" className="btn btn-secondary btn-sm">Cerca</button>
+      </form>
+
       <div className="filter-bar">
-        <Link href={showInactive ? "/counterparties" : "/counterparties?inactive=1"} className={"filter-pill" + (showInactive ? " active" : "")}>
+        <Link
+          href={{ pathname: "/counterparties", query: { ...(q ? { q } : {}), ...(showInactive ? {} : { inactive: "1" }) } }}
+          className={"filter-pill" + (showInactive ? " active" : "")}
+        >
           {showInactive ? "Incluse non attive" : "Mostra non attive"}
         </Link>
       </div>
@@ -102,6 +117,14 @@ export default async function CounterpartiesPage({
           </div>
         )}
       </div>
+
+      <Pagination
+        basePath="/counterparties"
+        params={{ inactive, q }}
+        page={result.page}
+        pageCount={result.pageCount}
+        total={result.total}
+      />
     </div>
   );
 }

@@ -156,6 +156,13 @@ export type Database = {
             referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "organization_members_profile_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       organizations: {
@@ -427,6 +434,13 @@ export type Database = {
           voucher_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "recovery_cases_assignee_profile_fkey"
+            columns: ["assignee_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "recovery_cases_counterparty_id_fkey"
             columns: ["counterparty_id"]

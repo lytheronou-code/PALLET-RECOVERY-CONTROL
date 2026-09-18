@@ -1,6 +1,8 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { Tables } from "@/lib/supabase/database.types";
+import { DEFAULT_PAGE_SIZE, pageCountFor, rangeFor, type PaginatedResult } from "@/lib/pagination";
+import { sanitizeOrSearchTerm } from "@/lib/supabase/filter";
 
 export type Counterparty = Tables<"counterparties">;
 
@@ -62,6 +64,39 @@ export async function listCounterparties(
 
   const { data, error } = await query;
   return error || !data ? [] : data;
+}
+
+export async function listCounterpartiesPage(
+  organizationId: string,
+  options: { includeInactive?: boolean; search?: string; page?: number; pageSize?: number } = {},
+): Promise<PaginatedResult<Counterparty>> {
+  const supabase = await createClient();
+  const pageSize = options.pageSize ?? DEFAULT_PAGE_SIZE;
+  const page = options.page ?? 1;
+  const { from, to } = rangeFor(page, pageSize);
+
+  let query = supabase
+    .from("counterparties")
+    .select("*", { count: "exact" })
+    .eq("organization_id", organizationId)
+    .order("legal_name", { ascending: true })
+    .range(from, to);
+
+  if (!options.includeInactive) query = query.eq("active", true);
+  if (options.search) {
+    const term = sanitizeOrSearchTerm(options.search);
+    if (term) query = query.or(`legal_name.ilike.%${term}%,code.ilike.%${term}%,vat_number.ilike.%${term}%`);
+  }
+
+  const { data, error, count } = await query;
+  const total = count ?? 0;
+  return {
+    items: error || !data ? [] : data,
+    total,
+    page,
+    pageSize,
+    pageCount: pageCountFor(total, pageSize),
+  };
 }
 
 export async function getCounterparty(organizationId: string, id: string): Promise<Counterparty | null> {

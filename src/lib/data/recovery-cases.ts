@@ -1,5 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { DEFAULT_PAGE_SIZE, pageCountFor, rangeFor, type PaginatedResult } from "@/lib/pagination";
+import { sanitizeOrSearchTerm } from "@/lib/supabase/filter";
 
 export type RecoveryCaseListItem = {
   id: string;
@@ -13,6 +15,8 @@ export type RecoveryCaseListItem = {
   dueDate: string | null;
   priority: string;
   status: string;
+  assigneeUserId: string | null;
+  assigneeName: string | null;
 };
 
 type CaseJoinRow = {
@@ -24,31 +28,17 @@ type CaseJoinRow = {
   due_date: string | null;
   priority: string;
   status: string;
+  assignee_user_id: string | null;
   counterparties: { legal_name: string } | null;
   pallet_types: { code: string } | null;
+  profiles: { email: string; display_name: string | null } | null;
 };
 
-export async function listRecoveryCases(
-  organizationId: string,
-  filters: { statuses?: string[] } = {},
-): Promise<RecoveryCaseListItem[]> {
-  const supabase = await createClient();
-  let query = supabase
-    .from("recovery_cases")
-    .select(
-      "id, reference, quantity_claimed, quantity_recovered, unit_value_snapshot, due_date, priority, status, counterparties(legal_name), pallet_types(code)",
-    )
-    .eq("organization_id", organizationId)
-    .order("due_date", { ascending: true, nullsFirst: false });
+const SELECT_CASE_LIST_ROW =
+  "id, reference, quantity_claimed, quantity_recovered, unit_value_snapshot, due_date, priority, status, assignee_user_id, counterparties(legal_name), pallet_types(code), profiles(email, display_name)";
 
-  if (filters.statuses && filters.statuses.length > 0) {
-    query = query.in("status", filters.statuses);
-  }
-
-  const { data, error } = await query;
-  if (error || !data) return [];
-
-  return (data as unknown as CaseJoinRow[]).map((row) => ({
+function mapCaseListRow(row: CaseJoinRow): RecoveryCaseListItem {
+  return {
     id: row.id,
     reference: row.reference,
     counterpartyName: row.counterparties?.legal_name ?? "—",
@@ -60,7 +50,66 @@ export async function listRecoveryCases(
     dueDate: row.due_date,
     priority: row.priority,
     status: row.status,
-  }));
+    assigneeUserId: row.assignee_user_id,
+    assigneeName: row.profiles?.display_name || row.profiles?.email || null,
+  };
+}
+
+export async function listRecoveryCases(
+  organizationId: string,
+  filters: { statuses?: string[] } = {},
+): Promise<RecoveryCaseListItem[]> {
+  const supabase = await createClient();
+  let query = supabase
+    .from("recovery_cases")
+    .select(SELECT_CASE_LIST_ROW)
+    .eq("organization_id", organizationId)
+    .order("due_date", { ascending: true, nullsFirst: false });
+
+  if (filters.statuses && filters.statuses.length > 0) {
+    query = query.in("status", filters.statuses);
+  }
+
+  const { data, error } = await query;
+  if (error || !data) return [];
+
+  return (data as unknown as CaseJoinRow[]).map(mapCaseListRow);
+}
+
+export async function listRecoveryCasesPage(
+  organizationId: string,
+  options: {
+    statuses?: string[];
+    search?: string;
+    assigneeUserId?: string;
+    page?: number;
+    pageSize?: number;
+  } = {},
+): Promise<PaginatedResult<RecoveryCaseListItem>> {
+  const supabase = await createClient();
+  const pageSize = options.pageSize ?? DEFAULT_PAGE_SIZE;
+  const page = options.page ?? 1;
+  const { from, to } = rangeFor(page, pageSize);
+
+  let query = supabase
+    .from("recovery_cases")
+    .select(SELECT_CASE_LIST_ROW, { count: "exact" })
+    .eq("organization_id", organizationId)
+    .order("due_date", { ascending: true, nullsFirst: false })
+    .range(from, to);
+
+  if (options.statuses?.length) query = query.in("status", options.statuses);
+  if (options.assigneeUserId) query = query.eq("assignee_user_id", options.assigneeUserId);
+  if (options.search) {
+    const term = sanitizeOrSearchTerm(options.search);
+    if (term) query = query.ilike("reference", `%${term}%`);
+  }
+
+  const { data, error, count } = await query;
+  const total = count ?? 0;
+  const items = (error || !data ? [] : (data as unknown as CaseJoinRow[])).map(mapCaseListRow);
+
+  return { items, total, page, pageSize, pageCount: pageCountFor(total, pageSize) };
 }
 
 export type RecoveryCaseDetail = {
@@ -71,6 +120,8 @@ export type RecoveryCaseDetail = {
   palletTypeId: string;
   palletTypeCode: string;
   voucherId: string | null;
+  siteId: string | null;
+  siteName: string | null;
   openedAt: string;
   dueDate: string | null;
   quantityClaimed: number;
@@ -79,6 +130,8 @@ export type RecoveryCaseDetail = {
   priority: string;
   status: string;
   notes: string | null;
+  assigneeUserId: string | null;
+  assigneeName: string | null;
 };
 
 export type RecoveryEventItem = {
@@ -97,7 +150,7 @@ export async function getRecoveryCase(
   const { data, error } = await supabase
     .from("recovery_cases")
     .select(
-      "id, reference, counterparty_id, pallet_type_id, voucher_id, opened_at, due_date, quantity_claimed, quantity_recovered, unit_value_snapshot, priority, status, notes, counterparties(legal_name), pallet_types(code)",
+      "id, reference, counterparty_id, pallet_type_id, voucher_id, site_id, opened_at, due_date, quantity_claimed, quantity_recovered, unit_value_snapshot, priority, status, notes, assignee_user_id, counterparties(legal_name), pallet_types(code), sites(name), profiles(email, display_name)",
     )
     .eq("organization_id", organizationId)
     .eq("id", id)
@@ -110,6 +163,7 @@ export async function getRecoveryCase(
     counterparty_id: string;
     pallet_type_id: string;
     voucher_id: string | null;
+    site_id: string | null;
     opened_at: string;
     due_date: string | null;
     quantity_claimed: number;
@@ -118,8 +172,11 @@ export async function getRecoveryCase(
     priority: string;
     status: string;
     notes: string | null;
+    assignee_user_id: string | null;
     counterparties: { legal_name: string } | null;
     pallet_types: { code: string } | null;
+    sites: { name: string } | null;
+    profiles: { email: string; display_name: string | null } | null;
   };
 
   return {
@@ -130,6 +187,8 @@ export async function getRecoveryCase(
     palletTypeId: row.pallet_type_id,
     palletTypeCode: row.pallet_types?.code ?? "—",
     voucherId: row.voucher_id,
+    siteId: row.site_id,
+    siteName: row.sites?.name ?? null,
     openedAt: row.opened_at,
     dueDate: row.due_date,
     quantityClaimed: row.quantity_claimed,
@@ -138,6 +197,8 @@ export async function getRecoveryCase(
     priority: row.priority,
     status: row.status,
     notes: row.notes,
+    assigneeUserId: row.assignee_user_id,
+    assigneeName: row.profiles?.display_name || row.profiles?.email || null,
   };
 }
 

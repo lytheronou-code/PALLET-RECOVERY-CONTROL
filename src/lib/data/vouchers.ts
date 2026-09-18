@@ -1,5 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { DEFAULT_PAGE_SIZE, pageCountFor, rangeFor, type PaginatedResult } from "@/lib/pagination";
+import { sanitizeOrSearchTerm } from "@/lib/supabase/filter";
 
 export type VoucherListItem = {
   id: string;
@@ -80,6 +82,54 @@ export async function listVouchers(
     status: row.status,
     notes: row.notes,
   }));
+}
+
+export async function listVouchersPage(
+  organizationId: string,
+  options: { statuses?: string[]; search?: string; page?: number; pageSize?: number } = {},
+): Promise<PaginatedResult<VoucherListItem>> {
+  const supabase = await createClient();
+  const pageSize = options.pageSize ?? DEFAULT_PAGE_SIZE;
+  const page = options.page ?? 1;
+  const { from, to } = rangeFor(page, pageSize);
+
+  let query = supabase
+    .from("vouchers")
+    .select(
+      "id, voucher_number, counterparty_id, pallet_type_id, issue_date, recovery_due_date, quantity, recovered_quantity, status, notes, counterparties(legal_name), pallet_types(code)",
+      { count: "exact" },
+    )
+    .eq("organization_id", organizationId)
+    .order("recovery_due_date", { ascending: true, nullsFirst: false })
+    .order("issue_date", { ascending: false })
+    .range(from, to);
+
+  if (options.statuses?.length) query = query.in("status", options.statuses);
+  if (options.search) {
+    const term = sanitizeOrSearchTerm(options.search);
+    if (term) query = query.ilike("voucher_number", `%${term}%`);
+  }
+
+  const { data, error, count } = await query;
+  const total = count ?? 0;
+
+  const items = (error || !data ? [] : (data as unknown as VoucherRow[])).map((row) => ({
+    id: row.id,
+    voucherNumber: row.voucher_number,
+    counterpartyId: row.counterparty_id,
+    counterpartyName: row.counterparties?.legal_name ?? "—",
+    palletTypeId: row.pallet_type_id,
+    palletTypeCode: row.pallet_types?.code ?? "—",
+    issueDate: row.issue_date,
+    recoveryDueDate: row.recovery_due_date,
+    quantity: row.quantity,
+    recoveredQuantity: row.recovered_quantity,
+    outstandingQuantity: Math.max(0, row.quantity - row.recovered_quantity),
+    status: row.status,
+    notes: row.notes,
+  }));
+
+  return { items, total, page, pageSize, pageCount: pageCountFor(total, pageSize) };
 }
 
 export async function getVoucherDetail(organizationId: string, id: string): Promise<VoucherDetail | null> {

@@ -1,9 +1,11 @@
 import Link from "next/link";
-import { Plus, Ticket } from "lucide-react";
+import { Plus, Ticket, Upload } from "lucide-react";
 import { requireMembership } from "@/lib/data/organization";
-import { listVouchers } from "@/lib/data/vouchers";
+import { listVouchersPage } from "@/lib/data/vouchers";
 import { formatDate, formatNumber } from "@/lib/format";
 import { VoucherStatusBadge } from "@/components/status-badge";
+import { parsePage } from "@/lib/pagination";
+import { Pagination } from "@/components/pagination";
 
 const FILTERS: { key: string; label: string; statuses?: string[] }[] = [
   { key: "active", label: "Attivi", statuses: ["open", "partial", "disputed"] },
@@ -24,12 +26,18 @@ function isOverdue(date: string | null, status: string): boolean {
 export default async function VouchersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filter?: string }>;
+  searchParams: Promise<{ filter?: string; q?: string; page?: string }>;
 }) {
   const membership = await requireMembership();
-  const { filter } = await searchParams;
+  const { filter, q, page: pageParam } = await searchParams;
   const activeFilter = FILTERS.find((item) => item.key === filter) ?? FILTERS[0];
-  const vouchers = await listVouchers(membership.organizationId, { statuses: activeFilter.statuses });
+  const page = parsePage(pageParam);
+  const result = await listVouchersPage(membership.organizationId, {
+    statuses: activeFilter.statuses,
+    search: q,
+    page,
+  });
+  const vouchers = result.items;
 
   const totalOutstanding = vouchers.reduce((sum, item) => sum + item.outstandingQuantity, 0);
   const overdueCount = vouchers.filter((item) => isOverdue(item.recoveryDueDate, item.status)).length;
@@ -44,11 +52,23 @@ export default async function VouchersPage({
             Scadenze, residui e collegamento diretto alle pratiche di recupero.
           </div>
         </div>
-        <Link href="/vouchers/new" className="btn btn-primary">
-          <Plus size={14} />
-          Nuovo buono
-        </Link>
+        <div style={{ display: "flex", gap: 8 }}>
+          <Link href="/import/vouchers" className="btn btn-secondary">
+            <Upload size={14} />
+            Import CSV
+          </Link>
+          <Link href="/vouchers/new" className="btn btn-primary">
+            <Plus size={14} />
+            Nuovo buono
+          </Link>
+        </div>
       </div>
+
+      <form method="get" className="search-bar">
+        {filter ? <input type="hidden" name="filter" value={filter} /> : null}
+        <input type="search" name="q" placeholder="Cerca per numero buono…" defaultValue={q ?? ""} />
+        <button type="submit" className="btn btn-secondary btn-sm">Cerca</button>
+      </form>
 
       <div className="grid premium-kpis three">
         <div className="metric-card">
@@ -144,6 +164,14 @@ export default async function VouchersPage({
           </div>
         )}
       </div>
+
+      <Pagination
+        basePath="/vouchers"
+        params={{ filter, q }}
+        page={result.page}
+        pageCount={result.pageCount}
+        total={result.total}
+      />
     </div>
   );
 }

@@ -150,6 +150,33 @@ function mapRpcError(message: string): string {
   return "Impossibile registrare l'evento.";
 }
 
+export async function assignRecoveryCaseAction(
+  caseId: string,
+  _prevState: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const membership = await requireMembership();
+  const raw = formData.get("assigneeUserId");
+  const assigneeUserId = typeof raw === "string" && raw.length > 0 ? raw : null;
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("recovery_cases")
+    .update({ assignee_user_id: assigneeUserId })
+    .eq("organization_id", membership.organizationId)
+    .eq("id", caseId);
+
+  if (error) {
+    if (error.message.includes("assignee must be a member of the organization")) {
+      return { error: "L'utente selezionato non è un membro dell'organizzazione." };
+    }
+    return { error: "Impossibile aggiornare l'assegnatario." };
+  }
+
+  revalidateRecoveryViews(caseId);
+  return { message: assigneeUserId ? "Pratica assegnata." : "Assegnazione rimossa." };
+}
+
 export async function addRecoveryEventAction(
   caseId: string,
   _prevState: FormState,
