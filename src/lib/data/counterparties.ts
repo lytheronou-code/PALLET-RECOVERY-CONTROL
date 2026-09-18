@@ -57,6 +57,12 @@ export type CounterpartyOverview = {
 
 const ACTIVE_CASE_STATUSES = ["open", "contacted", "scheduled", "partial", "disputed"];
 
+// Unbounded on purpose: every caller uses this for a <select> picker or a
+// CSV import lookup (needs the full active set to resolve rows against by
+// code/name), never to render a list view directly -- listCounterpartiesPage
+// exists for that. Bounded by a realistic per-org counterparty count, not
+// by an arbitrary cap; revisit if a pilot org's counterparty count turns
+// out to be much larger than expected.
 export async function listCounterparties(
   organizationId: string,
   options: { includeInactive?: boolean } = {},

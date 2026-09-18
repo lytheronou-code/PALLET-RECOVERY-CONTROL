@@ -4,6 +4,7 @@ import { listCounterparties } from "@/lib/data/counterparties";
 import { listPalletTypes } from "@/lib/data/pallet-types";
 import { listImportBatches } from "@/lib/data/import-batches";
 import { listVoucherNumbers } from "@/lib/data/vouchers";
+import { listSitesForImportLookup } from "@/lib/data/sites";
 import { VoucherImportWizard } from "@/components/voucher-import-wizard";
 import { formatDate, formatNumber } from "@/lib/format";
 
@@ -15,9 +16,10 @@ const STATUS_LABELS: Record<string, string> = {
 
 export default async function VoucherImportPage() {
   const membership = await requireMembership();
-  const [counterparties, palletTypes, existingVoucherNumbers, batches] = await Promise.all([
+  const [counterparties, palletTypes, sites, existingVoucherNumbers, batches] = await Promise.all([
     listCounterparties(membership.organizationId, { includeInactive: true }),
     listPalletTypes(membership.organizationId, { includeInactive: true }),
+    listSitesForImportLookup(membership.organizationId),
     listVoucherNumbers(membership.organizationId),
     listImportBatches(membership.organizationId),
   ]);
@@ -41,6 +43,7 @@ export default async function VoucherImportPage() {
       <VoucherImportWizard
         counterparties={counterparties.map((c) => ({ id: c.id, code: c.code, legalName: c.legal_name }))}
         palletTypes={palletTypes.map((p) => ({ id: p.id, code: p.code }))}
+        sites={sites}
         existingVoucherNumbers={existingVoucherNumbers}
       />
 

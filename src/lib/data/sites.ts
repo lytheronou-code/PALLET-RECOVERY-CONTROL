@@ -48,18 +48,46 @@ export async function listSitesPage(
   };
 }
 
-// Unbounded on purpose: used to populate <select> pickers, which need every
-// active site rather than a page of them.
-export async function listActiveSitesForPicker(organizationId: string): Promise<Site[]> {
+// Scoped to a single counterparty rather than the whole organization: a
+// voucher/recovery-case site picker only ever needs that counterparty's
+// own sites (the DB now enforces this match too, via
+// validate_voucher_recovery_site_match -- see the
+// site_counterparty_consistency migration), so this is bounded by a real
+// customer's site count, not the organization's. Organization-owned depots
+// (counterparty_id is null) are deliberately excluded: they are reserved
+// for future recovery planning, not customer location selection.
+export async function listActiveSitesForCounterparty(
+  organizationId: string,
+  counterpartyId: string,
+): Promise<Site[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("sites")
     .select("*")
     .eq("organization_id", organizationId)
+    .eq("counterparty_id", counterpartyId)
     .eq("active", true)
     .order("name", { ascending: true });
 
   return error || !data ? [] : data;
+}
+
+// Unbounded on purpose, like listCounterparties/listPalletTypes: CSV import
+// needs the full site catalog (code, name, counterparty) to resolve rows
+// against, the same way it resolves counterparty/pallet-type columns.
+export async function listSitesForImportLookup(
+  organizationId: string,
+): Promise<{ id: string; code: string | null; name: string; counterpartyId: string | null }[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("sites")
+    .select("id, code, name, counterparty_id")
+    .eq("organization_id", organizationId)
+    .eq("active", true);
+
+  return error || !data
+    ? []
+    : data.map((row) => ({ id: row.id, code: row.code, name: row.name, counterpartyId: row.counterparty_id }));
 }
 
 export async function getSite(organizationId: string, id: string): Promise<Site | null> {

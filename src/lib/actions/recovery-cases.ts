@@ -128,6 +128,9 @@ export async function createRecoveryCaseAction(
     if (error?.message.includes("recovery case quantity exceeds voucher outstanding quantity")) {
       return { error: "La quantità richiesta supera il residuo disponibile del buono." };
     }
+    if (error?.message.includes("site must belong to the same counterparty")) {
+      return { error: "Il sito selezionato non appartiene alla controparte scelta." };
+    }
     return { error: "Impossibile creare la pratica. Verifica dati e permessi." };
   }
 

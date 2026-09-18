@@ -2,6 +2,10 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { buildExposureReport, type ExposureReport } from "@/lib/reporting/exposure-report";
 
+// Unbounded on purpose, same reasoning as dashboard.ts's aggregate reads:
+// this is an aggregate report over a date range, not a list view, and
+// must see every case/event in that range to total correctly. A known
+// scaling limit at real pilot volume, not an oversight.
 export async function getExposureReport(
   organizationId: string,
   periodStart: Date,

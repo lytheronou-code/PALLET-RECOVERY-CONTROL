@@ -67,6 +67,17 @@ function dateOnly(value: string): Date {
   return new Date(value + "T00:00:00");
 }
 
+// getDashboardKpis, getDashboardInsights and getTopExposureCounterparties
+// below all read every recovery_cases/vouchers row for the organization
+// with no .range()/.limit(). This is deliberate, not an oversight: they
+// compute organization-wide aggregates (totals, ageing buckets, per-
+// counterparty sums), and an aggregate is only correct if it sees every
+// row -- paginating the input would silently under-count. The real fix at
+// real pilot scale is to push the aggregation into SQL (a view or RPC
+// doing sum/count server-side) instead of fetching every row into Node,
+// not client-side pagination; that is out of scope for this pass and
+// noted here as a known scaling limit to revisit once real row counts
+// from a pilot are available.
 export async function getDashboardKpis(organizationId: string): Promise<DashboardKpis> {
   const supabase = await createClient();
   const { data, error } = await supabase

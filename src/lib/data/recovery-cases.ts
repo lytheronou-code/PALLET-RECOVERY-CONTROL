@@ -55,27 +55,6 @@ function mapCaseListRow(row: CaseJoinRow): RecoveryCaseListItem {
   };
 }
 
-export async function listRecoveryCases(
-  organizationId: string,
-  filters: { statuses?: string[] } = {},
-): Promise<RecoveryCaseListItem[]> {
-  const supabase = await createClient();
-  let query = supabase
-    .from("recovery_cases")
-    .select(SELECT_CASE_LIST_ROW)
-    .eq("organization_id", organizationId)
-    .order("due_date", { ascending: true, nullsFirst: false });
-
-  if (filters.statuses && filters.statuses.length > 0) {
-    query = query.in("status", filters.statuses);
-  }
-
-  const { data, error } = await query;
-  if (error || !data) return [];
-
-  return (data as unknown as CaseJoinRow[]).map(mapCaseListRow);
-}
-
 export async function listRecoveryCasesPage(
   organizationId: string,
   options: {

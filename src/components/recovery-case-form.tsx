@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { createRecoveryCaseAction } from "@/lib/actions/recovery-cases";
+import { listSitesForCounterpartyAction } from "@/lib/actions/sites";
 import { emptyFormState } from "@/lib/actions/form-state";
 import { PRIORITIES } from "@/lib/validation/recovery-case";
 
@@ -12,15 +13,20 @@ const PRIORITY_LABELS: Record<(typeof PRIORITIES)[number], string> = {
   critical: "Critica",
 };
 
+// The site picker is contextual: it only ever offers sites belonging to
+// the currently selected counterparty (fetched fresh on every change, not
+// filtered client-side out of a full org-wide list), and clears the
+// selected site whenever it stops matching. This is a UX convenience --
+// the database enforces the same match independently via
+// validate_voucher_recovery_site_match, so a stale/forged site_id can
+// never slip through even if a client sends one anyway.
 export function RecoveryCaseForm({
   counterparties,
   palletTypes,
-  sites,
   defaults,
 }: {
   counterparties: { id: string; legalName: string }[];
   palletTypes: { id: string; code: string }[];
-  sites: { id: string; name: string }[];
   defaults?: {
     counterpartyId?: string;
     palletTypeId?: string;
@@ -29,6 +35,30 @@ export function RecoveryCaseForm({
   };
 }) {
   const [state, formAction, pending] = useActionState(createRecoveryCaseAction, emptyFormState);
+  const [counterpartyId, setCounterpartyId] = useState(defaults?.counterpartyId ?? "");
+  const [sites, setSites] = useState<{ id: string; name: string }[]>([]);
+  const [siteId, setSiteId] = useState("");
+
+  useEffect(() => {
+    if (!counterpartyId) return;
+    let cancelled = false;
+    listSitesForCounterpartyAction(counterpartyId).then((result) => {
+      if (cancelled) return;
+      setSites(result);
+      setSiteId((current) => (result.some((site) => site.id === current) ? current : ""));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [counterpartyId]);
+
+  function handleCounterpartyChange(value: string) {
+    setCounterpartyId(value);
+    if (!value) {
+      setSites([]);
+      setSiteId("");
+    }
+  }
 
   return (
     <form action={formAction}>
@@ -38,7 +68,13 @@ export function RecoveryCaseForm({
 
       <div className="field">
         <label htmlFor="counterpartyId">Controparte</label>
-        <select id="counterpartyId" name="counterpartyId" defaultValue={defaults?.counterpartyId ?? ""} required>
+        <select
+          id="counterpartyId"
+          name="counterpartyId"
+          value={counterpartyId}
+          onChange={(e) => handleCounterpartyChange(e.target.value)}
+          required
+        >
           <option value="" disabled>
             — seleziona —
           </option>
@@ -64,10 +100,10 @@ export function RecoveryCaseForm({
         </select>
       </div>
 
-      {sites.length > 0 ? (
+      {counterpartyId ? (
         <div className="field">
           <label htmlFor="siteId">Sito</label>
-          <select id="siteId" name="siteId" defaultValue="">
+          <select id="siteId" name="siteId" value={siteId} onChange={(e) => setSiteId(e.target.value)}>
             <option value="">Nessuno</option>
             {sites.map((s) => (
               <option key={s.id} value={s.id}>
@@ -75,6 +111,11 @@ export function RecoveryCaseForm({
               </option>
             ))}
           </select>
+          {sites.length === 0 ? (
+            <p className="muted" style={{ fontSize: 11, margin: "4px 0 0" }}>
+              Nessun sito registrato per questa controparte.
+            </p>
+          ) : null}
         </div>
       ) : null}
 

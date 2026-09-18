@@ -7,6 +7,7 @@ import { requireMembership } from "@/lib/data/organization";
 import { movementImportPayloadSchema, voucherImportPayloadSchema } from "@/lib/validation/import";
 import { buildLookupKey, validateMovementRows, type MovementLookups } from "@/lib/csv/movement-import";
 import { validateVoucherRows, type VoucherLookups } from "@/lib/csv/voucher-import";
+import { buildSiteLookup } from "@/lib/csv/site-lookup";
 
 export type ImportActionState = {
   error?: string;
@@ -45,17 +46,21 @@ export async function commitMovementImportAction(
 
   // Re-validate from scratch server-side with fresh lookups: never trust the
   // client's computed validity, only the raw parsed rows.
-  const [{ data: counterparties }, { data: palletTypes }] = await Promise.all([
+  const [{ data: counterparties }, { data: palletTypes }, { data: sites }] = await Promise.all([
     supabase
       .from("counterparties")
       .select("id, code, legal_name")
       .eq("organization_id", membership.organizationId),
     supabase.from("pallet_types").select("id, code").eq("organization_id", membership.organizationId),
+    supabase.from("sites").select("id, code, name, counterparty_id").eq("organization_id", membership.organizationId).eq("active", true),
   ]);
 
   const lookups: MovementLookups = {
     counterpartyIdByKey: new Map(),
     palletTypeIdByKey: new Map(),
+    siteLookup: buildSiteLookup(
+      (sites ?? []).map((s) => ({ id: s.id, code: s.code, name: s.name, counterpartyId: s.counterparty_id })),
+    ),
   };
   for (const cp of counterparties ?? []) {
     if (cp.code) lookups.counterpartyIdByKey.set(buildLookupKey(cp.code), cp.id);
@@ -167,19 +172,28 @@ export async function commitVoucherImportAction(
 
   // Re-validate from scratch server-side with fresh lookups: never trust the
   // client's computed validity, only the raw parsed rows.
-  const [{ data: counterparties }, { data: palletTypes }, { data: existingVouchers }] = await Promise.all([
-    supabase
-      .from("counterparties")
-      .select("id, code, legal_name")
-      .eq("organization_id", membership.organizationId),
-    supabase.from("pallet_types").select("id, code").eq("organization_id", membership.organizationId),
-    supabase.from("vouchers").select("voucher_number").eq("organization_id", membership.organizationId),
-  ]);
+  const [{ data: counterparties }, { data: palletTypes }, { data: existingVouchers }, { data: sites }] =
+    await Promise.all([
+      supabase
+        .from("counterparties")
+        .select("id, code, legal_name")
+        .eq("organization_id", membership.organizationId),
+      supabase.from("pallet_types").select("id, code").eq("organization_id", membership.organizationId),
+      supabase.from("vouchers").select("voucher_number").eq("organization_id", membership.organizationId),
+      supabase
+        .from("sites")
+        .select("id, code, name, counterparty_id")
+        .eq("organization_id", membership.organizationId)
+        .eq("active", true),
+    ]);
 
   const lookups: VoucherLookups = {
     counterpartyIdByKey: new Map(),
     palletTypeIdByKey: new Map(),
     existingVoucherNumbers: new Set(),
+    siteLookup: buildSiteLookup(
+      (sites ?? []).map((s) => ({ id: s.id, code: s.code, name: s.name, counterpartyId: s.counterparty_id })),
+    ),
   };
   for (const cp of counterparties ?? []) {
     if (cp.code) lookups.counterpartyIdByKey.set(buildLookupKey(cp.code), cp.id);

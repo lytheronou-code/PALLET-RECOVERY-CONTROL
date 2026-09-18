@@ -9,13 +9,15 @@ import {
   type ColumnMapping,
   type MovementLookups,
 } from "@/lib/csv/movement-import";
+import { buildSiteLookup } from "@/lib/csv/site-lookup";
 
-const headers = ["Data", "Cliente", "Pallet", "Dir", "Qta", "DocTipo", "DocNum", "Buono", "Note"];
+const headers = ["Data", "Cliente", "Pallet", "Sito", "Dir", "Qta", "DocTipo", "DocNum", "Buono", "Note"];
 
 const mapping: ColumnMapping = {
   movementDate: "Data",
   counterparty: "Cliente",
   palletType: "Pallet",
+  site: "Sito",
   direction: "Dir",
   quantity: "Qta",
   documentType: "DocTipo",
@@ -24,9 +26,18 @@ const mapping: ColumnMapping = {
   notes: "Note",
 };
 
+const siteLookup = buildSiteLookup([
+  { id: "site-1", code: "MIL", name: "Milano Hub", counterpartyId: "cp-1" },
+  { id: "site-2", code: null, name: "Roma Hub", counterpartyId: "cp-1" },
+  { id: "site-3", code: "ROM", name: "Roma Deposito", counterpartyId: "cp-2" },
+  { id: "site-4", code: "DUP", name: "Ambiguous A", counterpartyId: "cp-1" },
+  { id: "site-5", code: "DUP", name: "Ambiguous B", counterpartyId: "cp-1" },
+]);
+
 const lookups: MovementLookups = {
   counterpartyIdByKey: new Map([[buildLookupKey("Acme Srl"), "cp-1"]]),
   palletTypeIdByKey: new Map([[buildLookupKey("EPAL EUR1"), "pt-1"]]),
+  siteLookup,
 };
 
 describe("normalizeDate", () => {
@@ -65,7 +76,7 @@ describe("normalizeDirection", () => {
 
 describe("validateMovementRow", () => {
   it("accepts a fully valid row and resolves ids", () => {
-    const row = ["05/03/2026", "Acme Srl", "EPAL EUR1", "IN", "10", "DDT", "123", "V-1", "ok"];
+    const row = ["05/03/2026", "Acme Srl", "EPAL EUR1", "", "IN", "10", "DDT", "123", "V-1", "ok"];
     const result = validateMovementRow(headers, row, mapping, lookups, 1);
     expect(result.valid).toBe(true);
     if (result.valid) {
@@ -73,6 +84,7 @@ describe("validateMovementRow", () => {
         movement_date: "2026-03-05",
         counterparty_id: "cp-1",
         pallet_type_id: "pt-1",
+        site_id: null,
         direction: "inbound",
         quantity: 10,
         document_type: "DDT",
@@ -83,8 +95,43 @@ describe("validateMovementRow", () => {
     }
   });
 
+  it("resolves a site by code first", () => {
+    const row = ["05/03/2026", "Acme Srl", "EPAL EUR1", "MIL", "IN", "10", "", "", "", ""];
+    const result = validateMovementRow(headers, row, mapping, lookups, 1);
+    expect(result.valid).toBe(true);
+    if (result.valid) expect(result.movement.site_id).toBe("site-1");
+  });
+
+  it("falls back to matching a site by name when no code matches", () => {
+    const row = ["05/03/2026", "Acme Srl", "EPAL EUR1", "Roma Hub", "IN", "10", "", "", "", ""];
+    const result = validateMovementRow(headers, row, mapping, lookups, 1);
+    expect(result.valid).toBe(true);
+    if (result.valid) expect(result.movement.site_id).toBe("site-2");
+  });
+
+  it("rejects a site that belongs to a different counterparty", () => {
+    const row = ["05/03/2026", "Acme Srl", "EPAL EUR1", "Roma Deposito", "IN", "10", "", "", "", ""];
+    const result = validateMovementRow(headers, row, mapping, lookups, 1);
+    expect(result.valid).toBe(false);
+    if (!result.valid) expect(result.errors.join(" ")).toMatch(/non appartiene alla controparte/);
+  });
+
+  it("rejects a site that does not exist anywhere in the organization", () => {
+    const row = ["05/03/2026", "Acme Srl", "EPAL EUR1", "Nonexistent Site", "IN", "10", "", "", "", ""];
+    const result = validateMovementRow(headers, row, mapping, lookups, 1);
+    expect(result.valid).toBe(false);
+    if (!result.valid) expect(result.errors.join(" ")).toMatch(/Sito non trovato/);
+  });
+
+  it("rejects an ambiguous site code shared by multiple sites of the same counterparty", () => {
+    const row = ["05/03/2026", "Acme Srl", "EPAL EUR1", "DUP", "IN", "10", "", "", "", ""];
+    const result = validateMovementRow(headers, row, mapping, lookups, 1);
+    expect(result.valid).toBe(false);
+    if (!result.valid) expect(result.errors.join(" ")).toMatch(/ambiguo/);
+  });
+
   it("rejects an unknown counterparty", () => {
-    const row = ["05/03/2026", "Unknown Co", "EPAL EUR1", "IN", "10", "", "", "", ""];
+    const row = ["05/03/2026", "Unknown Co", "EPAL EUR1", "", "IN", "10", "", "", "", ""];
     const result = validateMovementRow(headers, row, mapping, lookups, 2);
     expect(result.valid).toBe(false);
     if (!result.valid) {
@@ -93,7 +140,7 @@ describe("validateMovementRow", () => {
   });
 
   it("rejects a zero or negative quantity", () => {
-    const row = ["05/03/2026", "Acme Srl", "EPAL EUR1", "IN", "0", "", "", "", ""];
+    const row = ["05/03/2026", "Acme Srl", "EPAL EUR1", "", "IN", "0", "", "", "", ""];
     const result = validateMovementRow(headers, row, mapping, lookups, 3);
     expect(result.valid).toBe(false);
     if (!result.valid) {
@@ -102,13 +149,13 @@ describe("validateMovementRow", () => {
   });
 
   it("rejects a non-integer quantity", () => {
-    const row = ["05/03/2026", "Acme Srl", "EPAL EUR1", "IN", "3.5", "", "", "", ""];
+    const row = ["05/03/2026", "Acme Srl", "EPAL EUR1", "", "IN", "3.5", "", "", "", ""];
     const result = validateMovementRow(headers, row, mapping, lookups, 4);
     expect(result.valid).toBe(false);
   });
 
   it("collects multiple errors on the same row instead of stopping at the first", () => {
-    const row = ["not-a-date", "Unknown Co", "Unknown Pallet", "sideways", "-1", "", "", "", ""];
+    const row = ["not-a-date", "Unknown Co", "Unknown Pallet", "", "sideways", "-1", "", "", "", ""];
     const result = validateMovementRow(headers, row, mapping, lookups, 5);
     expect(result.valid).toBe(false);
     if (!result.valid) {
@@ -120,8 +167,8 @@ describe("validateMovementRow", () => {
 describe("validateMovementRows", () => {
   it("validates every row independently and preserves row numbers", () => {
     const rows = [
-      ["05/03/2026", "Acme Srl", "EPAL EUR1", "IN", "10", "", "", "", ""],
-      ["not-a-date", "Acme Srl", "EPAL EUR1", "IN", "10", "", "", "", ""],
+      ["05/03/2026", "Acme Srl", "EPAL EUR1", "", "IN", "10", "", "", "", ""],
+      ["not-a-date", "Acme Srl", "EPAL EUR1", "", "IN", "10", "", "", "", ""],
     ];
     const results = validateMovementRows(headers, rows, mapping, lookups);
     expect(results).toHaveLength(2);

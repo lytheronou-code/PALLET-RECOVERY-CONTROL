@@ -68,9 +68,11 @@ export async function createVoucherAction(
   });
 
   if (error) {
-    return {
-      error: error.code === "23505" ? "Esiste già un buono con questo numero." : "Impossibile creare il buono.",
-    };
+    if (error.code === "23505") return { error: "Esiste già un buono con questo numero." };
+    if (error.message.includes("site must belong to the same counterparty")) {
+      return { error: "Il sito selezionato non appartiene alla controparte scelta." };
+    }
+    return { error: "Impossibile creare il buono." };
   }
 
   revalidateVoucherViews();

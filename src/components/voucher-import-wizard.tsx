@@ -13,6 +13,7 @@ import {
   type VoucherLookups,
 } from "@/lib/csv/voucher-import";
 import { buildLookupKey } from "@/lib/csv/movement-import";
+import { buildSiteLookup, type SiteRecord } from "@/lib/csv/site-lookup";
 import { commitVoucherImportAction } from "@/lib/actions/import";
 import type { ImportActionState } from "@/lib/actions/import";
 
@@ -22,6 +23,7 @@ const AUTO_MAP_HINTS: Record<VoucherField, string[]> = {
   voucherNumber: ["numero buono", "voucher number", "buono", "voucher"],
   counterparty: ["controparte", "cliente", "counterparty", "customer", "ragione sociale"],
   palletType: ["pallet", "tipo pallet", "pallet type", "codice pallet"],
+  site: ["sito", "site", "deposito", "hub"],
   issueDate: ["data emissione", "issue date", "data"],
   recoveryDueDate: ["scadenza", "scadenza recupero", "recovery due date", "due date"],
   quantity: ["quantita", "quantità", "qta", "quantity", "qty"],
@@ -43,10 +45,12 @@ const initialState: ImportActionState = {};
 export function VoucherImportWizard({
   counterparties,
   palletTypes,
+  sites,
   existingVoucherNumbers,
 }: {
   counterparties: LookupOption[];
   palletTypes: LookupOption[];
+  sites: SiteRecord[];
   existingVoucherNumbers: string[];
 }) {
   const [step, setStep] = useState<"upload" | "review">("upload");
@@ -68,8 +72,13 @@ export function VoucherImportWizard({
       if (pt.code) palletTypeIdByKey.set(buildLookupKey(pt.code), pt.id);
     }
     const existing = new Set(existingVoucherNumbers.map(buildLookupKey));
-    return { counterpartyIdByKey, palletTypeIdByKey, existingVoucherNumbers: existing };
-  }, [counterparties, palletTypes, existingVoucherNumbers]);
+    return {
+      counterpartyIdByKey,
+      palletTypeIdByKey,
+      existingVoucherNumbers: existing,
+      siteLookup: buildSiteLookup(sites),
+    };
+  }, [counterparties, palletTypes, existingVoucherNumbers, sites]);
 
   const results = useMemo(
     () => (step === "review" ? validateVoucherRows(headers, rows, mapping, lookups) : []),

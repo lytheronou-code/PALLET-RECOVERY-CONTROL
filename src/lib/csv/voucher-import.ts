@@ -1,9 +1,11 @@
 import { buildLookupKey, normalizeDate } from "@/lib/csv/movement-import";
+import { resolveSite, type SiteLookup } from "@/lib/csv/site-lookup";
 
 export const VOUCHER_FIELDS = [
   "voucherNumber",
   "counterparty",
   "palletType",
+  "site",
   "issueDate",
   "recoveryDueDate",
   "quantity",
@@ -24,6 +26,7 @@ export const VOUCHER_FIELD_LABELS: Record<VoucherField, string> = {
   voucherNumber: "Numero buono",
   counterparty: "Controparte",
   palletType: "Tipo pallet",
+  site: "Sito (opzionale)",
   issueDate: "Data emissione",
   recoveryDueDate: "Scadenza recupero",
   quantity: "Quantità",
@@ -36,12 +39,14 @@ export type VoucherLookups = {
   counterpartyIdByKey: Map<string, string>;
   palletTypeIdByKey: Map<string, string>;
   existingVoucherNumbers: Set<string>;
+  siteLookup: SiteLookup;
 };
 
 export type ValidatedVoucher = {
   voucher_number: string;
   counterparty_id: string;
   pallet_type_id: string;
+  site_id: string | null;
   issue_date: string;
   recovery_due_date: string | null;
   quantity: number;
@@ -110,6 +115,12 @@ export function validateVoucherRows(
       : undefined;
     if (rawPalletType && !palletTypeId) errors.push(`Tipo pallet non trovato: "${rawPalletType}"`);
 
+    const rawSite = getField(headers, row, mapping, "site");
+    let siteId: string | null = null;
+    const siteResolution = resolveSite(counterpartyId, rawSite, lookups.siteLookup);
+    if (siteResolution.status === "resolved") siteId = siteResolution.siteId;
+    else if (siteResolution.status === "error" && counterpartyId) errors.push(siteResolution.message);
+
     const issueDate = rawIssueDate ? normalizeDate(rawIssueDate) : null;
     if (!rawIssueDate) errors.push("Data emissione mancante");
     else if (!issueDate) errors.push(`Data emissione non valida: "${rawIssueDate}"`);
@@ -146,6 +157,7 @@ export function validateVoucherRows(
         voucher_number: rawVoucherNumber,
         counterparty_id: counterpartyId!,
         pallet_type_id: palletTypeId!,
+        site_id: siteId,
         issue_date: issueDate!,
         recovery_due_date: recoveryDueDate,
         quantity: quantity!,

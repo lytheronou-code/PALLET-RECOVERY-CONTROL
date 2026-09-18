@@ -2,6 +2,11 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { reconcile, type ReconciliationResult } from "@/lib/reconciliation/engine";
 
+// Unbounded on purpose, same reasoning as dashboard.ts's aggregate reads:
+// the reconciliation engine must see every movement and voucher for the
+// organization to match them correctly, so paginating the input would
+// silently produce a wrong (incomplete) reconciliation, not just a slow
+// one. A known scaling limit at real pilot volume, not an oversight.
 export async function getReconciliation(organizationId: string): Promise<ReconciliationResult> {
   const supabase = await createClient();
 
