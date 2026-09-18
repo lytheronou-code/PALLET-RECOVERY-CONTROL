@@ -152,3 +152,53 @@ project instead.
   under-tested.
 
 Out of scope until validated: AI, live GPS, full route optimization, marketplace, QR serialization, carbon certificates and billing administration.
+
+## Independent review fixes (2026-09-18, third pass, same PR)
+
+An independent review of PR #7 found eight enterprise-grade integrity gaps
+in the P1 work above. All eight are closed, still on `claude/premium-v2`,
+without reverting any of the applied P1 migrations:
+
+- **Movement correction atomicity**: the reversal and corrected-replacement
+  inserts moved from two independent Supabase calls into
+  `correct_pallet_movement()`, a single Postgres transaction.
+- **Double-correction protection**: enforced twice — the RPC checks before
+  inserting, and a partial unique index (`correction_type = 'reversal'`)
+  is the DB-level backstop against a direct INSERT bypassing the RPC.
+- **Site/counterparty consistency**: a DB trigger now requires
+  `site.counterparty_id = row.counterparty_id` on vouchers and recovery
+  cases; movements allow org-owned depots (`site.counterparty_id is
+  null`) explicitly, documented as a deliberate choice.
+- **Contextual site pickers**: voucher/recovery-case forms fetch sites for
+  only the selected counterparty instead of every site in the org.
+- **Site-aware CSV import**: movement and voucher CSV import gained an
+  optional site column, resolved by code then name, scoped to the row's
+  counterparty, re-validated server-side.
+- **Profile email integrity**: `profiles.email` can no longer be edited
+  directly (a guard trigger blocks it); it now only changes via a new
+  `auth.users` email-change trigger. `display_name` stays editable.
+- **Assignee `ON DELETE SET NULL`**: deleting/offboarding a user with
+  assigned recovery cases no longer fails; the case survives with the
+  assignment cleared.
+- **Unbounded-reads audit**: two now-dead unpaginated list functions were
+  deleted; every remaining unbounded read has a comment explaining why
+  (dropdown/CSV-lookup pickers realistically bounded, or an aggregate that
+  requires seeing every row to total correctly).
+
+A bug in the *first* version of the correction RPC was caught by this
+pass's own adversarial testing before it shipped: `select ... for update`
+on `pallet_movements` silently returned zero rows for every caller,
+because Postgres RLS requires a matching UPDATE policy to grant a FOR
+UPDATE lock and this table has none by design (full ledger immutability).
+Fixed with a transaction-scoped advisory lock instead of a row lock —
+verified working via a full adversarial re-run afterward.
+
+Verified with adversarial SQL (ROLLBACK-wrapped, zero residual rows):
+cross-counterparty site on a voucher and on a recovery case, correction
+atomicity under forced failure, double correction via the RPC, a forged
+direct-insert bypass, a forged second reversal after manually clearing
+the guard, a direct `profiles.email` edit, `display_name` edit (allowed),
+and deleting an assigned user (case survives, assignee cleared).
+`npm run typecheck/lint/test/build` all clean (117 tests), `npm audit`: 0
+vulnerabilities, Supabase security/performance advisors show no new
+findings.
