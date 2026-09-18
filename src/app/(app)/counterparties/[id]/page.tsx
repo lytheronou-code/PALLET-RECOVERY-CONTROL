@@ -259,7 +259,7 @@ export default async function CounterpartyDetailPage({
       </div>
 
       <div style={{ marginTop: 16 }}>
-        <ClientPortalAccessPanel counterpartyId={cp.id} members={portalMembers} />
+        <ClientPortalAccessPanel counterpartyId={cp.id} members={portalMembers} isAdmin={membership.role === "admin"} />
       </div>
     </div>
   );

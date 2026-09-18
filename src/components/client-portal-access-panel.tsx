@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import {
   grantClientPortalAccessAction,
   setClientPortalMembershipActiveAction,
@@ -12,14 +12,23 @@ import type { ClientPortalMembershipRow } from "@/lib/data/client-portal-admin";
 export function ClientPortalAccessPanel({
   counterpartyId,
   members,
+  isAdmin,
 }: {
   counterpartyId: string;
   members: ClientPortalMembershipRow[];
+  isAdmin: boolean;
 }) {
   const [state, formAction, pending] = useActionState(
     grantClientPortalAccessAction.bind(null, counterpartyId),
     emptyFormState,
   );
+  const [rowError, setRowError] = useState<string | null>(null);
+
+  async function handleToggle(membershipId: string, active: boolean) {
+    setRowError(null);
+    const result = await setClientPortalMembershipActiveAction(membershipId, active, counterpartyId);
+    if (result.error) setRowError(result.error);
+  }
 
   return (
     <section className="panel">
@@ -30,26 +39,38 @@ export function ClientPortalAccessPanel({
         </div>
       </div>
       <div className="panel-body">
-        <form action={formAction} className="form-grid-2" style={{ alignItems: "end" }}>
-          {state.error ? <div className="form-error" style={{ gridColumn: "1 / -1" }}>{state.error}</div> : null}
-          {state.message ? <div className="form-message" style={{ gridColumn: "1 / -1" }}>{state.message}</div> : null}
-          <div className="field">
-            <label htmlFor={`portal-email-${counterpartyId}`}>Email cliente</label>
-            <input
-              id={`portal-email-${counterpartyId}`}
-              name="email"
-              type="email"
-              placeholder="cliente@azienda.it"
-              required
-            />
-          </div>
-          <button type="submit" className="btn btn-secondary btn-sm" disabled={pending}>
-            {pending ? "Concessione…" : "Concedi accesso"}
-          </button>
-        </form>
-        <p className="muted" style={{ fontSize: 11, marginTop: 8, marginBottom: 16 }}>
-          Il cliente deve avere già un account (registrato su /signup) con questa email.
-        </p>
+        {isAdmin ? (
+          <>
+            <form action={formAction} className="form-grid-2" style={{ alignItems: "end" }}>
+              {state.error ? <div className="form-error" style={{ gridColumn: "1 / -1" }}>{state.error}</div> : null}
+              {state.message ? <div className="form-message" style={{ gridColumn: "1 / -1" }}>{state.message}</div> : null}
+              <div className="field">
+                <label htmlFor={`portal-email-${counterpartyId}`}>Email cliente</label>
+                <input
+                  id={`portal-email-${counterpartyId}`}
+                  name="email"
+                  type="email"
+                  placeholder="cliente@azienda.it"
+                  required
+                />
+              </div>
+              <button type="submit" className="btn btn-secondary btn-sm" disabled={pending}>
+                {pending ? "Concessione…" : "Concedi accesso"}
+              </button>
+            </form>
+            <p className="muted" style={{ fontSize: 11, marginTop: 8, marginBottom: 16 }}>
+              Il cliente deve avere già un account (registrato su /signup) con questa email. Un account può avere
+              accesso attivo a una sola controparte alla volta.
+            </p>
+          </>
+        ) : (
+          <p className="muted" style={{ fontSize: 12, marginBottom: 16 }}>
+            Solo un amministratore può concedere o revocare l&apos;accesso al portale clienti. Di seguito lo stato
+            attuale in sola lettura.
+          </p>
+        )}
+
+        {rowError ? <div className="form-error" style={{ marginBottom: 12 }}>{rowError}</div> : null}
 
         {members.length === 0 ? (
           <div className="empty-state">Nessun utente portale per questa controparte.</div>
@@ -62,7 +83,7 @@ export function ClientPortalAccessPanel({
                   <th>Nome</th>
                   <th>Concesso il</th>
                   <th>Stato</th>
-                  <th></th>
+                  {isAdmin ? <th></th> : null}
                 </tr>
               </thead>
               <tbody>
@@ -76,15 +97,17 @@ export function ClientPortalAccessPanel({
                         {member.active ? "Attivo" : "Disattivato"}
                       </span>
                     </td>
-                    <td>
-                      <form
-                        action={setClientPortalMembershipActiveAction.bind(null, member.id, !member.active, counterpartyId)}
-                      >
-                        <button type="submit" className="btn btn-ghost btn-sm">
+                    {isAdmin ? (
+                      <td>
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm"
+                          onClick={() => handleToggle(member.id, !member.active)}
+                        >
                           {member.active ? "Disattiva" : "Riattiva"}
                         </button>
-                      </form>
-                    </td>
+                      </td>
+                    ) : null}
                   </tr>
                 ))}
               </tbody>

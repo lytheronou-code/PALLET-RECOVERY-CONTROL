@@ -37,7 +37,10 @@ export async function grantClientPortalAccessAction(
       return { error: "Nessun account trovato con questa email. Il cliente deve prima registrarsi." };
     }
     if (error.message.includes("insufficient privileges")) {
-      return { error: "Permessi insufficienti per questa operazione." };
+      return { error: "Solo un amministratore può gestire l'accesso al portale clienti." };
+    }
+    if (error.message.includes("already has an active portal membership")) {
+      return { error: "Questo account ha già accesso attivo al portale di un'altra controparte." };
     }
     return { error: "Impossibile concedere l'accesso al portale." };
   }
@@ -46,13 +49,37 @@ export async function grantClientPortalAccessAction(
   return { message: "Accesso al portale concesso." };
 }
 
+// Returns an explicit result (never void): a blocked RLS update or a
+// single-active-membership conflict must never look like success in the
+// UI. RLS itself is admin-only (see the migration), so a non-admin
+// caller's UPDATE matches zero rows rather than erroring -- .select()
+// + checking for a returned row is what surfaces that as a real failure.
 export async function setClientPortalMembershipActiveAction(
   membershipId: string,
   active: boolean,
   counterpartyId: string,
-): Promise<void> {
+): Promise<{ error?: string }> {
   await requireMembership();
   const supabase = await createClient();
-  await supabase.from("client_portal_memberships").update({ active }).eq("id", membershipId);
+  const { data, error } = await supabase
+    .from("client_portal_memberships")
+    .update({ active })
+    .eq("id", membershipId)
+    .select("id")
+    .maybeSingle();
+
   revalidatePath("/counterparties/" + counterpartyId);
+
+  if (error) {
+    if (error.message.includes("client_portal_memberships_one_active_per_user")) {
+      return { error: "Questo account ha già accesso attivo al portale di un'altra controparte." };
+    }
+    return { error: "Operazione non riuscita." };
+  }
+
+  if (!data) {
+    return { error: "Solo un amministratore può gestire l'accesso al portale clienti." };
+  }
+
+  return {};
 }
