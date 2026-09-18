@@ -63,7 +63,7 @@ export default async function ImportBatchPage({
       </div>
 
       <p style={{ marginTop: 16 }}>
-        <Link href="/import">← Torna agli import</Link>
+        <Link href={batch.source_type === "vouchers" ? "/import/vouchers" : "/import"}>← Torna agli import</Link>
       </p>
     </div>
   );

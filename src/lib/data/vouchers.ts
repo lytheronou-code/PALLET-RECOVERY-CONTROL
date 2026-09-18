@@ -132,6 +132,19 @@ export async function listVouchersPage(
   return { items, total, page, pageSize, pageCount: pageCountFor(total, pageSize) };
 }
 
+// Used to pre-flag duplicate voucher numbers during CSV import before any
+// insert is attempted, rather than relying solely on the DB unique
+// constraint to reject them one at a time.
+export async function listVoucherNumbers(organizationId: string): Promise<string[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("vouchers")
+    .select("voucher_number")
+    .eq("organization_id", organizationId);
+
+  return error || !data ? [] : data.map((row) => row.voucher_number);
+}
+
 export async function getVoucherDetail(organizationId: string, id: string): Promise<VoucherDetail | null> {
   const supabase = await createClient();
   const [voucherResult, casesResult] = await Promise.all([
