@@ -1044,7 +1044,6 @@ export type Database = {
         Returns: {
           document_type: string
           id: string
-          notes: string
           original_filename: string
           total_count: number
           uploaded_at: string
@@ -1073,7 +1072,6 @@ export type Database = {
           outstanding_quantity: number
           outstanding_value: number
           pallet_type_code: string
-          priority: string
           quantity_claimed: number
           quantity_recovered: number
           reference: string
