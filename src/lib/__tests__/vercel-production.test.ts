@@ -4,11 +4,12 @@ import robots from "@/app/robots";
 import { GET as healthGET } from "@/app/api/health/route";
 
 describe("Vercel production hardening", () => {
-  it("sets the baseline anti-clickjacking and MIME headers", () => {
+  it("sets baseline browser and indexing protection headers", () => {
     const headers = new Map(securityHeaders.map((item) => [item.key, item.value]));
     expect(headers.get("X-Frame-Options")).toBe("DENY");
     expect(headers.get("X-Content-Type-Options")).toBe("nosniff");
     expect(headers.get("Referrer-Policy")).toBe("strict-origin-when-cross-origin");
+    expect(headers.get("X-Robots-Tag")).toContain("noindex");
   });
 
   it("keeps the application out of search indexes", () => {
