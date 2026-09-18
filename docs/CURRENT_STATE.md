@@ -83,14 +83,72 @@ Configure Supabase Auth custom SMTP with the verified transactional email provid
 
 This is now the only blocking gate before allowing external users to register.
 
-## P1 after Auth E2E / pilot
+## P1 delivered on `claude/premium-v2` (2026-09-18, second pass)
 
-1. Sites / operational locations.
-2. Documents + photographic evidence.
-3. Team invites / roles / assignment queues.
-4. Recovery planning / trips / stops.
-5. Bulk voucher import.
-6. Additive movement correction/reversal workflow.
-7. Deadline notifications/digests.
+The previous freeze ("do not start P1 until browser E2E is cleared") was
+explicitly overridden by the product owner's instruction to continue real
+development now; live E2E from this sandbox remains blocked by egress
+policy (see below), so this pass relied on typecheck/lint/unit tests/build
+plus direct, adversarial SQL verification against the real Supabase
+project instead.
+
+- **Pagination + search**: counterparties, movements, vouchers and
+  recovery cases previously fetched every row with no `limit` — a real
+  scalability bug, not a cosmetic gap. All four now paginate (25/page)
+  and support a sanitized search bar.
+- **Sites / operational locations** (P1 #1): full CRUD at `/sites`,
+  wired into voucher and recovery-case creation and shown on the
+  counterparty detail page. Route/trip grouping intentionally excluded
+  per the explicit non-goal.
+- **Movement correction/reversal workflow** (P1 #6): the ledger stays
+  immutable; corrections insert a linked reversal (+ optional corrected
+  replacement) with reason/actor/timestamp, never an edit to history.
+- **Bulk voucher CSV import** (P1 #5): `/import/vouchers` reuses the
+  movement-import upload → mapping → preview → confirm architecture,
+  with duplicate voucher-number detection (in-file and against the org's
+  existing vouchers) since `voucher_number` is unique per organization.
+- **Recovery-case assignment / "my queue"** (part of P1 #3): an
+  assignee picker on the case list and detail page, plus a "La mia
+  coda" filter. Full team-invite-by-email is still not built — it
+  requires SMTP configuration, explicitly out of scope for this pass.
+- **Org-mate visibility fix**: `organization_members` RLS previously
+  scoped `SELECT` to the caller's own row only, so Settings always
+  showed a member count of 1 for every organization. Fixed with an
+  `is_org_member()` helper; `organization_members.user_id` and
+  `recovery_cases.assignee_user_id` were repointed from `auth.users` to
+  `public.profiles` (same `ON DELETE CASCADE`) so PostgREST can embed a
+  member's name/email — this is what makes the assignee picker and "my
+  queue" possible.
+- **Route-level loading/error boundaries**: every route previously had
+  no `loading.tsx`/`error.tsx`; slow queries rendered a blank page and
+  unhandled errors fell through to Next's default screen.
+- **FASE 4 security review**: 18 adversarial attacks run as raw SQL
+  against the real project inside a transaction with a guaranteed
+  `ROLLBACK` (cross-tenant SELECT/UPDATE/DELETE, role-privilege
+  escalation, cross-tenant composite-FK bypass attempts, RPC overclaim,
+  ledger-immutability bypass, non-member assignment). All 18 were
+  blocked; the transaction left zero residual rows. `get_advisors`
+  (security + performance) shows no new findings beyond the two
+  pre-existing, intentional `SECURITY DEFINER` warnings
+  (`bootstrap_organization`, `is_org_member`, both invoked from RLS
+  policies and documented in their migrations).
+
+### Not implemented this pass (Truthmode decisions)
+
+- **Documents / photographic evidence** (P1 #2) — real Supabase Storage
+  + tenant-scoped policies is a meaningful chunk of work on its own;
+  deferred rather than rushed.
+- **Team invites by email** — blocked by the explicit instruction not to
+  configure Supabase SMTP/Resend in this phase.
+- **Recovery planning / trips** (P1 #4) — deferred; sites now give it a
+  real foundation (group by site/CAP) without committing to a UI yet.
+- **Deadline notification digests** (P1 #7) — needs the same SMTP
+  configuration as team invites; the in-app action center already
+  surfaces overdue/due-soon signals deterministically.
+- **Additional FASE 3 KPIs** (dispute rate, voucher expiry rate,
+  recovery cycle time, exposure by site/pallet-type) — the dashboard
+  already had ageing, recovery rate and overdue exposure from a prior
+  pass; no budget left this pass to add the rest without shipping them
+  under-tested.
 
 Out of scope until validated: AI, live GPS, full route optimization, marketplace, QR serialization, carbon certificates and billing administration.
