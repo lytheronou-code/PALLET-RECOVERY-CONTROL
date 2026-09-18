@@ -12,6 +12,7 @@ import {
   Settings,
   Ticket,
   Upload,
+  ArrowLeftRight,
 } from "lucide-react";
 
 const NAV_GROUPS = [
@@ -27,6 +28,7 @@ const NAV_GROUPS = [
   {
     label: "Dati",
     items: [
+      { href: "/movements", label: "Movimenti", icon: ArrowLeftRight },
       { href: "/import", label: "Importazioni", icon: Upload },
       { href: "/counterparties", label: "Controparti", icon: Building2 },
       { href: "/pallet-types", label: "Tipi pallet", icon: Package },

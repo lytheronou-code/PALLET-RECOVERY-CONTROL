@@ -78,7 +78,7 @@ export default async function SearchPage({
             </div>
             {results.vouchers.length === 0 ? <div className="empty-state">Nessun buono.</div> :
               results.vouchers.map((item) => (
-                <Link className="search-result" key={item.id} href={"/vouchers?q=" + encodeURIComponent(item.voucherNumber)}>
+                <Link className="search-result" key={item.id} href={"/vouchers/" + item.id}>
                   <div style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "space-between" }}>
                     <span className="search-result-title">{item.voucherNumber}</span>
                     <VoucherStatusBadge status={item.status} />
