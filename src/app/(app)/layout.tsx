@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { Building2, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { getPrimaryMembership } from "@/lib/data/organization";
 import { signOutAction } from "@/lib/actions/auth";
 import { SidebarNav } from "@/components/sidebar-nav";

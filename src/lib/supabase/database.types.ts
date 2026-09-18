@@ -181,6 +181,8 @@ export type Database = {
       }
       pallet_movements: {
         Row: {
+          correction_of_movement_id: string | null
+          correction_reason: string | null
           counterparty_id: string
           created_at: string
           created_by: string | null
@@ -193,10 +195,13 @@ export type Database = {
           organization_id: string
           pallet_type_id: string
           quantity: number
+          site_id: string | null
           source_batch_id: string | null
           voucher_number: string | null
         }
         Insert: {
+          correction_of_movement_id?: string | null
+          correction_reason?: string | null
           counterparty_id: string
           created_at?: string
           created_by?: string | null
@@ -209,10 +214,13 @@ export type Database = {
           organization_id: string
           pallet_type_id: string
           quantity: number
+          site_id?: string | null
           source_batch_id?: string | null
           voucher_number?: string | null
         }
         Update: {
+          correction_of_movement_id?: string | null
+          correction_reason?: string | null
           counterparty_id?: string
           created_at?: string
           created_by?: string | null
@@ -225,6 +233,7 @@ export type Database = {
           organization_id?: string
           pallet_type_id?: string
           quantity?: number
+          site_id?: string | null
           source_batch_id?: string | null
           voucher_number?: string | null
         }
@@ -235,6 +244,41 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "counterparties"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pallet_movements_org_correction_fk"
+            columns: ["organization_id", "correction_of_movement_id"]
+            isOneToOne: false
+            referencedRelation: "pallet_movements"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pallet_movements_org_counterparty_fk"
+            columns: ["organization_id", "counterparty_id"]
+            isOneToOne: false
+            referencedRelation: "counterparties"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pallet_movements_org_pallet_type_fk"
+            columns: ["organization_id", "pallet_type_id"]
+            isOneToOne: false
+            referencedRelation: "pallet_types"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pallet_movements_org_site_fk"
+            columns: ["organization_id", "site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "pallet_movements_org_source_batch_fk"
+            columns: ["organization_id", "source_batch_id"]
+            isOneToOne: false
+            referencedRelation: "import_batches"
+            referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "pallet_movements_organization_id_fkey"
@@ -297,6 +341,30 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email: string
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       recovery_cases: {
         Row: {
           assignee_user_id: string | null
@@ -312,6 +380,7 @@ export type Database = {
           quantity_claimed: number
           quantity_recovered: number
           reference: string
+          site_id: string | null
           status: string
           unit_value_snapshot: number
           updated_at: string
@@ -331,6 +400,7 @@ export type Database = {
           quantity_claimed: number
           quantity_recovered?: number
           reference: string
+          site_id?: string | null
           status?: string
           unit_value_snapshot?: number
           updated_at?: string
@@ -350,6 +420,7 @@ export type Database = {
           quantity_claimed?: number
           quantity_recovered?: number
           reference?: string
+          site_id?: string | null
           status?: string
           unit_value_snapshot?: number
           updated_at?: string
@@ -364,6 +435,44 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "recovery_cases_org_counterparty_fk"
+            columns: ["organization_id", "counterparty_id"]
+            isOneToOne: false
+            referencedRelation: "counterparties"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "recovery_cases_org_pallet_type_fk"
+            columns: ["organization_id", "pallet_type_id"]
+            isOneToOne: false
+            referencedRelation: "pallet_types"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "recovery_cases_org_site_fk"
+            columns: ["organization_id", "site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "recovery_cases_org_voucher_context_fk"
+            columns: [
+              "organization_id",
+              "voucher_id",
+              "counterparty_id",
+              "pallet_type_id",
+            ]
+            isOneToOne: false
+            referencedRelation: "vouchers"
+            referencedColumns: [
+              "organization_id",
+              "id",
+              "counterparty_id",
+              "pallet_type_id",
+            ]
+          },
+          {
             foreignKeyName: "recovery_cases_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -375,13 +484,6 @@ export type Database = {
             columns: ["pallet_type_id"]
             isOneToOne: false
             referencedRelation: "pallet_types"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "recovery_cases_voucher_id_fkey"
-            columns: ["voucher_id"]
-            isOneToOne: false
-            referencedRelation: "vouchers"
             referencedColumns: ["id"]
           },
         ]
@@ -422,6 +524,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "recovery_events_org_case_fk"
+            columns: ["organization_id", "recovery_case_id"]
+            isOneToOne: false
+            referencedRelation: "recovery_cases"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
             foreignKeyName: "recovery_events_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -433,6 +542,66 @@ export type Database = {
             columns: ["recovery_case_id"]
             isOneToOne: false
             referencedRelation: "recovery_cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sites: {
+        Row: {
+          active: boolean
+          address_line: string | null
+          city: string | null
+          code: string | null
+          counterparty_id: string | null
+          country_code: string
+          created_at: string
+          id: string
+          name: string
+          organization_id: string
+          postal_code: string | null
+          province: string | null
+        }
+        Insert: {
+          active?: boolean
+          address_line?: string | null
+          city?: string | null
+          code?: string | null
+          counterparty_id?: string | null
+          country_code?: string
+          created_at?: string
+          id?: string
+          name: string
+          organization_id: string
+          postal_code?: string | null
+          province?: string | null
+        }
+        Update: {
+          active?: boolean
+          address_line?: string | null
+          city?: string | null
+          code?: string | null
+          counterparty_id?: string | null
+          country_code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          organization_id?: string
+          postal_code?: string | null
+          province?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sites_org_counterparty_fk"
+            columns: ["organization_id", "counterparty_id"]
+            isOneToOne: false
+            referencedRelation: "counterparties"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "sites_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -449,6 +618,7 @@ export type Database = {
           quantity: number
           recovered_quantity: number
           recovery_due_date: string | null
+          site_id: string | null
           source_batch_id: string | null
           status: string
           voucher_number: string
@@ -464,6 +634,7 @@ export type Database = {
           quantity: number
           recovered_quantity?: number
           recovery_due_date?: string | null
+          site_id?: string | null
           source_batch_id?: string | null
           status?: string
           voucher_number: string
@@ -479,6 +650,7 @@ export type Database = {
           quantity?: number
           recovered_quantity?: number
           recovery_due_date?: string | null
+          site_id?: string | null
           source_batch_id?: string | null
           status?: string
           voucher_number?: string
@@ -490,6 +662,34 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "counterparties"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vouchers_org_counterparty_fk"
+            columns: ["organization_id", "counterparty_id"]
+            isOneToOne: false
+            referencedRelation: "counterparties"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "vouchers_org_pallet_type_fk"
+            columns: ["organization_id", "pallet_type_id"]
+            isOneToOne: false
+            referencedRelation: "pallet_types"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "vouchers_org_site_fk"
+            columns: ["organization_id", "site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "vouchers_org_source_batch_fk"
+            columns: ["organization_id", "source_batch_id"]
+            isOneToOne: false
+            referencedRelation: "import_batches"
+            referencedColumns: ["organization_id", "id"]
           },
           {
             foreignKeyName: "vouchers_organization_id_fkey"
@@ -526,6 +726,7 @@ export type Database = {
           role: string
         }[]
       }
+      is_org_member: { Args: { p_organization_id: string }; Returns: boolean }
       record_recovery_event: {
         Args: {
           p_case_id: string
@@ -548,10 +749,17 @@ export type Database = {
           quantity_claimed: number
           quantity_recovered: number
           reference: string
+          site_id: string | null
           status: string
           unit_value_snapshot: number
           updated_at: string
           voucher_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "recovery_cases"
+          isOneToOne: true
+          isSetofReturn: false
         }
       }
     }
