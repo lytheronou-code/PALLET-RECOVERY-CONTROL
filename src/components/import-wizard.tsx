@@ -1,0 +1,231 @@
+"use client";
+
+import { useActionState, useMemo, useState } from "react";
+import { parseCsv } from "@/lib/csv/parse";
+import {
+  MOVEMENT_FIELDS,
+  MOVEMENT_FIELD_LABELS,
+  REQUIRED_MOVEMENT_FIELDS,
+  buildLookupKey,
+  missingRequiredMappings,
+  validateMovementRows,
+  type ColumnMapping,
+  type MovementField,
+  type MovementLookups,
+} from "@/lib/csv/movement-import";
+import { commitMovementImportAction, type ImportActionState } from "@/lib/actions/import";
+
+type LookupOption = { id: string; code: string | null; legalName?: string };
+
+const AUTO_MAP_HINTS: Record<MovementField, string[]> = {
+  movementDate: ["data", "date", "data movimento", "movement date"],
+  counterparty: ["controparte", "cliente", "counterparty", "customer", "ragione sociale"],
+  palletType: ["pallet", "tipo pallet", "pallet type", "codice pallet"],
+  direction: ["direzione", "direction", "dir", "in/out"],
+  quantity: ["quantita", "quantità", "qta", "quantity", "qty"],
+  documentType: ["tipo documento", "document type", "doc tipo"],
+  documentNumber: ["numero documento", "document number", "doc numero", "n. documento"],
+  voucherNumber: ["numero buono", "voucher number", "buono"],
+  notes: ["note", "notes"],
+};
+
+function guessMapping(headers: string[]): ColumnMapping {
+  const mapping: ColumnMapping = {};
+  for (const field of MOVEMENT_FIELDS) {
+    const hints = AUTO_MAP_HINTS[field];
+    const match = headers.find((h) => hints.includes(h.trim().toLowerCase()));
+    if (match) mapping[field] = match;
+  }
+  return mapping;
+}
+
+const initialState: ImportActionState = {};
+
+export function ImportWizard({
+  counterparties,
+  palletTypes,
+}: {
+  counterparties: LookupOption[];
+  palletTypes: LookupOption[];
+}) {
+  const [step, setStep] = useState<"upload" | "review">("upload");
+  const [filename, setFilename] = useState("");
+  const [headers, setHeaders] = useState<string[]>([]);
+  const [rows, setRows] = useState<string[][]>([]);
+  const [mapping, setMapping] = useState<ColumnMapping>({});
+  const [parseError, setParseError] = useState<string | null>(null);
+  const [actionState, formAction, pending] = useActionState(commitMovementImportAction, initialState);
+
+  const lookups: MovementLookups = useMemo(() => {
+    const counterpartyIdByKey = new Map<string, string>();
+    for (const cp of counterparties) {
+      if (cp.code) counterpartyIdByKey.set(buildLookupKey(cp.code), cp.id);
+      if (cp.legalName) counterpartyIdByKey.set(buildLookupKey(cp.legalName), cp.id);
+    }
+    const palletTypeIdByKey = new Map<string, string>();
+    for (const pt of palletTypes) {
+      if (pt.code) palletTypeIdByKey.set(buildLookupKey(pt.code), pt.id);
+    }
+    return { counterpartyIdByKey, palletTypeIdByKey };
+  }, [counterparties, palletTypes]);
+
+  const results = useMemo(
+    () => (step === "review" ? validateMovementRows(headers, rows, mapping, lookups) : []),
+    [step, headers, rows, mapping, lookups],
+  );
+  const validCount = results.filter((r) => r.valid).length;
+  const invalidResults = results.filter((r): r is Extract<typeof r, { valid: false }> => !r.valid);
+  const missing = missingRequiredMappings(mapping);
+
+  const payloadJson = useMemo(
+    () => JSON.stringify({ filename, headers, rows, mapping }),
+    [filename, headers, rows, mapping],
+  );
+
+  async function handleFile(file: File) {
+    setParseError(null);
+    const text = await file.text();
+    const parsed = parseCsv(text);
+    if (parsed.headers.length === 0 || parsed.rows.length === 0) {
+      setParseError("Il file non contiene righe di dati valide.");
+      return;
+    }
+    setFilename(file.name);
+    setHeaders(parsed.headers);
+    setRows(parsed.rows);
+    setMapping(guessMapping(parsed.headers));
+    setStep("review");
+  }
+
+  if (step === "upload") {
+    return (
+      <div className="card">
+        {parseError ? <div className="form-error">{parseError}</div> : null}
+        {counterparties.length === 0 || palletTypes.length === 0 ? (
+          <div className="form-message">
+            Crea almeno una controparte e un tipo pallet prima di importare movimenti: servono per riconoscere le
+            righe del file.
+          </div>
+        ) : null}
+        <div className="field">
+          <label htmlFor="csvFile">File CSV movimenti</label>
+          <input
+            id="csvFile"
+            type="file"
+            accept=".csv,text/csv"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) void handleFile(file);
+            }}
+          />
+        </div>
+        <p className="muted" style={{ fontSize: 13 }}>
+          Colonne attese: data movimento, controparte, tipo pallet, direzione (IN/OUT), quantità, e opzionalmente
+          tipo documento, numero documento, numero buono, note.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {actionState.error ? <div className="form-error">{actionState.error}</div> : null}
+
+      <div className="card" style={{ marginBottom: 16 }}>
+        <h2 style={{ marginTop: 0, fontSize: 16 }}>1. Mappatura colonne — {filename}</h2>
+        <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          {MOVEMENT_FIELDS.map((field) => (
+            <div className="field" key={field}>
+              <label htmlFor={`map-${field}`}>
+                {MOVEMENT_FIELD_LABELS[field]}
+                {REQUIRED_MOVEMENT_FIELDS.includes(field) ? " *" : ""}
+              </label>
+              <select
+                id={`map-${field}`}
+                value={mapping[field] ?? ""}
+                onChange={(e) =>
+                  setMapping((prev) => ({ ...prev, [field]: e.target.value || undefined }))
+                }
+              >
+                <option value="">— non mappata —</option>
+                {headers.map((h) => (
+                  <option key={h} value={h}>
+                    {h}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="card" style={{ marginBottom: 16 }}>
+        <h2 style={{ marginTop: 0, fontSize: 16 }}>2. Anteprima e validazione</h2>
+        {missing.length > 0 ? (
+          <div className="form-error">
+            Campi obbligatori non mappati: {missing.map((f) => MOVEMENT_FIELD_LABELS[f]).join(", ")}
+          </div>
+        ) : (
+          <div className="grid kpis" style={{ marginBottom: 16 }}>
+            <div className="card">
+              <div className="kpi-label">Righe totali</div>
+              <div className="kpi-value">{results.length}</div>
+            </div>
+            <div className="card">
+              <div className="kpi-label">Valide</div>
+              <div className="kpi-value">{validCount}</div>
+            </div>
+            <div className="card">
+              <div className="kpi-label">Non valide</div>
+              <div className="kpi-value">{invalidResults.length}</div>
+            </div>
+          </div>
+        )}
+
+        {invalidResults.length > 0 ? (
+          <>
+            <h3 style={{ fontSize: 14 }}>Righe non valide (prime 50)</h3>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Riga</th>
+                  <th>Motivo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {invalidResults.slice(0, 50).map((r) => (
+                  <tr key={r.rowNumber}>
+                    <td>{r.rowNumber}</td>
+                    <td>{r.errors.join("; ")}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        ) : null}
+      </div>
+
+      <form action={formAction}>
+        <input type="hidden" name="payload" value={payloadJson} />
+        <div style={{ display: "flex", gap: 12 }}>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            style={{ width: "auto" }}
+            onClick={() => setStep("upload")}
+          >
+            Indietro
+          </button>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            style={{ width: "auto" }}
+            disabled={pending || missing.length > 0 || validCount === 0}
+          >
+            {pending ? "Import in corso…" : `Conferma import (${validCount} righe valide)`}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
