@@ -76,6 +76,184 @@ export type Database = {
           },
         ]
       }
+      document_events: {
+        Row: {
+          actor_user_id: string | null
+          document_id: string
+          event_type: string
+          id: string
+          notes: string | null
+          occurred_at: string
+          organization_id: string
+        }
+        Insert: {
+          actor_user_id?: string | null
+          document_id: string
+          event_type: string
+          id?: string
+          notes?: string | null
+          occurred_at?: string
+          organization_id: string
+        }
+        Update: {
+          actor_user_id?: string | null
+          document_id?: string
+          event_type?: string
+          id?: string
+          notes?: string | null
+          occurred_at?: string
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_events_actor_user_id_fkey"
+            columns: ["actor_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_events_org_document_fk"
+            columns: ["organization_id", "document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "document_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documents: {
+        Row: {
+          counterparty_id: string
+          created_at: string
+          document_type: string
+          file_size: number
+          id: string
+          mime_type: string
+          movement_id: string | null
+          notes: string | null
+          organization_id: string
+          original_filename: string
+          recovery_case_id: string | null
+          recovery_event_id: string | null
+          site_id: string | null
+          status: string
+          storage_path: string
+          updated_at: string
+          uploaded_at: string
+          uploaded_by: string | null
+          visibility: string
+          voucher_id: string | null
+        }
+        Insert: {
+          counterparty_id: string
+          created_at?: string
+          document_type: string
+          file_size: number
+          id?: string
+          mime_type: string
+          movement_id?: string | null
+          notes?: string | null
+          organization_id: string
+          original_filename: string
+          recovery_case_id?: string | null
+          recovery_event_id?: string | null
+          site_id?: string | null
+          status?: string
+          storage_path: string
+          updated_at?: string
+          uploaded_at?: string
+          uploaded_by?: string | null
+          visibility?: string
+          voucher_id?: string | null
+        }
+        Update: {
+          counterparty_id?: string
+          created_at?: string
+          document_type?: string
+          file_size?: number
+          id?: string
+          mime_type?: string
+          movement_id?: string | null
+          notes?: string | null
+          organization_id?: string
+          original_filename?: string
+          recovery_case_id?: string | null
+          recovery_event_id?: string | null
+          site_id?: string | null
+          status?: string
+          storage_path?: string
+          updated_at?: string
+          uploaded_at?: string
+          uploaded_by?: string | null
+          visibility?: string
+          voucher_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_org_counterparty_fk"
+            columns: ["organization_id", "counterparty_id"]
+            isOneToOne: false
+            referencedRelation: "counterparties"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "documents_org_movement_fk"
+            columns: ["organization_id", "movement_id"]
+            isOneToOne: false
+            referencedRelation: "pallet_movements"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "documents_org_recovery_case_fk"
+            columns: ["organization_id", "recovery_case_id"]
+            isOneToOne: false
+            referencedRelation: "recovery_cases"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "documents_org_recovery_event_fk"
+            columns: ["organization_id", "recovery_event_id"]
+            isOneToOne: false
+            referencedRelation: "recovery_events"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "documents_org_site_fk"
+            columns: ["organization_id", "site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "documents_org_voucher_fk"
+            columns: ["organization_id", "voucher_id"]
+            isOneToOne: false
+            referencedRelation: "vouchers"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "documents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       import_batches: {
         Row: {
           completed_at: string | null
@@ -791,6 +969,42 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "recovery_cases"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      update_document_state: {
+        Args: {
+          p_document_id: string
+          p_new_status?: string
+          p_new_visibility?: string
+          p_notes?: string
+        }
+        Returns: {
+          counterparty_id: string
+          created_at: string
+          document_type: string
+          file_size: number
+          id: string
+          mime_type: string
+          movement_id: string | null
+          notes: string | null
+          organization_id: string
+          original_filename: string
+          recovery_case_id: string | null
+          recovery_event_id: string | null
+          site_id: string | null
+          status: string
+          storage_path: string
+          updated_at: string
+          uploaded_at: string
+          uploaded_by: string | null
+          visibility: string
+          voucher_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "documents"
           isOneToOne: true
           isSetofReturn: false
         }
