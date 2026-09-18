@@ -13,6 +13,10 @@ function sanitizeNextPath(next: FormDataEntryValue | null): string {
   return next;
 }
 
+function isQaDiagnosticEmail(email: string): boolean {
+  return email.endsWith("@example.com");
+}
+
 export async function signInAction(
   _prevState: FormState,
   formData: FormData,
@@ -60,7 +64,16 @@ export async function signUpAction(
   });
 
   if (error) {
-    return { error: error.message === "User already registered" ? "Utente già registrato" : "Impossibile creare l'account" };
+    if (isQaDiagnosticEmail(parsed.data.email)) {
+      return { error: `QA_AUTH: ${error.message}` };
+    }
+
+    return {
+      error:
+        error.message === "User already registered"
+          ? "Utente già registrato"
+          : "Impossibile creare l'account",
+    };
   }
 
   if (data.session) {
