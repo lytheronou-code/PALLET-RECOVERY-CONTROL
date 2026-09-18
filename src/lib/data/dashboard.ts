@@ -29,6 +29,22 @@ export type ActionableCase = {
   outstandingExposure: number;
 };
 
+export type AgeingSlice = {
+  label: string;
+  count: number;
+  value: number;
+};
+
+export type DashboardInsights = {
+  openCases: number;
+  recoveryRate: number;
+  overdueExposure: number;
+  openVouchers: number;
+  voucherDueSoon: number;
+  voucherOverdue: number;
+  ageing: AgeingSlice[];
+};
+
 const CLOSED_STATUSES = ["closed_unrecovered", "cancelled"];
 const ACTIONABLE_STATUSES = ["open", "contacted", "scheduled", "partial", "disputed"];
 
@@ -37,6 +53,7 @@ type CaseRow = {
   reference: string;
   status: string;
   priority: string;
+  opened_at?: string;
   due_date: string | null;
   quantity_claimed: number;
   quantity_recovered: number;
@@ -45,6 +62,10 @@ type CaseRow = {
   counterparties: { legal_name: string } | null;
   pallet_types: { code: string } | null;
 };
+
+function dateOnly(value: string): Date {
+  return new Date(value + "T00:00:00");
+}
 
 export async function getDashboardKpis(organizationId: string): Promise<DashboardKpis> {
   const supabase = await createClient();
@@ -87,7 +108,7 @@ export async function getDashboardKpis(organizationId: string): Promise<Dashboar
     }
 
     if (row.due_date && ACTIONABLE_STATUSES.includes(row.status)) {
-      const dueDate = new Date(row.due_date);
+      const dueDate = dateOnly(row.due_date);
       if (dueDate < today) {
         overdueCases += 1;
       } else if (dueDate <= dueSoonCutoff) {
@@ -99,6 +120,86 @@ export async function getDashboardKpis(organizationId: string): Promise<Dashboar
   return { openPallets, openExposure, recoveredPallets, recoveredValue, casesDueSoon, overdueCases };
 }
 
+export async function getDashboardInsights(organizationId: string): Promise<DashboardInsights> {
+  const supabase = await createClient();
+  const [{ data: cases }, { data: vouchers }] = await Promise.all([
+    supabase
+      .from("recovery_cases")
+      .select("status, opened_at, due_date, quantity_claimed, quantity_recovered, unit_value_snapshot")
+      .eq("organization_id", organizationId),
+    supabase
+      .from("vouchers")
+      .select("status, recovery_due_date, quantity, recovered_quantity")
+      .eq("organization_id", organizationId),
+  ]);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dueSoonCutoff = new Date(today);
+  dueSoonCutoff.setDate(dueSoonCutoff.getDate() + 7);
+
+  let totalClaimed = 0;
+  let totalRecovered = 0;
+  let openCases = 0;
+  let overdueExposure = 0;
+
+  const ageingMap = new Map<string, AgeingSlice>([
+    ["0-30", { label: "0–30 gg", count: 0, value: 0 }],
+    ["31-60", { label: "31–60 gg", count: 0, value: 0 }],
+    ["61-90", { label: "61–90 gg", count: 0, value: 0 }],
+    ["90+", { label: "90+ gg", count: 0, value: 0 }],
+  ]);
+
+  for (const row of cases ?? []) {
+    if (row.status !== "cancelled") {
+      totalClaimed += row.quantity_claimed;
+      totalRecovered += row.quantity_recovered;
+    }
+
+    if (!ACTIONABLE_STATUSES.includes(row.status)) continue;
+
+    openCases += 1;
+    const outstanding = row.quantity_claimed - row.quantity_recovered;
+    const exposure = outstanding * row.unit_value_snapshot;
+
+    if (row.due_date && dateOnly(row.due_date) < today) {
+      overdueExposure += exposure;
+    }
+
+    const opened = dateOnly(row.opened_at);
+    const ageDays = Math.max(0, Math.floor((today.getTime() - opened.getTime()) / 86400000));
+    const bucket = ageDays <= 30 ? "0-30" : ageDays <= 60 ? "31-60" : ageDays <= 90 ? "61-90" : "90+";
+    const slice = ageingMap.get(bucket);
+    if (slice) {
+      slice.count += 1;
+      slice.value += exposure;
+    }
+  }
+
+  let openVouchers = 0;
+  let voucherDueSoon = 0;
+  let voucherOverdue = 0;
+
+  for (const voucher of vouchers ?? []) {
+    if (!["open", "partial", "disputed"].includes(voucher.status)) continue;
+    openVouchers += 1;
+    if (!voucher.recovery_due_date) continue;
+    const due = dateOnly(voucher.recovery_due_date);
+    if (due < today) voucherOverdue += 1;
+    else if (due <= dueSoonCutoff) voucherDueSoon += 1;
+  }
+
+  return {
+    openCases,
+    recoveryRate: totalClaimed > 0 ? Math.round((totalRecovered / totalClaimed) * 100) : 0,
+    overdueExposure,
+    openVouchers,
+    voucherDueSoon,
+    voucherOverdue,
+    ageing: Array.from(ageingMap.values()),
+  };
+}
+
 export async function getTopExposureCounterparties(
   organizationId: string,
   limit = 6,
@@ -108,7 +209,7 @@ export async function getTopExposureCounterparties(
     .from("recovery_cases")
     .select("status, quantity_claimed, quantity_recovered, unit_value_snapshot, counterparty_id, counterparties(legal_name)")
     .eq("organization_id", organizationId)
-    .not("status", "in", `(${CLOSED_STATUSES.join(",")})`);
+    .in("status", ACTIONABLE_STATUSES);
 
   if (error || !data) {
     return [];
