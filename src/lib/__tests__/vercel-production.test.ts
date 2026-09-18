@@ -21,12 +21,20 @@ describe("Vercel production hardening", () => {
   });
 
   it("exposes a non-cacheable health response", async () => {
+    const previousRegion = process.env.VERCEL_REGION;
+    process.env.VERCEL_REGION = "cdg1";
+
     const response = await healthGET();
+
+    if (previousRegion === undefined) delete process.env.VERCEL_REGION;
+    else process.env.VERCEL_REGION = previousRegion;
+
     expect(response.status).toBe(200);
     expect(response.headers.get("Cache-Control")).toBe("no-store, max-age=0");
     await expect(response.json()).resolves.toEqual({
       status: "ok",
       service: "pallet-recovery-control",
+      region: "cdg1",
     });
   });
 });

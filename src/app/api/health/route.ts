@@ -5,6 +5,7 @@ export async function GET() {
     {
       status: "ok",
       service: "pallet-recovery-control",
+      region: process.env.VERCEL_REGION ?? null,
     },
     {
       status: 200,
