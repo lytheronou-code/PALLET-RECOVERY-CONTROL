@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireMembership } from "@/lib/data/organization";
 import { listCounterparties } from "@/lib/data/counterparties";
 import { listPalletTypes } from "@/lib/data/pallet-types";
+import { listSitesForImportLookup } from "@/lib/data/sites";
 import { listImportBatches } from "@/lib/data/import-batches";
 import { ImportWizard } from "@/components/import-wizard";
 import { formatDate } from "@/lib/format";
@@ -14,9 +15,10 @@ const STATUS_LABELS: Record<string, string> = {
 
 export default async function ImportPage() {
   const membership = await requireMembership();
-  const [counterparties, palletTypes, batches] = await Promise.all([
+  const [counterparties, palletTypes, sites, batches] = await Promise.all([
     listCounterparties(membership.organizationId, { includeInactive: true }),
     listPalletTypes(membership.organizationId, { includeInactive: true }),
+    listSitesForImportLookup(membership.organizationId),
     listImportBatches(membership.organizationId),
   ]);
 
@@ -29,6 +31,7 @@ export default async function ImportPage() {
       <ImportWizard
         counterparties={counterparties.map((c) => ({ id: c.id, code: c.code, legalName: c.legal_name }))}
         palletTypes={palletTypes.map((p) => ({ id: p.id, code: p.code }))}
+        sites={sites}
       />
 
       <h2 style={{ fontSize: 16, marginTop: 32 }}>Import precedenti</h2>

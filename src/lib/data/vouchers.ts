@@ -1,5 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { DEFAULT_PAGE_SIZE, pageCountFor, rangeFor, type PaginatedResult } from "@/lib/pagination";
+import { sanitizeOrSearchTerm } from "@/lib/supabase/filter";
 
 export type VoucherListItem = {
   id: string;
@@ -46,26 +48,36 @@ type VoucherRow = {
   pallet_types: { code: string; description?: string; unit_value?: number } | null;
 };
 
-export async function listVouchers(
+export async function listVouchersPage(
   organizationId: string,
-  options: { statuses?: string[] } = {},
-): Promise<VoucherListItem[]> {
+  options: { statuses?: string[]; search?: string; page?: number; pageSize?: number } = {},
+): Promise<PaginatedResult<VoucherListItem>> {
   const supabase = await createClient();
+  const pageSize = options.pageSize ?? DEFAULT_PAGE_SIZE;
+  const page = options.page ?? 1;
+  const { from, to } = rangeFor(page, pageSize);
+
   let query = supabase
     .from("vouchers")
     .select(
       "id, voucher_number, counterparty_id, pallet_type_id, issue_date, recovery_due_date, quantity, recovered_quantity, status, notes, counterparties(legal_name), pallet_types(code)",
+      { count: "exact" },
     )
     .eq("organization_id", organizationId)
     .order("recovery_due_date", { ascending: true, nullsFirst: false })
-    .order("issue_date", { ascending: false });
+    .order("issue_date", { ascending: false })
+    .range(from, to);
 
   if (options.statuses?.length) query = query.in("status", options.statuses);
+  if (options.search) {
+    const term = sanitizeOrSearchTerm(options.search);
+    if (term) query = query.ilike("voucher_number", `%${term}%`);
+  }
 
-  const { data, error } = await query;
-  if (error || !data) return [];
+  const { data, error, count } = await query;
+  const total = count ?? 0;
 
-  return (data as unknown as VoucherRow[]).map((row) => ({
+  const items = (error || !data ? [] : (data as unknown as VoucherRow[])).map((row) => ({
     id: row.id,
     voucherNumber: row.voucher_number,
     counterpartyId: row.counterparty_id,
@@ -80,6 +92,21 @@ export async function listVouchers(
     status: row.status,
     notes: row.notes,
   }));
+
+  return { items, total, page, pageSize, pageCount: pageCountFor(total, pageSize) };
+}
+
+// Used to pre-flag duplicate voucher numbers during CSV import before any
+// insert is attempted, rather than relying solely on the DB unique
+// constraint to reject them one at a time.
+export async function listVoucherNumbers(organizationId: string): Promise<string[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("vouchers")
+    .select("voucher_number")
+    .eq("organization_id", organizationId);
+
+  return error || !data ? [] : data.map((row) => row.voucher_number);
 }
 
 export async function getVoucherDetail(organizationId: string, id: string): Promise<VoucherDetail | null> {

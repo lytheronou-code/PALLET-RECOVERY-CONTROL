@@ -125,4 +125,30 @@ Additional safeguards completed after the initial audit:
 - authenticated hard delete removed from operational/master history;
 - movement ledger, voucher detail and global search added to the premium workspace.
 
-Do not start P1 until browser E2E is cleared and the pilot data model has been confirmed.
+## P1 status update (2026-09-18, second pass)
+
+The freeze above was explicitly overridden by the product owner: continue
+real P1 development now rather than wait on browser E2E, since this
+sandbox cannot reach the live Supabase project over HTTPS (egress policy)
+and so cannot run true browser E2E regardless. Verification for this pass
+relied on typecheck/lint/unit tests/build plus direct adversarial SQL
+against the real database (18 attacks, all blocked, transaction rolled
+back with zero residual rows — see `docs/CURRENT_STATE.md` for the full
+list).
+
+Delivered from the P1 list above: **#1 Sites/locations**, **#5 Bulk
+voucher import**, **#6 Movement correction workflow**, and the
+assignment/"my queue" half of **#3 Team management**. Two real bugs found
+during the audit were also fixed: counterparties/movements/vouchers/
+recovery-cases had no pagination (fetched unbounded result sets), and
+`organization_members` RLS only ever exposed a user's own membership row,
+so every organization's member count in Settings read 1.
+
+Still not built, and why: **#2 Documents/evidence** (Storage integration
+is its own scope, deferred rather than rushed), **team invites by email**
+and **#7 notification digests** (both need Supabase SMTP, explicitly out
+of scope for this phase), **#4 recovery planning/trips** (sites now give
+it a real foundation but no UI yet). None of these were dropped for lack
+of value — see `docs/CURRENT_STATE.md` for the itemized reasoning.
+
+Browser E2E and pilot data confirmation remain the gate before P2.

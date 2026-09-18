@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { counterpartySchema, palletTypeSchema } from "@/lib/validation/master-data";
+import { counterpartySchema, palletTypeSchema, siteSchema } from "@/lib/validation/master-data";
 
 describe("counterpartySchema", () => {
   it("accepts a minimal valid counterparty and defaults countryCode", () => {
@@ -63,5 +63,31 @@ describe("palletTypeSchema", () => {
       unitValue: "-1",
     });
     expect(result.success).toBe(false);
+  });
+});
+
+describe("siteSchema", () => {
+  it("accepts a minimal valid site and defaults countryCode", () => {
+    const result = siteSchema.safeParse({ name: "Deposito Nord" });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.countryCode).toBe("IT");
+    }
+  });
+
+  it("accepts an optional linked counterparty id", () => {
+    const result = siteSchema.safeParse({
+      name: "Deposito Nord",
+      counterpartyId: "11111111-1111-4111-8111-111111111111",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects an empty name", () => {
+    expect(siteSchema.safeParse({ name: "" }).success).toBe(false);
+  });
+
+  it("rejects a non-uuid counterparty id", () => {
+    expect(siteSchema.safeParse({ name: "Deposito Nord", counterpartyId: "not-a-uuid" }).success).toBe(false);
   });
 });

@@ -13,6 +13,7 @@ import {
   type MovementField,
   type MovementLookups,
 } from "@/lib/csv/movement-import";
+import { buildSiteLookup, type SiteRecord } from "@/lib/csv/site-lookup";
 import { commitMovementImportAction, type ImportActionState } from "@/lib/actions/import";
 
 type LookupOption = { id: string; code: string | null; legalName?: string };
@@ -21,6 +22,7 @@ const AUTO_MAP_HINTS: Record<MovementField, string[]> = {
   movementDate: ["data", "date", "data movimento", "movement date"],
   counterparty: ["controparte", "cliente", "counterparty", "customer", "ragione sociale"],
   palletType: ["pallet", "tipo pallet", "pallet type", "codice pallet"],
+  site: ["sito", "site", "deposito", "hub"],
   direction: ["direzione", "direction", "dir", "in/out"],
   quantity: ["quantita", "quantità", "qta", "quantity", "qty"],
   documentType: ["tipo documento", "document type", "doc tipo"],
@@ -44,9 +46,11 @@ const initialState: ImportActionState = {};
 export function ImportWizard({
   counterparties,
   palletTypes,
+  sites,
 }: {
   counterparties: LookupOption[];
   palletTypes: LookupOption[];
+  sites: SiteRecord[];
 }) {
   const [step, setStep] = useState<"upload" | "review">("upload");
   const [filename, setFilename] = useState("");
@@ -66,8 +70,8 @@ export function ImportWizard({
     for (const pt of palletTypes) {
       if (pt.code) palletTypeIdByKey.set(buildLookupKey(pt.code), pt.id);
     }
-    return { counterpartyIdByKey, palletTypeIdByKey };
-  }, [counterparties, palletTypes]);
+    return { counterpartyIdByKey, palletTypeIdByKey, siteLookup: buildSiteLookup(sites) };
+  }, [counterparties, palletTypes, sites]);
 
   const results = useMemo(
     () => (step === "review" ? validateMovementRows(headers, rows, mapping, lookups) : []),

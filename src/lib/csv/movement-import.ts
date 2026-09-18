@@ -1,7 +1,10 @@
+import { resolveSite, type SiteLookup } from "@/lib/csv/site-lookup";
+
 export const MOVEMENT_FIELDS = [
   "movementDate",
   "counterparty",
   "palletType",
+  "site",
   "direction",
   "quantity",
   "documentType",
@@ -24,6 +27,7 @@ export const MOVEMENT_FIELD_LABELS: Record<MovementField, string> = {
   movementDate: "Data movimento",
   counterparty: "Controparte",
   palletType: "Tipo pallet",
+  site: "Sito (opzionale)",
   direction: "Direzione (IN/OUT)",
   quantity: "Quantità",
   documentType: "Tipo documento",
@@ -37,12 +41,14 @@ export type ColumnMapping = Partial<Record<MovementField, string>>;
 export type MovementLookups = {
   counterpartyIdByKey: Map<string, string>;
   palletTypeIdByKey: Map<string, string>;
+  siteLookup: SiteLookup;
 };
 
 export type ValidatedMovement = {
   movement_date: string;
   counterparty_id: string;
   pallet_type_id: string;
+  site_id: string | null;
   direction: "inbound" | "outbound";
   quantity: number;
   document_type: string | null;
@@ -131,6 +137,7 @@ export function validateMovementRow(
   const rawDate = getField(headers, row, mapping, "movementDate");
   const rawCounterparty = getField(headers, row, mapping, "counterparty");
   const rawPalletType = getField(headers, row, mapping, "palletType");
+  const rawSite = getField(headers, row, mapping, "site");
   const rawDirection = getField(headers, row, mapping, "direction");
   const rawQuantity = getField(headers, row, mapping, "quantity");
   const documentType = getField(headers, row, mapping, "documentType") || null;
@@ -153,6 +160,11 @@ export function validateMovementRow(
     ? lookups.palletTypeIdByKey.get(buildLookupKey(rawPalletType))
     : undefined;
   if (rawPalletType && !palletTypeId) errors.push(`Tipo pallet non trovato: "${rawPalletType}"`);
+
+  let siteId: string | null = null;
+  const siteResolution = resolveSite(counterpartyId, rawSite, lookups.siteLookup);
+  if (siteResolution.status === "resolved") siteId = siteResolution.siteId;
+  else if (siteResolution.status === "error" && counterpartyId) errors.push(siteResolution.message);
 
   const direction = rawDirection ? normalizeDirection(rawDirection) : null;
   if (!rawDirection) errors.push("Direzione mancante");
@@ -181,6 +193,7 @@ export function validateMovementRow(
       movement_date: movementDate!,
       counterparty_id: counterpartyId!,
       pallet_type_id: palletTypeId!,
+      site_id: siteId,
       direction: direction!,
       quantity: quantity!,
       document_type: documentType,

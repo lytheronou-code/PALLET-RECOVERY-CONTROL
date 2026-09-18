@@ -36,6 +36,7 @@ export async function createRecoveryCaseAction(
     counterpartyId: formData.get("counterpartyId"),
     palletTypeId: formData.get("palletTypeId"),
     voucherId: formData.get("voucherId"),
+    siteId: formData.get("siteId"),
     quantityClaimed: formData.get("quantityClaimed"),
     dueDate: formData.get("dueDate"),
     priority: formData.get("priority"),
@@ -112,6 +113,7 @@ export async function createRecoveryCaseAction(
       counterparty_id: parsed.data.counterpartyId,
       pallet_type_id: parsed.data.palletTypeId,
       voucher_id: parsed.data.voucherId || null,
+      site_id: parsed.data.siteId || null,
       reference: generateReference(),
       due_date: parsed.data.dueDate || null,
       quantity_claimed: parsed.data.quantityClaimed,
@@ -125,6 +127,9 @@ export async function createRecoveryCaseAction(
   if (error || !created) {
     if (error?.message.includes("recovery case quantity exceeds voucher outstanding quantity")) {
       return { error: "La quantità richiesta supera il residuo disponibile del buono." };
+    }
+    if (error?.message.includes("site must belong to the same counterparty")) {
+      return { error: "Il sito selezionato non appartiene alla controparte scelta." };
     }
     return { error: "Impossibile creare la pratica. Verifica dati e permessi." };
   }
@@ -148,6 +153,33 @@ function mapRpcError(message: string): string {
     if (message.includes(needle)) return friendly;
   }
   return "Impossibile registrare l'evento.";
+}
+
+export async function assignRecoveryCaseAction(
+  caseId: string,
+  _prevState: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const membership = await requireMembership();
+  const raw = formData.get("assigneeUserId");
+  const assigneeUserId = typeof raw === "string" && raw.length > 0 ? raw : null;
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("recovery_cases")
+    .update({ assignee_user_id: assigneeUserId })
+    .eq("organization_id", membership.organizationId)
+    .eq("id", caseId);
+
+  if (error) {
+    if (error.message.includes("assignee must be a member of the organization")) {
+      return { error: "L'utente selezionato non è un membro dell'organizzazione." };
+    }
+    return { error: "Impossibile aggiornare l'assegnatario." };
+  }
+
+  revalidateRecoveryViews(caseId);
+  return { message: assigneeUserId ? "Pratica assegnata." : "Assegnazione rimossa." };
 }
 
 export async function addRecoveryEventAction(

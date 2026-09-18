@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Building2, Mail, MapPin, Pencil, Phone } from "lucide-react";
+import { Building2, Mail, MapPin, Pencil, Phone, Plus } from "lucide-react";
 import { requireMembership } from "@/lib/data/organization";
 import { getCounterpartyOverview } from "@/lib/data/counterparties";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
@@ -136,6 +136,45 @@ export default async function CounterpartyDetailPage({
             </dl>
           </div>
         </aside>
+      </div>
+
+      <div className="section-grid equal" style={{ marginBottom: 16 }}>
+        <section className="panel">
+          <div className="panel-header">
+            <div>
+              <h2 className="panel-title">Siti</h2>
+              <div className="panel-subtitle">Depositi e punti di consegna di questa controparte.</div>
+            </div>
+            <Link href={"/sites/new?counterpartyId=" + cp.id} className="btn btn-secondary btn-sm">
+              <Plus size={14} />
+              Nuovo sito
+            </Link>
+          </div>
+          {overview.sites.length === 0 ? (
+            <div className="empty-state">Nessun sito registrato per questa controparte.</div>
+          ) : (
+            <div className="table-wrap">
+              <table className="data-table">
+                <thead>
+                  <tr><th>Nome</th><th>Città</th><th>Stato</th></tr>
+                </thead>
+                <tbody>
+                  {overview.sites.map((site) => (
+                    <tr key={site.id}>
+                      <td><Link className="row-title" href={"/sites/" + site.id + "/edit"}>{site.name}</Link></td>
+                      <td>{site.city ?? "—"}</td>
+                      <td>
+                        <span className={"badge " + (site.active ? "badge-closed" : "badge-neutral")}>
+                          {site.active ? "Attivo" : "Non attivo"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
       </div>
 
       <div className="section-grid equal">

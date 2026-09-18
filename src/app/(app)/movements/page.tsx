@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { ArrowDownLeft, ArrowUpRight, Upload } from "lucide-react";
 import { requireMembership } from "@/lib/data/organization";
-import { listMovements } from "@/lib/data/movements";
+import { listMovementsPage } from "@/lib/data/movements";
 import { formatDate, formatNumber } from "@/lib/format";
+import { parsePage } from "@/lib/pagination";
+import { Pagination } from "@/components/pagination";
 
 const FILTERS = [
   { key: "all", label: "Tutti" },
@@ -13,14 +15,18 @@ const FILTERS = [
 export default async function MovementsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ direction?: string }>;
+  searchParams: Promise<{ direction?: string; q?: string; page?: string }>;
 }) {
   const membership = await requireMembership();
-  const { direction } = await searchParams;
+  const { direction, q, page: pageParam } = await searchParams;
   const active = FILTERS.find((item) => item.key === direction) ?? FILTERS[0];
-  const movements = await listMovements(membership.organizationId, {
+  const page = parsePage(pageParam);
+  const result = await listMovementsPage(membership.organizationId, {
     direction: active.key === "all" ? undefined : active.key,
+    search: q,
+    page,
   });
+  const movements = result.items;
 
   const inbound = movements.filter((item) => item.direction === "inbound").reduce((sum, item) => sum + item.quantity, 0);
   const outbound = movements.filter((item) => item.direction === "outbound").reduce((sum, item) => sum + item.quantity, 0);
@@ -44,10 +50,10 @@ export default async function MovementsPage({
       <div className="grid premium-kpis three">
         <div className="metric-card">
           <div className="metric-top">
-            <span className="metric-caption">Movimenti visualizzati</span>
+            <span className="metric-caption">Movimenti in questa pagina</span>
           </div>
           <div className="metric-value">{formatNumber(movements.length)}</div>
-          <div className="metric-foot">ultimi record della vista</div>
+          <div className="metric-foot">{formatNumber(result.total)} totali nella vista</div>
         </div>
         <div className="metric-card">
           <div className="metric-top">
@@ -55,7 +61,7 @@ export default async function MovementsPage({
             <span className="metric-icon warning"><ArrowUpRight size={17} /></span>
           </div>
           <div className="metric-value">{formatNumber(outbound)}</div>
-          <div className="metric-foot">uscite nella vista corrente</div>
+          <div className="metric-foot">uscite in questa pagina</div>
         </div>
         <div className="metric-card">
           <div className="metric-top">
@@ -63,9 +69,15 @@ export default async function MovementsPage({
             <span className="metric-icon"><ArrowDownLeft size={17} /></span>
           </div>
           <div className="metric-value">{formatNumber(inbound)}</div>
-          <div className="metric-foot">rientri nella vista corrente</div>
+          <div className="metric-foot">rientri in questa pagina</div>
         </div>
       </div>
+
+      <form method="get" className="search-bar">
+        {direction ? <input type="hidden" name="direction" value={direction} /> : null}
+        <input type="search" name="q" placeholder="Cerca per numero documento o buono…" defaultValue={q ?? ""} />
+        <button type="submit" className="btn btn-secondary btn-sm">Cerca</button>
+      </form>
 
       <div className="filter-bar">
         {FILTERS.map((item) => (
@@ -91,9 +103,11 @@ export default async function MovementsPage({
                   <th>Flusso</th>
                   <th>Controparte</th>
                   <th>Pallet</th>
+                  <th>Sito</th>
                   <th>Quantità</th>
                   <th>Documento</th>
                   <th>Buono</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -109,14 +123,27 @@ export default async function MovementsPage({
                       <Link href={"/counterparties/" + item.counterpartyId} className="row-title">
                         {item.counterpartyName}
                       </Link>
+                      {item.correctionOfMovementId ? (
+                        <div className="row-subtitle">correzione/storno</div>
+                      ) : null}
                     </td>
                     <td>{item.palletTypeCode}</td>
+                    <td>{item.siteName ?? "—"}</td>
                     <td className="numeric"><strong>{formatNumber(item.quantity)}</strong></td>
                     <td>
                       <div>{item.documentNumber ?? "—"}</div>
                       {item.documentType ? <div className="row-subtitle">{item.documentType}</div> : null}
                     </td>
                     <td>{item.voucherNumber ?? "—"}</td>
+                    <td>
+                      {item.isCorrected ? (
+                        <span className="badge badge-neutral">Corretto</span>
+                      ) : (
+                        <Link href={"/movements/" + item.id + "/correct"} className="btn btn-ghost btn-sm">
+                          Correggi
+                        </Link>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -124,9 +151,14 @@ export default async function MovementsPage({
           </div>
         )}
       </div>
-      <p className="muted" style={{ fontSize: 11, marginTop: 10 }}>
-        La vista mostra fino a 250 movimenti recenti. Gli import completi restano tracciati per batch.
-      </p>
+
+      <Pagination
+        basePath="/movements"
+        params={{ direction, q }}
+        page={result.page}
+        pageCount={result.pageCount}
+        total={result.total}
+      />
     </div>
   );
 }

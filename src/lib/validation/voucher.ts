@@ -22,6 +22,7 @@ export const voucherSchema = withDateRule(
   z.object({
     counterpartyId: z.string().uuid("Seleziona una controparte"),
     palletTypeId: z.string().uuid("Seleziona un tipo pallet"),
+    siteId: z.string().uuid().optional().or(z.literal("")),
     ...voucherDatesShape,
   }),
 );

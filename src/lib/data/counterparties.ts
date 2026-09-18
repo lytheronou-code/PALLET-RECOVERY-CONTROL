@@ -1,6 +1,8 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { Tables } from "@/lib/supabase/database.types";
+import { DEFAULT_PAGE_SIZE, pageCountFor, rangeFor, type PaginatedResult } from "@/lib/pagination";
+import { sanitizeOrSearchTerm } from "@/lib/supabase/filter";
 
 export type Counterparty = Tables<"counterparties">;
 
@@ -34,6 +36,13 @@ export type CounterpartyMovementSummary = {
   documentNumber: string | null;
 };
 
+export type CounterpartySiteSummary = {
+  id: string;
+  name: string;
+  city: string | null;
+  active: boolean;
+};
+
 export type CounterpartyOverview = {
   counterparty: Counterparty;
   openExposure: number;
@@ -43,10 +52,17 @@ export type CounterpartyOverview = {
   cases: CounterpartyCaseSummary[];
   vouchers: CounterpartyVoucherSummary[];
   movements: CounterpartyMovementSummary[];
+  sites: CounterpartySiteSummary[];
 };
 
 const ACTIVE_CASE_STATUSES = ["open", "contacted", "scheduled", "partial", "disputed"];
 
+// Unbounded on purpose: every caller uses this for a <select> picker or a
+// CSV import lookup (needs the full active set to resolve rows against by
+// code/name), never to render a list view directly -- listCounterpartiesPage
+// exists for that. Bounded by a realistic per-org counterparty count, not
+// by an arbitrary cap; revisit if a pilot org's counterparty count turns
+// out to be much larger than expected.
 export async function listCounterparties(
   organizationId: string,
   options: { includeInactive?: boolean } = {},
@@ -62,6 +78,39 @@ export async function listCounterparties(
 
   const { data, error } = await query;
   return error || !data ? [] : data;
+}
+
+export async function listCounterpartiesPage(
+  organizationId: string,
+  options: { includeInactive?: boolean; search?: string; page?: number; pageSize?: number } = {},
+): Promise<PaginatedResult<Counterparty>> {
+  const supabase = await createClient();
+  const pageSize = options.pageSize ?? DEFAULT_PAGE_SIZE;
+  const page = options.page ?? 1;
+  const { from, to } = rangeFor(page, pageSize);
+
+  let query = supabase
+    .from("counterparties")
+    .select("*", { count: "exact" })
+    .eq("organization_id", organizationId)
+    .order("legal_name", { ascending: true })
+    .range(from, to);
+
+  if (!options.includeInactive) query = query.eq("active", true);
+  if (options.search) {
+    const term = sanitizeOrSearchTerm(options.search);
+    if (term) query = query.or(`legal_name.ilike.%${term}%,code.ilike.%${term}%,vat_number.ilike.%${term}%`);
+  }
+
+  const { data, error, count } = await query;
+  const total = count ?? 0;
+  return {
+    items: error || !data ? [] : data,
+    total,
+    page,
+    pageSize,
+    pageCount: pageCountFor(total, pageSize),
+  };
 }
 
 export async function getCounterparty(organizationId: string, id: string): Promise<Counterparty | null> {
@@ -82,7 +131,7 @@ export async function getCounterpartyOverview(
 ): Promise<CounterpartyOverview | null> {
   const supabase = await createClient();
 
-  const [counterpartyResult, casesResult, vouchersResult, movementsResult] = await Promise.all([
+  const [counterpartyResult, casesResult, vouchersResult, movementsResult, sitesResult] = await Promise.all([
     supabase
       .from("counterparties")
       .select("*")
@@ -108,6 +157,12 @@ export async function getCounterpartyOverview(
       .eq("counterparty_id", id)
       .order("movement_date", { ascending: false })
       .limit(12),
+    supabase
+      .from("sites")
+      .select("id, name, city, active")
+      .eq("organization_id", organizationId)
+      .eq("counterparty_id", id)
+      .order("name", { ascending: true }),
   ]);
 
   if (counterpartyResult.error || !counterpartyResult.data) return null;
@@ -176,6 +231,12 @@ export async function getCounterpartyOverview(
       quantity: item.quantity,
       palletTypeCode: item.pallet_types?.code ?? "—",
       documentNumber: item.document_number,
+    })),
+    sites: (sitesResult.data ?? []).map((item) => ({
+      id: item.id,
+      name: item.name,
+      city: item.city,
+      active: item.active,
     })),
   };
 }
