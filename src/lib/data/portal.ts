@@ -152,6 +152,10 @@ export async function listPortalMovements(page: number): Promise<PaginatedResult
   };
 }
 
+// priority is deliberately NOT exposed here -- it's an internal
+// recovery-management concept (escalation/operational strategy) with no
+// business being shown to the counterparty the case is about. The RPC
+// itself no longer returns the column (not just omitted here).
 export type PortalRecoveryCase = {
   id: string;
   reference: string;
@@ -161,7 +165,6 @@ export type PortalRecoveryCase = {
   outstandingQuantity: number;
   outstandingValue: number;
   dueDate: string | null;
-  priority: string;
   status: string;
   openedAt: string;
 };
@@ -184,7 +187,6 @@ export async function listPortalRecoveryCases(page: number): Promise<PaginatedRe
       outstandingQuantity: row.outstanding_quantity,
       outstandingValue: Number(row.outstanding_value),
       dueDate: row.due_date,
-      priority: row.priority,
       status: row.status,
       openedAt: row.opened_at,
     })),
@@ -195,12 +197,15 @@ export async function listPortalRecoveryCases(page: number): Promise<PaginatedRe
   };
 }
 
+// notes is deliberately NOT exposed here -- documents.notes is an
+// internal operational field; a document being visibility='client' does
+// not imply every internal annotation on its metadata row should be too.
+// The RPC itself no longer returns the column.
 export type PortalDocument = {
   id: string;
   documentType: string;
   originalFilename: string;
   uploadedAt: string;
-  notes: string | null;
 };
 
 export async function listPortalDocuments(page: number): Promise<PaginatedResult<PortalDocument>> {
@@ -217,7 +222,6 @@ export async function listPortalDocuments(page: number): Promise<PaginatedResult
       documentType: row.document_type,
       originalFilename: row.original_filename,
       uploadedAt: row.uploaded_at,
-      notes: row.notes,
     })),
     total,
     page,

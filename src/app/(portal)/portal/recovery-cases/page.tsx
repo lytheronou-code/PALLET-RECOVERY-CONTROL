@@ -1,6 +1,6 @@
 import { listPortalRecoveryCases } from "@/lib/data/portal";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
-import { PriorityBadge, StatusBadge } from "@/components/status-badge";
+import { StatusBadge } from "@/components/status-badge";
 import { parsePage } from "@/lib/pagination";
 import { Pagination } from "@/components/pagination";
 
@@ -34,7 +34,6 @@ export default async function PortalRecoveryCasesPage({
                 <th>Residuo</th>
                 <th>Valore residuo</th>
                 <th>Scadenza</th>
-                <th>Priorità</th>
                 <th>Stato</th>
               </tr>
             </thead>
@@ -47,7 +46,6 @@ export default async function PortalRecoveryCasesPage({
                   <td className="numeric">{formatNumber(item.outstandingQuantity)}</td>
                   <td className="numeric">{formatCurrency(item.outstandingValue)}</td>
                   <td>{formatDate(item.dueDate)}</td>
-                  <td><PriorityBadge priority={item.priority} /></td>
                   <td><StatusBadge status={item.status} /></td>
                 </tr>
               ))}

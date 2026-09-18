@@ -38,7 +38,6 @@ export function PortalDocumentsTable({ items }: { items: PortalDocument[] }) {
                 <td>{DOCUMENT_TYPE_LABELS[doc.documentType as keyof typeof DOCUMENT_TYPE_LABELS] ?? doc.documentType}</td>
                 <td>
                   <div className="row-title">{doc.originalFilename}</div>
-                  {doc.notes ? <div className="row-subtitle">{doc.notes}</div> : null}
                 </td>
                 <td>{formatDate(doc.uploadedAt)}</td>
                 <td>
