@@ -379,3 +379,101 @@ Not started until M1 fully passed its own QA/advisors/adversarial pass
 - **Additional portal roles** (`client_manager`, etc.) — V1 ships a
   single fixed `client_viewer` role by explicit instruction not to
   overbuild.
+
+## Independent review fixes (2026-09-19, fourth pass, same PR #8)
+
+A focused independent-review hardening pass on the M1/M2 work above,
+still on `claude/premium-v3-documents-portal`, additive migrations only:
+
+- **Storage orphan cleanup**: `uploadDocumentAction`'s own error-recovery
+  path removed the just-uploaded Storage object when the metadata insert
+  failed, but there was intentionally no DELETE policy on
+  `storage.objects` — that cleanup call silently no-opped under RLS and
+  left an orphaned file on every failed upload. Added a narrowly-scoped
+  DELETE policy: admin/operator of the object's own organization, AND
+  only when no `public.documents` row references that `storage_path` at
+  all — tracked evidence can never match it. Verified via the exact
+  boolean logic Postgres RLS evaluates per row (literal SQL `DELETE` on
+  `storage.objects` is blocked platform-wide by Supabase's own
+  `storage.protect_delete()` trigger, confirmed via `pg_trigger` — not a
+  sandbox limitation; real deletion goes through the Storage API, which
+  checks this same policy).
+- **Storage INSERT hardening**: the INSERT policy validated only that
+  the first path segment (`organization_id`) matched the caller's org,
+  never that the second segment (`counterparty_id`) was a real
+  counterparty in that org. Tightened to require both.
+- **Magic-byte file signature validation**: declared MIME type and
+  filename extension are both strings the uploader controls. Server now
+  reads only the leading bytes (`File.slice()`, never the full file) and
+  checks them against each allowed format's real signature (`%PDF-`,
+  `FF D8 FF`, the 8-byte PNG header, `RIFF....WEBP`) before the file
+  ever reaches Storage.
+- **Client portal: `priority` removed** from `portal_list_recovery_cases`
+  — an internal recovery-management concept (escalation/strategy) with
+  no business being shown to the counterparty the case is about. Removed
+  from the RPC's `RETURNS TABLE` entirely, not just unused client-side.
+- **Client portal: `notes` removed** from `portal_list_documents` — an
+  internal operational field; a document being `visibility='client'`
+  does not imply every internal annotation on its row should be too.
+- **Client portal access management is admin-only**: granting/
+  activating/deactivating a client's access to their own operational and
+  financial data is an authorization operation, not a day-to-day
+  operator task. `client_portal_memberships` INSERT/UPDATE/DELETE RLS
+  and `admin_grant_client_portal_access()` tightened from admin/operator
+  to admin only; operators keep read access to membership status. UI
+  hides the grant/activate/deactivate controls for non-admins.
+- **One active portal membership per user**: `portal_current_context()`
+  picked the most-recently-created active membership when a user had
+  more than one — silently deciding which customer's data they see. A
+  partial unique index (`client_portal_memberships (user_id) WHERE
+  active`) now enforces exactly one; `admin_grant_client_portal_access`
+  rejects granting a second active counterparty with a clear message.
+- **Portal RPC pagination clamp**: all four `portal_list_*` functions
+  now cap `p_page_size` at 100 (`least(greatest(...), 100)`) — a portal
+  user calling a SECURITY DEFINER RPC directly could otherwise request
+  an unbounded row count. Not a data-isolation issue, but avoidable load.
+- **Explicit Server Action results**: `setDocumentStatusAction`/
+  `setDocumentVisibilityAction` returned `void` and were wired to plain
+  fire-and-forget `<form action>` elements — a blocked RLS check or
+  failed RPC call looked identical to success in the UI. Both now return
+  `{ error? }`; the UI calls them directly (matching the existing
+  download-button pattern) so a real failure surfaces to the user.
+  `setClientPortalMembershipActiveAction` got the same treatment plus
+  the single-active-membership conflict mapping.
+- **Two real bugs found and fixed by this pass's own adversarial
+  re-test**: `admin_grant_client_portal_access` declares `RETURNS TABLE
+  (id, user_id, email, active)`, which implicitly creates PL/pgSQL
+  variables with those names in the function body's scope. Unqualified
+  references to `id` and `active`, plus the INSERT's own `ON CONFLICT
+  (..., user_id)` column list (which cannot be table-qualified),
+  collided with them — every single call failed with "column reference
+  is ambiguous", including legitimate admin calls. This function had
+  never actually worked since its introduction earlier in this PR.
+  Fixed with explicit table-alias qualification everywhere possible,
+  plus a `#variable_conflict use_column` directive for the one position
+  that cannot be qualified. Verified end-to-end afterward (a real grant,
+  idempotent re-grant, and the single-active-membership rejection all
+  now behave correctly).
+
+Verified with adversarial SQL (ROLLBACK-wrapped, zero residual rows),
+covering every scenario the review asked for: tracked evidence
+undeletable, orphan cleanup logic allowed for admin/operator, blocked
+for viewer/portal-user/cross-tenant admin; `INSERT` with a fake
+counterparty-id path segment blocked, a real one still works; portal
+`recovery_cases`/`documents` RPCs confirmed to have no `priority`/`notes`
+column in their return type at the `information_schema` level; operator
+blocked from granting/deactivating portal access, admin succeeds; a
+second active membership blocked both through the RPC and via a direct
+`INSERT` bypass; a huge `p_page_size` request returns without error;
+internal-visibility and superseded documents both remain invisible to
+`portal_list_documents` and rejected by `portal_get_document_storage_path`
+(the superseded case specifically, not just internal-visibility, which
+was the only case tested before).
+
+`npm ci`, `npm run typecheck/lint/test/build`: clean (148 tests, +7 from
+magic-byte signature coverage). `npm audit`: 0 vulnerabilities. Supabase
+Security Advisor: only the same pre-existing intentional `SECURITY
+DEFINER` warnings (now 12, including the fixed
+`admin_grant_client_portal_access` — all confirmed `search_path=public`,
+`anon` execute explicitly revoked, `authenticated` execute intentional).
+Performance Advisor: only informational "unused index" notices.
