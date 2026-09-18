@@ -4,22 +4,40 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireMembership } from "@/lib/data/organization";
 import { correctMovementSchema } from "@/lib/validation/movement-correction";
-import { oppositeDirection, type Direction } from "@/lib/movements/correction";
 import type { FormState } from "@/lib/actions/form-state";
+
+const RPC_ERROR_MESSAGES: Record<string, string> = {
+  "movement not found or not accessible": "Movimento originale non trovato.",
+  "already been corrected": "Questo movimento è già stato corretto in precedenza.",
+  "correction reason of at least 3 characters": "Il motivo della correzione deve avere almeno 3 caratteri.",
+  "quantity must be a positive integer": "Inserisci una quantità intera positiva per il movimento corretto.",
+  "direction must be inbound or outbound": "Seleziona una direzione valida per il movimento corretto.",
+  "must belong to the same counterparty": "Il sito selezionato non appartiene alla controparte del movimento.",
+  "movement corrections must be created through": "Permessi insufficienti per correggere questo movimento.",
+  "row-level security policy": "Permessi insufficienti per correggere questo movimento.",
+};
+
+function mapCorrectionError(message: string): string {
+  for (const [needle, friendly] of Object.entries(RPC_ERROR_MESSAGES)) {
+    if (message.includes(needle)) return friendly;
+  }
+  return "Impossibile registrare la correzione.";
+}
 
 // The movement ledger is immutable (no UPDATE policy on pallet_movements),
 // so a wrong row can only be fixed by inserting new, linked rows: a
 // reversal that cancels it out, and -- unless the original should never
-// have existed at all -- a corrected replacement. Both new rows are plain
-// INSERTs covered by the existing operators_insert_movements policy; no
-// RPC is needed here because there is no shared counter to race on (unlike
-// recovery quantities), each correction only ever touches brand-new rows.
+// have existed at all -- a corrected replacement. Both inserts, the
+// original-row lock and the double-correction check now live in the
+// correct_pallet_movement() RPC so they run as one atomic transaction
+// instead of two independent Supabase calls from this action (see the
+// correct_pallet_movement_rpc migration for the threat model this closes).
 export async function correctMovementAction(
   originalMovementId: string,
   _prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const membership = await requireMembership();
+  await requireMembership();
   const parsed = correctMovementSchema.safeParse({
     reason: formData.get("reason"),
     reversalOnly: formData.get("reversalOnly") === "on",
@@ -35,67 +53,19 @@ export async function correctMovementAction(
   }
 
   const supabase = await createClient();
-  const { data: original, error: originalError } = await supabase
-    .from("pallet_movements")
-    .select("*")
-    .eq("organization_id", membership.organizationId)
-    .eq("id", originalMovementId)
-    .maybeSingle();
-
-  if (originalError || !original) {
-    return { error: "Movimento originale non trovato." };
-  }
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const reversalNote = `Storno del movimento del ${original.movement_date}. Motivo: ${parsed.data.reason}`;
-  const { error: reversalError } = await supabase.from("pallet_movements").insert({
-    organization_id: membership.organizationId,
-    counterparty_id: original.counterparty_id,
-    pallet_type_id: original.pallet_type_id,
-    site_id: original.site_id,
-    movement_date: new Date().toISOString().slice(0, 10),
-    direction: oppositeDirection(original.direction as Direction),
-    quantity: original.quantity,
-    document_type: original.document_type,
-    document_number: original.document_number,
-    voucher_number: original.voucher_number,
-    notes: reversalNote,
-    correction_of_movement_id: original.id,
-    correction_reason: parsed.data.reason,
-    created_by: user?.id ?? null,
+  const { error } = await supabase.rpc("correct_pallet_movement", {
+    p_movement_id: originalMovementId,
+    p_reason: parsed.data.reason,
+    p_reversal_only: parsed.data.reversalOnly,
+    p_movement_date: parsed.data.movementDate || undefined,
+    p_direction: parsed.data.direction || undefined,
+    p_quantity: parsed.data.quantity ?? undefined,
+    p_document_type: parsed.data.documentType || undefined,
+    p_document_number: parsed.data.documentNumber || undefined,
   });
 
-  if (reversalError) {
-    return { error: "Impossibile registrare lo storno." };
-  }
-
-  if (!parsed.data.reversalOnly) {
-    const { error: replacementError } = await supabase.from("pallet_movements").insert({
-      organization_id: membership.organizationId,
-      counterparty_id: original.counterparty_id,
-      pallet_type_id: original.pallet_type_id,
-      site_id: original.site_id,
-      movement_date: parsed.data.movementDate || original.movement_date,
-      direction: parsed.data.direction || (original.direction as Direction),
-      quantity: parsed.data.quantity ?? original.quantity,
-      document_type: parsed.data.documentType || original.document_type,
-      document_number: parsed.data.documentNumber || original.document_number,
-      voucher_number: original.voucher_number,
-      notes: `Sostituisce il movimento errato del ${original.movement_date}. Motivo: ${parsed.data.reason}`,
-      correction_of_movement_id: original.id,
-      correction_reason: parsed.data.reason,
-      created_by: user?.id ?? null,
-    });
-
-    if (replacementError) {
-      return {
-        error:
-          "Storno registrato ma la creazione del movimento corretto è fallita. Aggiungilo manualmente per completare la correzione.",
-      };
-    }
+  if (error) {
+    return { error: mapCorrectionError(error.message) };
   }
 
   revalidatePath("/movements");

@@ -190,6 +190,7 @@ export type Database = {
         Row: {
           correction_of_movement_id: string | null
           correction_reason: string | null
+          correction_type: string | null
           counterparty_id: string
           created_at: string
           created_by: string | null
@@ -209,6 +210,7 @@ export type Database = {
         Insert: {
           correction_of_movement_id?: string | null
           correction_reason?: string | null
+          correction_type?: string | null
           counterparty_id: string
           created_at?: string
           created_by?: string | null
@@ -228,6 +230,7 @@ export type Database = {
         Update: {
           correction_of_movement_id?: string | null
           correction_reason?: string | null
+          correction_type?: string | null
           counterparty_id?: string
           created_at?: string
           created_by?: string | null
@@ -738,6 +741,22 @@ export type Database = {
         Returns: {
           organization_id: string
           role: string
+        }[]
+      }
+      correct_pallet_movement: {
+        Args: {
+          p_direction?: string
+          p_document_number?: string
+          p_document_type?: string
+          p_movement_date?: string
+          p_movement_id: string
+          p_quantity?: number
+          p_reason: string
+          p_reversal_only?: boolean
+        }
+        Returns: {
+          replacement_id: string
+          reversal_id: string
         }[]
       }
       is_org_member: { Args: { p_organization_id: string }; Returns: boolean }
