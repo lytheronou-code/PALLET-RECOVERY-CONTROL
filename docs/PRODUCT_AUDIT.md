@@ -152,3 +152,28 @@ it a real foundation but no UI yet). None of these were dropped for lack
 of value — see `docs/CURRENT_STATE.md` for the itemized reasoning.
 
 Browser E2E and pilot data confirmation remain the gate before P2.
+
+## Premium V3 status update (2026-09-18)
+
+Two items from this audit are now delivered, on `claude/premium-v3-documents-portal`:
+
+- **P1 #2 Documents & photographic evidence** — delivered. Private
+  tenant-isolated Supabase Storage, DDT/voucher-scan/pickup-proof/
+  dispute-evidence/settlement-document/other types, linked to
+  counterparty/site/movement/voucher/recovery-case/recovery-event,
+  context-driven evidence panels (not a generic file manager). See
+  `docs/CURRENT_STATE.md` for the full breakdown and adversarial
+  verification.
+- **P2 "Read-only client portal"** — delivered ahead of the original P2
+  ordering, at the product owner's explicit request. Read-only V1: a
+  client can see their own counterparty's pallet exposure, vouchers,
+  recovery-case progress and shared evidence, and nothing else —
+  verified with cross-tenant/cross-client adversarial SQL, not just RLS
+  inspection. `client_case_responses` (a lightweight structured dispute
+  response) was explicitly left out of this pass per the spec's own
+  "if this adds too much scope, don't build it now" guidance.
+
+Still not built from the P1 list: **#3 Team management** (role UI beyond
+DB-level admin/operator/viewer, invites still blocked on SMTP), **#4
+Recovery planning/trips**, **#7 notification digests** (also blocked on
+SMTP). Reasoning unchanged from the prior P1 status update above.
