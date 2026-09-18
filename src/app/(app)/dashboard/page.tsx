@@ -177,10 +177,7 @@ export default async function DashboardPage() {
           </div>
           <div className="panel-body">
             <div className="recovery-gauge-wrap" style={{ marginBottom: 18 }}>
-              <div
-                className="recovery-gauge"
-                style={{ background: "conic-gradient(var(--accent) " + insights.recoveryRate + "%, #e8eef3 0)" }}
-              >
+              <div className="recovery-gauge">
                 <strong>{insights.recoveryRate}%</strong>
               </div>
               <div>
