@@ -54,6 +54,45 @@ function extensionOf(filename: string): string {
   return parts.length > 1 ? (parts.pop() ?? "").toLowerCase() : "";
 }
 
+// Magic-byte signatures: a renamed executable can freely claim any MIME
+// type AND any extension (both are just strings the uploader controls),
+// but it cannot fake the file's own leading bytes without also being a
+// genuinely valid file of that format. This is the one check in the
+// pipeline that inspects real file content rather than metadata about it.
+const MAGIC_BYTES_BY_MIME: Record<AllowedMimeType, (header: Uint8Array) => boolean> = {
+  "application/pdf": (header) => matchesSignature(header, [0x25, 0x50, 0x44, 0x46, 0x2d]), // %PDF-
+  "image/jpeg": (header) => matchesSignature(header, [0xff, 0xd8, 0xff]),
+  "image/png": (header) => matchesSignature(header, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+  "image/webp": (header) =>
+    matchesSignature(header, [0x52, 0x49, 0x46, 0x46]) && // "RIFF"
+    matchesSignature(header.subarray(8), [0x57, 0x45, 0x42, 0x50]), // "WEBP" at offset 8
+};
+
+// WEBP's signature spans bytes 8-11 (after the 4-byte RIFF chunk size),
+// so this is the minimum header length that lets every format above be
+// checked in one read.
+export const MAGIC_BYTES_HEADER_LENGTH = 12;
+
+function matchesSignature(header: Uint8Array, signature: number[]): boolean {
+  if (header.length < signature.length) return false;
+  return signature.every((byte, index) => header[index] === byte);
+}
+
+// Pure and synchronous so it's directly unit-testable with constructed
+// byte arrays, independent of how the header bytes were read.
+export function matchesFileSignature(header: Uint8Array, mimeType: string): boolean {
+  const check = MAGIC_BYTES_BY_MIME[mimeType as AllowedMimeType];
+  return check ? check(header) : false;
+}
+
+// Reads only the leading bytes needed for signature detection -- never
+// the full (up to 15MB) file -- via File.slice(), which does not load
+// the rest of the file into memory.
+export async function readFileHeader(file: File, length: number = MAGIC_BYTES_HEADER_LENGTH): Promise<Uint8Array> {
+  const buffer = await file.slice(0, length).arrayBuffer();
+  return new Uint8Array(buffer);
+}
+
 export type FileValidationResult = { valid: true } | { valid: false; error: string };
 
 // Server-side re-validation of a file already accepted by the browser

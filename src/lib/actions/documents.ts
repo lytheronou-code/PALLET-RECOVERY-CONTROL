@@ -4,7 +4,13 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireMembership } from "@/lib/data/organization";
 import { uploadDocumentSchema } from "@/lib/validation/document";
-import { buildDocumentStoragePath, validateDocumentFile, type DocumentEntity } from "@/lib/documents/storage-path";
+import {
+  buildDocumentStoragePath,
+  matchesFileSignature,
+  readFileHeader,
+  validateDocumentFile,
+  type DocumentEntity,
+} from "@/lib/documents/storage-path";
 import type { FormState } from "@/lib/actions/form-state";
 
 export type DocumentLinkContext = {
@@ -71,6 +77,16 @@ export async function uploadDocumentAction(
     return { error: validation.error };
   }
 
+  // Extension and declared MIME type are both just strings the uploader
+  // controls -- a renamed executable can make both agree with each
+  // other while being neither a PDF nor an image. Read only the leading
+  // bytes (never the full file) and check them against the format's
+  // real signature before ever touching Storage.
+  const header = await readFileHeader(file);
+  if (!matchesFileSignature(header, file.type)) {
+    return { error: "Il contenuto del file non corrisponde al formato dichiarato." };
+  }
+
   const storagePath = buildDocumentStoragePath({
     organizationId: membership.organizationId,
     counterpartyId: link.counterpartyId,
@@ -128,26 +144,39 @@ export async function uploadDocumentAction(
 // Soft-delete only: marks the document superseded rather than removing it,
 // preserving the file and its audit trail (see the documents_evidence_schema
 // migration -- there is intentionally no DELETE path for documents in V1).
+// Returns an explicit result rather than void: a failed RLS check or RPC
+// error must never look like success in the UI.
 export async function setDocumentStatusAction(
   documentId: string,
   status: "active" | "superseded",
   link: Pick<DocumentLinkContext, "counterpartyId" | "recoveryCaseId" | "voucherId" | "movementId">,
-): Promise<void> {
+): Promise<{ error?: string }> {
   await requireMembership();
   const supabase = await createClient();
-  await supabase.rpc("update_document_state", { p_document_id: documentId, p_new_status: status });
+  const { error } = await supabase.rpc("update_document_state", { p_document_id: documentId, p_new_status: status });
+  if (error) {
+    return { error: mapDocumentError(error.message) };
+  }
   revalidateDocumentViews(link);
+  return {};
 }
 
 export async function setDocumentVisibilityAction(
   documentId: string,
   visibility: "internal" | "client",
   link: Pick<DocumentLinkContext, "counterpartyId" | "recoveryCaseId" | "voucherId" | "movementId">,
-): Promise<void> {
+): Promise<{ error?: string }> {
   await requireMembership();
   const supabase = await createClient();
-  await supabase.rpc("update_document_state", { p_document_id: documentId, p_new_visibility: visibility });
+  const { error } = await supabase.rpc("update_document_state", {
+    p_document_id: documentId,
+    p_new_visibility: visibility,
+  });
+  if (error) {
+    return { error: mapDocumentError(error.message) };
+  }
   revalidateDocumentViews(link);
+  return {};
 }
 
 // Called directly from client components (see listSitesForCounterpartyAction

@@ -27,17 +27,32 @@ export function DocumentsSection({
   total: number;
 }) {
   const [state, formAction, pending] = useActionState(uploadDocumentAction.bind(null, link), emptyFormState);
-  const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [rowError, setRowError] = useState<string | null>(null);
   const revalidateLink: RevalidateLink = link;
 
   async function handleDownload(documentId: string) {
-    setDownloadError(null);
+    setRowError(null);
     const result = await getSignedDocumentUrlAction(documentId);
     if ("error" in result) {
-      setDownloadError(result.error);
+      setRowError(result.error);
       return;
     }
     window.open(result.url, "_blank", "noopener,noreferrer");
+  }
+
+  // Called directly (not via a plain <form action> fire-and-forget) so a
+  // failed RLS check or RPC error surfaces to the user instead of the
+  // button silently doing nothing.
+  async function handleSetVisibility(documentId: string, visibility: "internal" | "client") {
+    setRowError(null);
+    const result = await setDocumentVisibilityAction(documentId, visibility, revalidateLink);
+    if (result.error) setRowError(result.error);
+  }
+
+  async function handleSetStatus(documentId: string, status: "active" | "superseded") {
+    setRowError(null);
+    const result = await setDocumentStatusAction(documentId, status, revalidateLink);
+    if (result.error) setRowError(result.error);
   }
 
   return (
@@ -83,9 +98,9 @@ export function DocumentsSection({
           </button>
         </form>
 
-        {downloadError ? (
+        {rowError ? (
           <div className="form-error" style={{ marginTop: 12 }}>
-            {downloadError}
+            {rowError}
           </div>
         ) : null}
 
@@ -136,30 +151,21 @@ export function DocumentsSection({
                           <button type="button" className="btn btn-ghost btn-sm" onClick={() => handleDownload(doc.id)}>
                             Apri
                           </button>
-                          <form
-                            action={setDocumentVisibilityAction.bind(
-                              null,
-                              doc.id,
-                              doc.visibility === "client" ? "internal" : "client",
-                              revalidateLink,
-                            )}
+                          <button
+                            type="button"
+                            className="btn btn-ghost btn-sm"
+                            onClick={() => handleSetVisibility(doc.id, doc.visibility === "client" ? "internal" : "client")}
                           >
-                            <button type="submit" className="btn btn-ghost btn-sm">
-                              {doc.visibility === "client" ? "Rendi interno" : "Condividi"}
-                            </button>
-                          </form>
+                            {doc.visibility === "client" ? "Rendi interno" : "Condividi"}
+                          </button>
                           {doc.status === "active" ? (
-                            <form action={setDocumentStatusAction.bind(null, doc.id, "superseded", revalidateLink)}>
-                              <button type="submit" className="btn btn-ghost btn-sm">
-                                Segna superato
-                              </button>
-                            </form>
+                            <button type="button" className="btn btn-ghost btn-sm" onClick={() => handleSetStatus(doc.id, "superseded")}>
+                              Segna superato
+                            </button>
                           ) : (
-                            <form action={setDocumentStatusAction.bind(null, doc.id, "active", revalidateLink)}>
-                              <button type="submit" className="btn btn-ghost btn-sm">
-                                Riattiva
-                              </button>
-                            </form>
+                            <button type="button" className="btn btn-ghost btn-sm" onClick={() => handleSetStatus(doc.id, "active")}>
+                              Riattiva
+                            </button>
                           )}
                         </div>
                       </td>
