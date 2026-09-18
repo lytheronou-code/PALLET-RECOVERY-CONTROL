@@ -33,3 +33,19 @@ export const palletTypeSchema = z.object({
   description: z.string().trim().min(1, "Descrizione obbligatoria").max(200),
   unitValue: z.coerce.number().min(0, "Il valore non può essere negativo"),
 });
+
+export const siteSchema = z.object({
+  name: z.string().trim().min(1, "Nome obbligatorio").max(200),
+  code: z.string().trim().max(50).optional().or(z.literal("")),
+  counterpartyId: z.string().trim().uuid().optional().or(z.literal("")),
+  addressLine: z.string().trim().max(200).optional().or(z.literal("")),
+  postalCode: z.string().trim().max(20).optional().or(z.literal("")),
+  city: z.string().trim().max(100).optional().or(z.literal("")),
+  province: z.string().trim().max(50).optional().or(z.literal("")),
+  countryCode: z
+    .string()
+    .trim()
+    .length(2, "Usa il codice ISO a 2 lettere (es. IT)")
+    .toUpperCase()
+    .default("IT"),
+});

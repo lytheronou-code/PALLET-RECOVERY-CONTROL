@@ -1,6 +1,7 @@
 import { requireMembership } from "@/lib/data/organization";
 import { listCounterparties } from "@/lib/data/counterparties";
 import { listPalletTypes } from "@/lib/data/pallet-types";
+import { listActiveSitesForPicker } from "@/lib/data/sites";
 import { RecoveryCaseForm } from "@/components/recovery-case-form";
 
 export default async function NewRecoveryCasePage({
@@ -15,9 +16,10 @@ export default async function NewRecoveryCasePage({
 }) {
   const membership = await requireMembership();
   const params = await searchParams;
-  const [counterparties, palletTypes] = await Promise.all([
+  const [counterparties, palletTypes, sites] = await Promise.all([
     listCounterparties(membership.organizationId),
     listPalletTypes(membership.organizationId),
+    listActiveSitesForPicker(membership.organizationId),
   ]);
 
   return (
@@ -29,6 +31,7 @@ export default async function NewRecoveryCasePage({
         <RecoveryCaseForm
           counterparties={counterparties.map((c) => ({ id: c.id, legalName: c.legal_name }))}
           palletTypes={palletTypes.map((p) => ({ id: p.id, code: p.code }))}
+          sites={sites.map((s) => ({ id: s.id, name: s.name }))}
           defaults={{
             counterpartyId: params.counterpartyId,
             palletTypeId: params.palletTypeId,

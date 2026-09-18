@@ -36,6 +36,13 @@ export type CounterpartyMovementSummary = {
   documentNumber: string | null;
 };
 
+export type CounterpartySiteSummary = {
+  id: string;
+  name: string;
+  city: string | null;
+  active: boolean;
+};
+
 export type CounterpartyOverview = {
   counterparty: Counterparty;
   openExposure: number;
@@ -45,6 +52,7 @@ export type CounterpartyOverview = {
   cases: CounterpartyCaseSummary[];
   vouchers: CounterpartyVoucherSummary[];
   movements: CounterpartyMovementSummary[];
+  sites: CounterpartySiteSummary[];
 };
 
 const ACTIVE_CASE_STATUSES = ["open", "contacted", "scheduled", "partial", "disputed"];
@@ -117,7 +125,7 @@ export async function getCounterpartyOverview(
 ): Promise<CounterpartyOverview | null> {
   const supabase = await createClient();
 
-  const [counterpartyResult, casesResult, vouchersResult, movementsResult] = await Promise.all([
+  const [counterpartyResult, casesResult, vouchersResult, movementsResult, sitesResult] = await Promise.all([
     supabase
       .from("counterparties")
       .select("*")
@@ -143,6 +151,12 @@ export async function getCounterpartyOverview(
       .eq("counterparty_id", id)
       .order("movement_date", { ascending: false })
       .limit(12),
+    supabase
+      .from("sites")
+      .select("id, name, city, active")
+      .eq("organization_id", organizationId)
+      .eq("counterparty_id", id)
+      .order("name", { ascending: true }),
   ]);
 
   if (counterpartyResult.error || !counterpartyResult.data) return null;
@@ -211,6 +225,12 @@ export async function getCounterpartyOverview(
       quantity: item.quantity,
       palletTypeCode: item.pallet_types?.code ?? "—",
       documentNumber: item.document_number,
+    })),
+    sites: (sitesResult.data ?? []).map((item) => ({
+      id: item.id,
+      name: item.name,
+      city: item.city,
+      active: item.active,
     })),
   };
 }

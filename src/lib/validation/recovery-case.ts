@@ -6,6 +6,7 @@ export const createRecoveryCaseSchema = z.object({
   counterpartyId: z.string().uuid("Seleziona una controparte"),
   palletTypeId: z.string().uuid("Seleziona un tipo pallet"),
   voucherId: z.string().uuid().optional().or(z.literal("")),
+  siteId: z.string().uuid().optional().or(z.literal("")),
   quantityClaimed: z.coerce.number().int().positive("La quantità deve essere un intero positivo"),
   dueDate: z.string().optional().or(z.literal("")),
   priority: z.enum(PRIORITIES),

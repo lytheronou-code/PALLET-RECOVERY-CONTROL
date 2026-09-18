@@ -15,10 +15,12 @@ const PRIORITY_LABELS: Record<(typeof PRIORITIES)[number], string> = {
 export function RecoveryCaseForm({
   counterparties,
   palletTypes,
+  sites,
   defaults,
 }: {
   counterparties: { id: string; legalName: string }[];
   palletTypes: { id: string; code: string }[];
+  sites: { id: string; name: string }[];
   defaults?: {
     counterpartyId?: string;
     palletTypeId?: string;
@@ -61,6 +63,20 @@ export function RecoveryCaseForm({
           ))}
         </select>
       </div>
+
+      {sites.length > 0 ? (
+        <div className="field">
+          <label htmlFor="siteId">Sito</label>
+          <select id="siteId" name="siteId" defaultValue="">
+            <option value="">Nessuno</option>
+            {sites.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      ) : null}
 
       <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <div className="field">

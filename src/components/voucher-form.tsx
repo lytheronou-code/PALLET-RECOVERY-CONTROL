@@ -4,15 +4,18 @@ import { useActionState } from "react";
 import { emptyFormState, type FormState } from "@/lib/actions/form-state";
 import type { Counterparty } from "@/lib/data/counterparties";
 import type { PalletType } from "@/lib/data/pallet-types";
+import type { Site } from "@/lib/data/sites";
 
 export function VoucherForm({
   action,
   counterparties,
   palletTypes,
+  sites,
 }: {
   action: (prevState: FormState, formData: FormData) => Promise<FormState>;
   counterparties: Counterparty[];
   palletTypes: PalletType[];
+  sites?: Site[];
 }) {
   const [state, formAction, pending] = useActionState(action, emptyFormState);
   const today = new Date().toISOString().slice(0, 10);
@@ -42,6 +45,18 @@ export function VoucherForm({
           </select>
         </div>
       </div>
+
+      {sites && sites.length > 0 ? (
+        <div className="field">
+          <label htmlFor="siteId">Sito</label>
+          <select id="siteId" name="siteId" defaultValue="">
+            <option value="">Nessuno</option>
+            {sites.map((s) => (
+              <option value={s.id} key={s.id}>{s.name}</option>
+            ))}
+          </select>
+        </div>
+      ) : null}
 
       <div className="field">
         <label htmlFor="voucherNumber">Numero buono / riferimento</label>

@@ -24,6 +24,7 @@ export async function createVoucherAction(
   const parsed = voucherSchema.safeParse({
     counterpartyId: formData.get("counterpartyId"),
     palletTypeId: formData.get("palletTypeId"),
+    siteId: formData.get("siteId"),
     voucherNumber: formData.get("voucherNumber"),
     issueDate: formData.get("issueDate"),
     recoveryDueDate: formData.get("recoveryDueDate"),
@@ -58,6 +59,7 @@ export async function createVoucherAction(
     organization_id: membership.organizationId,
     counterparty_id: parsed.data.counterpartyId,
     pallet_type_id: parsed.data.palletTypeId,
+    site_id: parsed.data.siteId || null,
     voucher_number: parsed.data.voucherNumber,
     issue_date: parsed.data.issueDate,
     recovery_due_date: parsed.data.recoveryDueDate || null,
