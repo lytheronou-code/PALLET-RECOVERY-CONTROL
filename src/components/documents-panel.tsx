@@ -1,27 +1,9 @@
 import { requireMembership } from "@/lib/data/organization";
 import { listDocumentsForEntity } from "@/lib/data/documents";
 import { DocumentsSection, type DocumentsSectionLabels } from "@/components/documents-section";
-import { DOCUMENT_TYPES } from "@/lib/validation/document";
+import { DOCUMENT_TYPES, documentTypeLabel } from "@/lib/validation/document";
 import type { DocumentLinkContext } from "@/lib/actions/documents";
 import { getPageContext } from "@/i18n/server";
-import type { Translator } from "@/i18n/translator";
-
-// Maps each DB document_type enum value (src/lib/validation/document.ts) to
-// its dictionary key -- never a locale-branched literal, per the DB
-// enum -> dictionary -> t() pattern used across this app (see
-// src/components/status-badge.tsx for the same intent on case/voucher
-// status).
-const DOCUMENT_TYPE_LABEL_KEYS = {
-  ddt: "documents.types.ddt",
-  voucher: "documents.types.voucher",
-  voucher_scan: "documents.types.voucherScan",
-  pickup_proof: "documents.types.pickupProof",
-  delivery_proof: "documents.types.deliveryProof",
-  pallet_photo: "documents.types.palletPhoto",
-  dispute_evidence: "documents.types.disputeEvidence",
-  settlement_document: "documents.types.settlementDocument",
-  other: "documents.types.other",
-} as const satisfies Record<(typeof DOCUMENT_TYPES)[number], Parameters<Translator>[0]>;
 
 // A case/voucher/movement's own evidence set is realistically small (a
 // handful to a few dozen files), so a single bounded page (no interactive
@@ -48,7 +30,7 @@ export async function DocumentsPanel({
   const result = await listDocumentsForEntity(membership.organizationId, entityLink, { page: 1 });
 
   const documentTypeLabels = Object.fromEntries(
-    DOCUMENT_TYPES.map((type) => [type, t(DOCUMENT_TYPE_LABEL_KEYS[type])]),
+    DOCUMENT_TYPES.map((type) => [type, documentTypeLabel(t, type)]),
   ) as DocumentsSectionLabels["documentTypeLabels"];
 
   const labels: DocumentsSectionLabels = {
