@@ -779,3 +779,22 @@ never `organization_members`/`client_portal_memberships`).
 - Stripe/plans/billing, custom domain provisioning, full internal-app
   white-labeling: all explicitly out of scope per the task.
 Performance Advisor: only informational "unused index" notices.
+
+## Premium V5 — team management role UI (2026-09-19)
+
+See `docs/PRODUCT_AUDIT.md`'s "Premium V5 status update" for the full
+writeup. Short version: Settings > Team is a real UI now (list members,
+admin adds an existing account by email with a chosen role, admin
+changes another member's role or removes them), backed by three new
+admin-gated RPCs (`admin_add_organization_member`,
+`admin_update_organization_member_role`,
+`admin_remove_organization_member`) since `organization_members` has no
+client-facing write RLS policy by design. A caller can never target
+their own membership, which also rules out a "last admin" edge case.
+Adversarial QA (12 scenarios) caught and fixed one real bug pre-ship: an
+ambiguous `id` reference in the role-change RPC's `UPDATE` statement,
+caused by its own `RETURNS TABLE (id uuid, ...)` shadowing the column
+name. 237/237 tests passing (7 new), typecheck/lint/i18n:check/build/
+audit clean, Security/Performance advisors show no new findings beyond
+the expected new `SECURITY DEFINER`-callable-by-`authenticated` entries
+for the three new RPCs.

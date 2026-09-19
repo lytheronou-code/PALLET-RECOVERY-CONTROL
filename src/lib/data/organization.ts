@@ -14,6 +14,15 @@ export type OrganizationMemberOption = {
   name: string;
 };
 
+export type OrganizationMemberWithRole = {
+  id: string;
+  userId: string;
+  email: string;
+  displayName: string | null;
+  role: string;
+  createdAt: string;
+};
+
 // RLS scopes organization_members to `user_id = auth.uid()`, so this only ever
 // returns the calling user's own memberships regardless of the id/name join.
 export async function getCurrentMemberships(): Promise<CurrentMembership[]> {
@@ -54,6 +63,41 @@ export async function listOrganizationMembers(organizationId: string): Promise<O
       name: row.profiles?.display_name || row.profiles?.email || "Utente",
     }),
   );
+}
+
+// Richer sibling of listOrganizationMembers() above, for the Settings >
+// Team tab: includes the membership id (needed to target a specific row
+// for a role-change/removal RPC call) and role, which the assignee-picker
+// callers of the plain version don't need. Kept as a separate function
+// rather than widening the existing one's return shape, so the two
+// existing assignee-picker call sites (recovery-cases pages) are
+// untouched.
+export async function listOrganizationMembersWithRoles(organizationId: string): Promise<OrganizationMemberWithRole[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("organization_members")
+    .select("id, user_id, role, created_at, profiles(email, display_name)")
+    .eq("organization_id", organizationId)
+    .order("created_at", { ascending: true });
+
+  if (error || !data) return [];
+
+  return (
+    data as unknown as Array<{
+      id: string;
+      user_id: string;
+      role: string;
+      created_at: string;
+      profiles: { email: string; display_name: string | null } | null;
+    }>
+  ).map((row) => ({
+    id: row.id,
+    userId: row.user_id,
+    email: row.profiles?.email ?? "",
+    displayName: row.profiles?.display_name ?? null,
+    role: row.role,
+    createdAt: row.created_at,
+  }));
 }
 
 export async function getPrimaryMembership(): Promise<CurrentMembership | null> {
