@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { emptyFormState, type FormState } from "@/lib/actions/form-state";
 import { COUNTERPARTY_TYPES } from "@/lib/validation/master-data";
 import type { Counterparty } from "@/lib/data/counterparties";
+import { CountrySelect } from "@/components/country-select";
 
 const TYPE_LABELS: Record<(typeof COUNTERPARTY_TYPES)[number], string> = {
   customer: "Cliente",
@@ -27,12 +28,18 @@ export function CounterpartyForm({
     <form action={formAction}>
       {state.error ? <div className="form-error">{state.error}</div> : null}
 
-      <div className="field">
-        <label htmlFor="legalName">Ragione sociale</label>
-        <input id="legalName" name="legalName" type="text" defaultValue={counterparty?.legal_name} required />
+      <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div className="field">
+          <label htmlFor="legalName">Ragione sociale</label>
+          <input id="legalName" name="legalName" type="text" defaultValue={counterparty?.legal_name} required />
+        </div>
+        <div className="field">
+          <label htmlFor="tradingName">Nome commerciale</label>
+          <input id="tradingName" name="tradingName" type="text" defaultValue={counterparty?.trading_name ?? ""} />
+        </div>
       </div>
 
-      <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+      <div className="grid" style={{ gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 12 }}>
         <div className="field">
           <label htmlFor="code">Codice</label>
           <input id="code" name="code" type="text" defaultValue={counterparty?.code ?? ""} />
@@ -40,6 +47,19 @@ export function CounterpartyForm({
         <div className="field">
           <label htmlFor="vatNumber">P.IVA</label>
           <input id="vatNumber" name="vatNumber" type="text" defaultValue={counterparty?.vat_number ?? ""} />
+        </div>
+        <div className="field">
+          <label htmlFor="taxId">Codice fiscale</label>
+          <input id="taxId" name="taxId" type="text" defaultValue={counterparty?.tax_id ?? ""} />
+        </div>
+        <div className="field">
+          <label htmlFor="registrationNumber">N. registrazione</label>
+          <input
+            id="registrationNumber"
+            name="registrationNumber"
+            type="text"
+            defaultValue={counterparty?.registration_number ?? ""}
+          />
         </div>
       </div>
 
@@ -58,9 +78,15 @@ export function CounterpartyForm({
         </select>
       </div>
 
-      <div className="field">
-        <label htmlFor="addressLine">Indirizzo</label>
-        <input id="addressLine" name="addressLine" type="text" defaultValue={counterparty?.address_line ?? ""} />
+      <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div className="field">
+          <label htmlFor="addressLine">Indirizzo</label>
+          <input id="addressLine" name="addressLine" type="text" defaultValue={counterparty?.address_line ?? ""} />
+        </div>
+        <div className="field">
+          <label htmlFor="addressLine2">Indirizzo (riga 2)</label>
+          <input id="addressLine2" name="addressLine2" type="text" defaultValue={counterparty?.address_line_2 ?? ""} />
+        </div>
       </div>
 
       <div className="grid" style={{ gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
@@ -73,7 +99,7 @@ export function CounterpartyForm({
           <input id="city" name="city" type="text" defaultValue={counterparty?.city ?? ""} />
         </div>
         <div className="field">
-          <label htmlFor="province">Provincia</label>
+          <label htmlFor="province">Provincia / regione</label>
           <input id="province" name="province" type="text" defaultValue={counterparty?.province ?? ""} />
         </div>
       </div>
@@ -89,15 +115,9 @@ export function CounterpartyForm({
         </div>
       </div>
 
-      <div className="field" style={{ maxWidth: 120 }}>
+      <div className="field" style={{ maxWidth: 260 }}>
         <label htmlFor="countryCode">Paese</label>
-        <input
-          id="countryCode"
-          name="countryCode"
-          type="text"
-          maxLength={2}
-          defaultValue={counterparty?.country_code ?? "IT"}
-        />
+        <CountrySelect id="countryCode" name="countryCode" defaultValue={counterparty?.country_code} />
       </div>
 
       <button type="submit" className="btn btn-primary" disabled={pending} style={{ width: "auto" }}>

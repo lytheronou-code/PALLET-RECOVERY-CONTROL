@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { emptyFormState, type FormState } from "@/lib/actions/form-state";
 import type { Site } from "@/lib/data/sites";
 import type { Counterparty } from "@/lib/data/counterparties";
+import { CountrySelect } from "@/components/country-select";
 
 export function SiteForm({
   action,
@@ -49,9 +50,15 @@ export function SiteForm({
         </select>
       </div>
 
-      <div className="field">
-        <label htmlFor="addressLine">Indirizzo</label>
-        <input id="addressLine" name="addressLine" type="text" defaultValue={site?.address_line ?? ""} />
+      <div className="form-grid-2">
+        <div className="field">
+          <label htmlFor="addressLine">Indirizzo</label>
+          <input id="addressLine" name="addressLine" type="text" defaultValue={site?.address_line ?? ""} />
+        </div>
+        <div className="field">
+          <label htmlFor="addressLine2">Indirizzo (riga 2)</label>
+          <input id="addressLine2" name="addressLine2" type="text" defaultValue={site?.address_line_2 ?? ""} />
+        </div>
       </div>
 
       <div className="form-grid-3">
@@ -64,20 +71,14 @@ export function SiteForm({
           <input id="city" name="city" type="text" defaultValue={site?.city ?? ""} />
         </div>
         <div className="field">
-          <label htmlFor="province">Provincia</label>
+          <label htmlFor="province">Provincia / regione</label>
           <input id="province" name="province" type="text" defaultValue={site?.province ?? ""} />
         </div>
       </div>
 
-      <div className="field" style={{ maxWidth: 120 }}>
+      <div className="field" style={{ maxWidth: 260 }}>
         <label htmlFor="countryCode">Paese</label>
-        <input
-          id="countryCode"
-          name="countryCode"
-          type="text"
-          maxLength={2}
-          defaultValue={site?.country_code ?? "IT"}
-        />
+        <CountrySelect id="countryCode" name="countryCode" defaultValue={site?.country_code} />
       </div>
 
       <button type="submit" className="btn btn-primary" disabled={pending}>

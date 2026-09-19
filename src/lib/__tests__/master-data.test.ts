@@ -41,6 +41,43 @@ describe("counterpartySchema", () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it("accepts a real non-Italian ISO country code", () => {
+    const result = counterpartySchema.safeParse({
+      legalName: "Acme Logistics Ltd",
+      counterpartyType: "customer",
+      countryCode: "GB",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.countryCode).toBe("GB");
+    }
+  });
+
+  it("rejects a well-formed but unrecognized country code", () => {
+    const result = counterpartySchema.safeParse({
+      legalName: "Acme Logistics",
+      counterpartyType: "customer",
+      countryCode: "ZZ",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts the new optional international fields without requiring VAT", () => {
+    const result = counterpartySchema.safeParse({
+      legalName: "ABC Pallet Customer",
+      counterpartyType: "customer",
+      countryCode: "US",
+      tradingName: "ABC Co",
+      taxId: "12-3456789",
+      registrationNumber: "US-REG-1",
+      addressLine2: "Suite 400",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.vatNumber).toBeUndefined();
+    }
+  });
 });
 
 describe("palletTypeSchema", () => {

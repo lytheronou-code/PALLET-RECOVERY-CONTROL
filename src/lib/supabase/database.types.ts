@@ -70,6 +70,7 @@ export type Database = {
         Row: {
           active: boolean
           address_line: string | null
+          address_line_2: string | null
           city: string | null
           code: string | null
           counterparty_type: string
@@ -82,11 +83,15 @@ export type Database = {
           phone: string | null
           postal_code: string | null
           province: string | null
+          registration_number: string | null
+          tax_id: string | null
+          trading_name: string | null
           vat_number: string | null
         }
         Insert: {
           active?: boolean
           address_line?: string | null
+          address_line_2?: string | null
           city?: string | null
           code?: string | null
           counterparty_type?: string
@@ -99,11 +104,15 @@ export type Database = {
           phone?: string | null
           postal_code?: string | null
           province?: string | null
+          registration_number?: string | null
+          tax_id?: string | null
+          trading_name?: string | null
           vat_number?: string | null
         }
         Update: {
           active?: boolean
           address_line?: string | null
+          address_line_2?: string | null
           city?: string | null
           code?: string | null
           counterparty_type?: string
@@ -116,6 +125,9 @@ export type Database = {
           phone?: string | null
           postal_code?: string | null
           province?: string | null
+          registration_number?: string | null
+          tax_id?: string | null
+          trading_name?: string | null
           vat_number?: string | null
         }
         Relationships: [
@@ -397,31 +409,73 @@ export type Database = {
       }
       organizations: {
         Row: {
+          address_line_1: string | null
+          address_line_2: string | null
+          city: string | null
+          country_code: string | null
           created_at: string
           default_currency: string
           default_locale: string
           id: string
+          legal_name: string | null
           name: string
+          postal_code: string | null
+          region: string | null
+          registration_number: string | null
           slug: string
+          support_email: string | null
+          support_phone: string | null
+          tax_id: string | null
           timezone: string
+          trading_name: string | null
+          vat_id: string | null
+          website: string | null
         }
         Insert: {
+          address_line_1?: string | null
+          address_line_2?: string | null
+          city?: string | null
+          country_code?: string | null
           created_at?: string
           default_currency?: string
           default_locale?: string
           id?: string
+          legal_name?: string | null
           name: string
+          postal_code?: string | null
+          region?: string | null
+          registration_number?: string | null
           slug: string
+          support_email?: string | null
+          support_phone?: string | null
+          tax_id?: string | null
           timezone?: string
+          trading_name?: string | null
+          vat_id?: string | null
+          website?: string | null
         }
         Update: {
+          address_line_1?: string | null
+          address_line_2?: string | null
+          city?: string | null
+          country_code?: string | null
           created_at?: string
           default_currency?: string
           default_locale?: string
           id?: string
+          legal_name?: string | null
           name?: string
+          postal_code?: string | null
+          region?: string | null
+          registration_number?: string | null
           slug?: string
+          support_email?: string | null
+          support_phone?: string | null
+          tax_id?: string | null
           timezone?: string
+          trading_name?: string | null
+          vat_id?: string | null
+          website?: string | null
         }
         Relationships: []
       }
@@ -809,6 +863,7 @@ export type Database = {
         Row: {
           active: boolean
           address_line: string | null
+          address_line_2: string | null
           city: string | null
           code: string | null
           counterparty_id: string | null
@@ -823,6 +878,7 @@ export type Database = {
         Insert: {
           active?: boolean
           address_line?: string | null
+          address_line_2?: string | null
           city?: string | null
           code?: string | null
           counterparty_id?: string | null
@@ -837,6 +893,7 @@ export type Database = {
         Update: {
           active?: boolean
           address_line?: string | null
+          address_line_2?: string | null
           city?: string | null
           code?: string | null
           counterparty_id?: string | null

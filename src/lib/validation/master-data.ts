@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isSupportedCountry } from "@/lib/countries";
 
 export const COUNTERPARTY_TYPES = [
   "customer",
@@ -11,10 +12,14 @@ export const COUNTERPARTY_TYPES = [
 
 export const counterpartySchema = z.object({
   legalName: z.string().trim().min(1, "Ragione sociale obbligatoria").max(200),
+  tradingName: z.string().trim().max(200).optional().or(z.literal("")),
   code: z.string().trim().max(50).optional().or(z.literal("")),
   vatNumber: z.string().trim().max(30).optional().or(z.literal("")),
+  taxId: z.string().trim().max(50).optional().or(z.literal("")),
+  registrationNumber: z.string().trim().max(50).optional().or(z.literal("")),
   counterpartyType: z.enum(COUNTERPARTY_TYPES),
   addressLine: z.string().trim().max(200).optional().or(z.literal("")),
+  addressLine2: z.string().trim().max(200).optional().or(z.literal("")),
   postalCode: z.string().trim().max(20).optional().or(z.literal("")),
   city: z.string().trim().max(100).optional().or(z.literal("")),
   province: z.string().trim().max(50).optional().or(z.literal("")),
@@ -23,7 +28,8 @@ export const counterpartySchema = z.object({
     .trim()
     .length(2, "Usa il codice ISO a 2 lettere (es. IT)")
     .toUpperCase()
-    .default("IT"),
+    .default("IT")
+    .refine(isSupportedCountry, "Paese non riconosciuto"),
   email: z.string().trim().email("Email non valida").optional().or(z.literal("")),
   phone: z.string().trim().max(30).optional().or(z.literal("")),
 });
@@ -39,6 +45,7 @@ export const siteSchema = z.object({
   code: z.string().trim().max(50).optional().or(z.literal("")),
   counterpartyId: z.string().trim().uuid().optional().or(z.literal("")),
   addressLine: z.string().trim().max(200).optional().or(z.literal("")),
+  addressLine2: z.string().trim().max(200).optional().or(z.literal("")),
   postalCode: z.string().trim().max(20).optional().or(z.literal("")),
   city: z.string().trim().max(100).optional().or(z.literal("")),
   province: z.string().trim().max(50).optional().or(z.literal("")),
@@ -47,5 +54,6 @@ export const siteSchema = z.object({
     .trim()
     .length(2, "Usa il codice ISO a 2 lettere (es. IT)")
     .toUpperCase()
-    .default("IT"),
+    .default("IT")
+    .refine(isSupportedCountry, "Paese non riconosciuto"),
 });
