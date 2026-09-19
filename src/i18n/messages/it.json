@@ -472,10 +472,117 @@
   },
   "recoveryCases": {
     "title": "Pratiche di recupero",
-    "new": "Nuova pratica"
+    "new": "Nuova pratica",
+    "eyebrow": "Operazioni di recupero",
+    "subtitle": "Coda operativa, priorità, scadenze e valore economico da recuperare.",
+    "searchPlaceholder": "Cerca per riferimento…",
+    "filters": {
+      "open": "Operative",
+      "recovered": "Recuperate",
+      "closed": "Chiuse",
+      "all": "Tutte"
+    },
+    "myQueue": "La mia coda",
+    "kpis": {
+      "casesThisPage": "Pratiche in questa pagina",
+      "totalFiltered": "{total} totali · {filter}",
+      "exposure": "Esposizione",
+      "outstandingThisPage": "{count} pallet residui, questa pagina",
+      "overdue": "Scadute",
+      "overdueThisPage": "nella pagina corrente"
+    },
+    "table": {
+      "case": "Pratica",
+      "counterparty": "Controparte",
+      "pallet": "Pallet",
+      "outstanding": "Residuo",
+      "exposure": "Esposizione",
+      "dueDate": "Scadenza",
+      "priority": "Priorità",
+      "status": "Stato",
+      "assignee": "Assegnata a"
+    },
+    "recoveredOfClaimed": "{recovered} / {claimed} recuperati",
+    "empty": "Nessuna pratica in questa vista.",
+    "unassigned": "Non assegnata",
+    "newPageTitle": "Nuova pratica di recupero",
+    "detail": {
+      "eyebrow": "Pratica di recupero",
+      "kpis": {
+        "claimed": "Richiesto",
+        "recovered": "Recuperato",
+        "completed": "{percent}% completato",
+        "outstanding": "Residuo",
+        "palletsToClose": "pallet da chiudere",
+        "exposure": "Esposizione",
+        "estimatedOutstandingValue": "valore residuo stimato"
+      },
+      "dossier": {
+        "title": "Dossier pratica",
+        "subtitle": "Informazioni che governano il recupero.",
+        "openedDate": "Data apertura",
+        "dueDate": "Scadenza",
+        "site": "Sito",
+        "unitValue": "Valore unitario",
+        "linkedVoucher": "Buono collegato",
+        "openVoucher": "Apri buono",
+        "assignee": "Assegnata a",
+        "notes": "Note"
+      },
+      "activity": {
+        "title": "Registra attività",
+        "subtitle": "Ogni evento aggiorna timeline e stato."
+      },
+      "timeline": {
+        "title": "Timeline operativa",
+        "subtitleCount": "{count} eventi registrati",
+        "empty": "Nessun evento registrato.",
+        "table": {
+          "date": "Data",
+          "event": "Evento",
+          "quantity": "Quantità",
+          "notes": "Note"
+        }
+      }
+    },
+    "form": {
+      "counterparty": "Controparte",
+      "selectPlaceholder": "— seleziona —",
+      "palletType": "Tipo pallet",
+      "site": "Sito",
+      "noSite": "Nessuno",
+      "noSitesForCounterparty": "Nessun sito registrato per questa controparte.",
+      "quantityClaimed": "Quantità richiesta",
+      "dueDate": "Scadenza",
+      "priority": "Priorità",
+      "notes": "Note",
+      "creating": "Creazione…",
+      "create": "Crea pratica"
+    },
+    "eventForm": {
+      "closedCaseNotice": "Questa pratica è chiusa; puoi comunque aggiungere una nota.",
+      "eventType": "Evento",
+      "quantityRemaining": "Quantità (residuo: {remaining})",
+      "recoveredTotalPreview": "Nuovo totale recuperato: {recovered}/{claimed} → stato: {status}",
+      "notes": "Note",
+      "saving": "Salvataggio…",
+      "addEvent": "Aggiungi evento"
+    }
   },
   "recoveryEvents": {
-    "title": "Eventi"
+    "title": "Eventi",
+    "types": {
+      "created": "Pratica creata",
+      "contact_attempt": "Contatto effettuato",
+      "response": "Risposta ricevuta",
+      "scheduled": "Recupero programmato",
+      "pickup": "Ritiro effettuato",
+      "partial_recovery": "Recupero parziale",
+      "full_recovery": "Recupero completo",
+      "dispute": "Contestazione",
+      "note": "Nota",
+      "closed": "Chiusura (non recuperato)"
+    }
   },
   "documents": {
     "title": "Documenti",

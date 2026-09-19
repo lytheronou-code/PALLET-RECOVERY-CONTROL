@@ -472,10 +472,117 @@
   },
   "recoveryCases": {
     "title": "Recovery cases",
-    "new": "New case"
+    "new": "New case",
+    "eyebrow": "Recovery operations",
+    "subtitle": "Operational queue, priority, due dates and economic value to recover.",
+    "searchPlaceholder": "Search by reference…",
+    "filters": {
+      "open": "Open",
+      "recovered": "Recovered",
+      "closed": "Closed",
+      "all": "All"
+    },
+    "myQueue": "My queue",
+    "kpis": {
+      "casesThisPage": "Cases on this page",
+      "totalFiltered": "{total} total · {filter}",
+      "exposure": "Exposure",
+      "outstandingThisPage": "{count} pallet outstanding, this page",
+      "overdue": "Overdue",
+      "overdueThisPage": "in the current page"
+    },
+    "table": {
+      "case": "Case",
+      "counterparty": "Counterparty",
+      "pallet": "Pallet",
+      "outstanding": "Outstanding",
+      "exposure": "Exposure",
+      "dueDate": "Due date",
+      "priority": "Priority",
+      "status": "Status",
+      "assignee": "Assignee"
+    },
+    "recoveredOfClaimed": "{recovered} / {claimed} recovered",
+    "empty": "No cases in this view.",
+    "unassigned": "Unassigned",
+    "newPageTitle": "New recovery case",
+    "detail": {
+      "eyebrow": "Recovery case",
+      "kpis": {
+        "claimed": "Claimed",
+        "recovered": "Recovered",
+        "completed": "{percent}% completed",
+        "outstanding": "Outstanding",
+        "palletsToClose": "pallet to close",
+        "exposure": "Exposure",
+        "estimatedOutstandingValue": "estimated outstanding value"
+      },
+      "dossier": {
+        "title": "Case dossier",
+        "subtitle": "Information governing the recovery.",
+        "openedDate": "Opened on",
+        "dueDate": "Due date",
+        "site": "Site",
+        "unitValue": "Unit value",
+        "linkedVoucher": "Linked voucher",
+        "openVoucher": "Open voucher",
+        "assignee": "Assignee",
+        "notes": "Notes"
+      },
+      "activity": {
+        "title": "Log activity",
+        "subtitle": "Each event updates the timeline and status."
+      },
+      "timeline": {
+        "title": "Operational timeline",
+        "subtitleCount": "{count} events recorded",
+        "empty": "No events recorded.",
+        "table": {
+          "date": "Date",
+          "event": "Event",
+          "quantity": "Quantity",
+          "notes": "Notes"
+        }
+      }
+    },
+    "form": {
+      "counterparty": "Counterparty",
+      "selectPlaceholder": "— select —",
+      "palletType": "Pallet type",
+      "site": "Site",
+      "noSite": "None",
+      "noSitesForCounterparty": "No sites registered for this counterparty.",
+      "quantityClaimed": "Quantity claimed",
+      "dueDate": "Due date",
+      "priority": "Priority",
+      "notes": "Notes",
+      "creating": "Creating…",
+      "create": "Create case"
+    },
+    "eventForm": {
+      "closedCaseNotice": "This case is closed; you can still add a note.",
+      "eventType": "Event",
+      "quantityRemaining": "Quantity (remaining: {remaining})",
+      "recoveredTotalPreview": "New total recovered: {recovered}/{claimed} → status: {status}",
+      "notes": "Notes",
+      "saving": "Saving…",
+      "addEvent": "Add event"
+    }
   },
   "recoveryEvents": {
-    "title": "Events"
+    "title": "Events",
+    "types": {
+      "created": "Case created",
+      "contact_attempt": "Contact attempt",
+      "response": "Response received",
+      "scheduled": "Recovery scheduled",
+      "pickup": "Pickup completed",
+      "partial_recovery": "Partial recovery",
+      "full_recovery": "Full recovery",
+      "dispute": "Dispute",
+      "note": "Note",
+      "closed": "Closed (unrecovered)"
+    }
   },
   "documents": {
     "title": "Documents",
