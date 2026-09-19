@@ -1268,15 +1268,6 @@
       }
     }
   },
-  "clientPortalAccess": {
-    "errors": {
-      "noAccountFound": "No account found with this email. The customer must sign up first.",
-      "adminOnly": "Only an organization admin can manage client portal access.",
-      "alreadyActiveElsewhere": "This account already has active portal access to another counterparty.",
-      "grantFailed": "Portal access could not be granted.",
-      "granted": "Portal access granted."
-    }
-  },
   "workspaceSelector": {
     "title": "Choose a workspace",
     "description": "Your account has access to more than one workspace.",
@@ -1292,6 +1283,40 @@
       "title": "Something went wrong",
       "description": "An unexpected error occurred. Please try again.",
       "retry": "Try again"
+    }
+  },
+  "clientPortalAccess": {
+    "errors": {
+      "noAccountFound": "No account found with this email. The customer must sign up first.",
+      "adminOnly": "Only an organization admin can manage client portal access.",
+      "alreadyActiveElsewhere": "This account already has active portal access to another counterparty.",
+      "grantFailed": "Portal access could not be granted.",
+      "granted": "Portal access granted."
+    },
+    "title": "Client portal",
+    "subtitle": "Users authorized to view this counterparty's data in read-only mode.",
+    "grantForm": {
+      "emailLabel": "Client email",
+      "emailPlaceholder": "client@company.com",
+      "granting": "Granting…",
+      "grantButton": "Grant access",
+      "adminHint": "The client must already have an account (signed up at /signup) with this email. An account can have active access to only one counterparty at a time."
+    },
+    "readOnlyHint": "Only an administrator can grant or revoke client portal access. Below is the current status, read-only.",
+    "empty": "No portal users for this counterparty yet.",
+    "table": {
+      "email": "Email",
+      "name": "Name",
+      "grantedOn": "Granted on",
+      "status": "Status"
+    },
+    "status": {
+      "active": "Active",
+      "disabled": "Disabled"
+    },
+    "actions": {
+      "deactivate": "Deactivate",
+      "reactivate": "Reactivate"
     }
   }
 }

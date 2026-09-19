@@ -1268,15 +1268,6 @@
       }
     }
   },
-  "clientPortalAccess": {
-    "errors": {
-      "noAccountFound": "Nessun account trovato con questa email. Il cliente deve prima registrarsi.",
-      "adminOnly": "Solo un amministratore può gestire l'accesso al portale clienti.",
-      "alreadyActiveElsewhere": "Questo account ha già accesso attivo al portale di un'altra controparte.",
-      "grantFailed": "Impossibile concedere l'accesso al portale.",
-      "granted": "Accesso al portale concesso."
-    }
-  },
   "workspaceSelector": {
     "title": "Scegli un workspace",
     "description": "Il tuo account ha accesso a più di un workspace.",
@@ -1292,6 +1283,40 @@
       "title": "Qualcosa è andato storto",
       "description": "Si è verificato un errore imprevisto. Riprova.",
       "retry": "Riprova"
+    }
+  },
+  "clientPortalAccess": {
+    "errors": {
+      "noAccountFound": "Nessun account trovato con questa email. Il cliente deve prima registrarsi.",
+      "adminOnly": "Solo un amministratore può gestire l'accesso al portale clienti.",
+      "alreadyActiveElsewhere": "Questo account ha già accesso attivo al portale di un'altra controparte.",
+      "grantFailed": "Impossibile concedere l'accesso al portale.",
+      "granted": "Accesso al portale concesso."
+    },
+    "title": "Portale clienti",
+    "subtitle": "Utenti autorizzati a vedere i dati di questa controparte in sola lettura.",
+    "grantForm": {
+      "emailLabel": "Email cliente",
+      "emailPlaceholder": "cliente@azienda.it",
+      "granting": "Concessione…",
+      "grantButton": "Concedi accesso",
+      "adminHint": "Il cliente deve avere già un account (registrato su /signup) con questa email. Un account può avere accesso attivo a una sola controparte alla volta."
+    },
+    "readOnlyHint": "Solo un amministratore può concedere o revocare l'accesso al portale clienti. Di seguito lo stato attuale, in sola lettura.",
+    "empty": "Nessun utente portale per questa controparte.",
+    "table": {
+      "email": "Email",
+      "name": "Nome",
+      "grantedOn": "Concesso il",
+      "status": "Stato"
+    },
+    "status": {
+      "active": "Attivo",
+      "disabled": "Disattivato"
+    },
+    "actions": {
+      "deactivate": "Disattiva",
+      "reactivate": "Riattiva"
     }
   }
 }
