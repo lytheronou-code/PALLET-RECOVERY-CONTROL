@@ -139,6 +139,25 @@ describe("buildExposureReport", () => {
   });
 });
 
+const IT_HEADER = [
+  "Controparte",
+  "Pratiche aperte",
+  "Pallet outstanding",
+  "Valore outstanding",
+  "Recuperato periodo (pallet)",
+  "Recuperato periodo (valore)",
+  "Anzianità max (giorni)",
+];
+const EN_HEADER = [
+  "Counterparty",
+  "Open cases",
+  "Outstanding pallets",
+  "Outstanding value",
+  "Recovered in period (pallets)",
+  "Recovered in period (value)",
+  "Max ageing (days)",
+];
+
 describe("exposureReportToCsv", () => {
   it("renders a header row and one row per counterparty", () => {
     const report = buildExposureReport(
@@ -148,13 +167,29 @@ describe("exposureReportToCsv", () => {
       new Date("2026-03-31"),
       new Date("2026-03-31"),
     );
-    const csv = exposureReportToCsv(report);
+    const csv = exposureReportToCsv(report, IT_HEADER);
     const lines = csv.split("\n");
     expect(lines[0]).toBe(
-      "Controparte,Pratiche aperte,Outstanding pallet,Outstanding valore,Recuperato periodo (pallet),Recuperato periodo (valore),Anzianità max (giorni)",
+      "Controparte,Pratiche aperte,Pallet outstanding,Valore outstanding,Recuperato periodo (pallet),Recuperato periodo (valore),Anzianità max (giorni)",
     );
     expect(lines[1]).toContain("Acme Srl");
     expect(lines[1]).toContain("80.00");
+  });
+
+  it("uses whichever header the caller supplies (locale-resolved by the route handler), while row values stay identical", () => {
+    const report = buildExposureReport(
+      [makeCase({ quantityClaimed: 10, quantityRecovered: 2, unitValueSnapshot: 10 })],
+      [],
+      new Date("2026-01-01"),
+      new Date("2026-03-31"),
+      new Date("2026-03-31"),
+    );
+    const csvIt = exposureReportToCsv(report, IT_HEADER);
+    const csvEn = exposureReportToCsv(report, EN_HEADER);
+    expect(csvEn.split("\n")[0]).toBe(EN_HEADER.join(","));
+    // Only the header line differs; every data row is byte-identical --
+    // exported values never depend on the viewer's language.
+    expect(csvIt.split("\n").slice(1)).toEqual(csvEn.split("\n").slice(1));
   });
 
   it("escapes counterparty names containing commas", () => {
@@ -164,7 +199,7 @@ describe("exposureReportToCsv", () => {
       new Date("2026-01-01"),
       new Date("2026-03-31"),
     );
-    const csv = exposureReportToCsv(report);
+    const csv = exposureReportToCsv(report, IT_HEADER);
     expect(csv).toContain('"Acme, Inc."');
   });
 
@@ -175,7 +210,7 @@ describe("exposureReportToCsv", () => {
       new Date("2026-01-01"),
       new Date("2026-03-31"),
     );
-    const csv = exposureReportToCsv(report);
+    const csv = exposureReportToCsv(report, IT_HEADER);
     const firstDataLine = csv.split("\n")[1];
     expect(firstDataLine.startsWith("'=") || firstDataLine.startsWith("\"'=")).toBe(true);
   });

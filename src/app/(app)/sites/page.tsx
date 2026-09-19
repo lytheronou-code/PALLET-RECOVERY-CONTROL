@@ -5,6 +5,7 @@ import { listSitesPage } from "@/lib/data/sites";
 import { setSiteActiveAction } from "@/lib/actions/sites";
 import { parsePage } from "@/lib/pagination";
 import { Pagination } from "@/components/pagination";
+import { getPageContext } from "@/i18n/server";
 
 export default async function SitesPage({
   searchParams,
@@ -12,6 +13,7 @@ export default async function SitesPage({
   searchParams: Promise<{ inactive?: string; q?: string; page?: string }>;
 }) {
   const membership = await requireMembership();
+  const { t } = await getPageContext(membership.organizationId);
   const { inactive, q, page: pageParam } = await searchParams;
   const showInactive = inactive === "1";
   const page = parsePage(pageParam);
@@ -26,22 +28,20 @@ export default async function SitesPage({
     <div className="shell">
       <div className="header">
         <div className="page-heading">
-          <div className="eyebrow">Master data</div>
-          <h1 className="page-title">Siti operativi</h1>
-          <div className="page-subtitle">
-            Depositi, stabilimenti e punti di consegna dove l&apos;esposizione pallet è fisicamente localizzata.
-          </div>
+          <div className="eyebrow">{t("sites.eyebrow")}</div>
+          <h1 className="page-title">{t("sites.title")}</h1>
+          <div className="page-subtitle">{t("sites.subtitle")}</div>
         </div>
         <Link href="/sites/new" className="btn btn-primary">
           <Plus size={14} />
-          Nuovo sito
+          {t("sites.new")}
         </Link>
       </div>
 
       <form method="get" className="search-bar">
         {inactive ? <input type="hidden" name="inactive" value={inactive} /> : null}
-        <input type="search" name="q" placeholder="Cerca per nome, codice o città…" defaultValue={q ?? ""} />
-        <button type="submit" className="btn btn-secondary btn-sm">Cerca</button>
+        <input type="search" name="q" placeholder={t("sites.searchPlaceholder")} defaultValue={q ?? ""} />
+        <button type="submit" className="btn btn-secondary btn-sm">{t("common.actions.search")}</button>
       </form>
 
       <div className="filter-bar">
@@ -49,7 +49,7 @@ export default async function SitesPage({
           href={{ pathname: "/sites", query: { ...(q ? { q } : {}), ...(showInactive ? {} : { inactive: "1" }) } }}
           className={"filter-pill" + (showInactive ? " active" : "")}
         >
-          {showInactive ? "Incluse non attive" : "Mostra non attive"}
+          {showInactive ? t("sites.includingInactive") : t("sites.showInactive")}
         </Link>
       </div>
 
@@ -57,18 +57,18 @@ export default async function SitesPage({
         {sites.length === 0 ? (
           <div className="empty-state">
             <MapPin size={24} style={{ marginBottom: 8 }} />
-            <div>Nessun sito registrato. Aggiungi i depositi e i punti di consegna coinvolti nei flussi pallet.</div>
+            <div>{t("sites.empty")}</div>
           </div>
         ) : (
           <div className="table-wrap">
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Nome</th>
-                  <th>Codice</th>
-                  <th>Controparte</th>
-                  <th>Località</th>
-                  <th>Stato</th>
+                  <th>{t("sites.table.name")}</th>
+                  <th>{t("sites.table.code")}</th>
+                  <th>{t("sites.table.counterparty")}</th>
+                  <th>{t("sites.table.location")}</th>
+                  <th>{t("sites.table.status")}</th>
                   <th></th>
                 </tr>
               </thead>
@@ -85,15 +85,17 @@ export default async function SitesPage({
                     <td>{[site.city, site.province].filter(Boolean).join(" · ") || "—"}</td>
                     <td>
                       <span className={"badge " + (site.active ? "badge-closed" : "badge-neutral")}>
-                        {site.active ? "Attivo" : "Non attivo"}
+                        {site.active ? t("sites.active") : t("sites.inactive")}
                       </span>
                     </td>
                     <td>
                       <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
-                        <Link href={"/sites/" + site.id + "/edit"} className="btn btn-secondary btn-sm">Apri</Link>
+                        <Link href={"/sites/" + site.id + "/edit"} className="btn btn-secondary btn-sm">
+                          {t("common.actions.open")}
+                        </Link>
                         <form action={setSiteActiveAction.bind(null, site.id, !site.active)}>
                           <button type="submit" className="btn btn-ghost btn-sm">
-                            {site.active ? "Disattiva" : "Riattiva"}
+                            {site.active ? t("sites.deactivate") : t("sites.reactivate")}
                           </button>
                         </form>
                       </div>
@@ -112,6 +114,7 @@ export default async function SitesPage({
         page={result.page}
         pageCount={result.pageCount}
         total={result.total}
+        t={t}
       />
     </div>
   );

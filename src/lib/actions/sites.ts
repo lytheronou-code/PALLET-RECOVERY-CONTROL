@@ -5,7 +5,10 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireMembership } from "@/lib/data/organization";
 import { listActiveSitesForCounterparty } from "@/lib/data/sites";
-import { siteSchema } from "@/lib/validation/master-data";
+import { buildSiteSchema } from "@/lib/validation/master-data";
+import { mapDatabaseError } from "@/lib/errors/friendly";
+import { getT } from "@/i18n/server";
+import type { Translator } from "@/i18n/translator";
 import type { FormState } from "@/lib/actions/form-state";
 
 // Called directly from client components (not bound to a form) whenever
@@ -26,12 +29,13 @@ export async function listSitesForCounterpartyAction(
   return sites.map((site) => ({ id: site.id, name: site.name }));
 }
 
-function parseSiteForm(formData: FormData) {
-  return siteSchema.safeParse({
+function parseSiteForm(formData: FormData, t: Translator) {
+  return buildSiteSchema(t).safeParse({
     name: formData.get("name"),
     code: formData.get("code"),
     counterpartyId: formData.get("counterpartyId"),
     addressLine: formData.get("addressLine"),
+    addressLine2: formData.get("addressLine2"),
     postalCode: formData.get("postalCode"),
     city: formData.get("city"),
     province: formData.get("province"),
@@ -44,10 +48,11 @@ export async function createSiteAction(
   formData: FormData,
 ): Promise<FormState> {
   const membership = await requireMembership();
-  const parsed = parseSiteForm(formData);
+  const { t } = await getT(membership.organizationId);
+  const parsed = parseSiteForm(formData, t);
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Dati non validi" };
+    return { error: parsed.error.issues[0]?.message ?? t("common.errors.generic") };
   }
 
   const supabase = await createClient();
@@ -57,6 +62,7 @@ export async function createSiteAction(
     code: parsed.data.code || null,
     counterparty_id: parsed.data.counterpartyId || null,
     address_line: parsed.data.addressLine || null,
+    address_line_2: parsed.data.addressLine2 || null,
     postal_code: parsed.data.postalCode || null,
     city: parsed.data.city || null,
     province: parsed.data.province || null,
@@ -64,7 +70,7 @@ export async function createSiteAction(
   });
 
   if (error) {
-    return { error: "Impossibile creare il sito. Verifica i permessi." };
+    return { error: mapDatabaseError(error, t) };
   }
 
   revalidatePath("/sites");
@@ -77,10 +83,11 @@ export async function updateSiteAction(
   formData: FormData,
 ): Promise<FormState> {
   const membership = await requireMembership();
-  const parsed = parseSiteForm(formData);
+  const { t } = await getT(membership.organizationId);
+  const parsed = parseSiteForm(formData, t);
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Dati non validi" };
+    return { error: parsed.error.issues[0]?.message ?? t("common.errors.generic") };
   }
 
   const supabase = await createClient();
@@ -91,6 +98,7 @@ export async function updateSiteAction(
       code: parsed.data.code || null,
       counterparty_id: parsed.data.counterpartyId || null,
       address_line: parsed.data.addressLine || null,
+      address_line_2: parsed.data.addressLine2 || null,
       postal_code: parsed.data.postalCode || null,
       city: parsed.data.city || null,
       province: parsed.data.province || null,
@@ -100,7 +108,7 @@ export async function updateSiteAction(
     .eq("organization_id", membership.organizationId);
 
   if (error) {
-    return { error: "Impossibile aggiornare il sito. Verifica i permessi." };
+    return { error: mapDatabaseError(error, t) };
   }
 
   revalidatePath("/sites");

@@ -1,0 +1,1353 @@
+{
+  "common": {
+    "appName": "Pallet Recovery Control",
+    "actions": {
+      "save": "Salva",
+      "saving": "Salvataggio…",
+      "cancel": "Annulla",
+      "delete": "Elimina",
+      "deleting": "Eliminazione…",
+      "edit": "Modifica",
+      "create": "Crea",
+      "creating": "Creazione…",
+      "back": "Indietro",
+      "next": "Avanti",
+      "previous": "Precedente",
+      "confirm": "Conferma",
+      "close": "Chiudi",
+      "search": "Cerca",
+      "filter": "Filtra",
+      "export": "Esporta",
+      "import": "Importa",
+      "download": "Scarica",
+      "upload": "Carica",
+      "uploading": "Caricamento…",
+      "view": "Visualizza",
+      "retry": "Riprova",
+      "continue": "Continua",
+      "skip": "Salta per ora",
+      "finish": "Fine",
+      "add": "Aggiungi",
+      "remove": "Rimuovi",
+      "select": "Seleziona",
+      "clear": "Azzera",
+      "signOut": "Esci",
+      "open": "Apri",
+      "apply": "Applica",
+      "saveChanges": "Salva modifiche"
+    },
+    "pagination": {
+      "page": "Pagina",
+      "of": "di",
+      "previous": "Precedente",
+      "next": "Successiva",
+      "showingResults": "Visualizzati {from}–{to} di {total}",
+      "perPage": "Per pagina",
+      "results": "risultati"
+    },
+    "emptyState": {
+      "title": "Ancora nessun elemento",
+      "description": "Nessun record corrisponde alla vista corrente.",
+      "noResults": "Nessun risultato trovato"
+    },
+    "loading": {
+      "generic": "Caricamento…"
+    },
+    "errors": {
+      "generic": "Qualcosa è andato storto. Riprova.",
+      "notFound": "L'elemento richiesto non è stato trovato.",
+      "forbidden": "Non hai i permessi per eseguire questa azione.",
+      "unexpected": "Si è verificato un errore imprevisto.",
+      "network": "Errore di rete. Controlla la connessione e riprova.",
+      "duplicate": "Esiste già un record con questi dati.",
+      "sessionExpired": "La sessione è scaduta. Accedi di nuovo."
+    },
+    "validation": {
+      "required": "Questo campo è obbligatorio.",
+      "invalidEmail": "Inserisci un indirizzo email valido.",
+      "invalidFormat": "Formato non valido.",
+      "tooLong": "Questo valore è troppo lungo.",
+      "tooShort": "Questo valore è troppo corto.",
+      "mustBePositive": "Questo valore deve essere maggiore di zero.",
+      "invalidHexColor": "Inserisci un colore valido nel formato #RRGGBB.",
+      "invalidCountry": "Seleziona un paese valido.",
+      "invalidCurrency": "Seleziona una valuta valida.",
+      "invalidTimezone": "Seleziona un fuso orario valido.",
+      "invalidLocale": "Seleziona una lingua supportata.",
+      "cannotBeNegative": "Questo valore non può essere negativo."
+    },
+    "confirmDelete": {
+      "title": "Conferma eliminazione",
+      "description": "Questa azione non può essere annullata.",
+      "confirm": "Sì, elimina"
+    },
+    "language": "Lingua",
+    "poweredBy": "Offerto da {product}",
+    "status": {
+      "recoveryCase": {
+        "open": "Aperta",
+        "contacted": "Contattata",
+        "scheduled": "Programmata",
+        "partial": "Parziale",
+        "recovered": "Recuperata",
+        "disputed": "Contestata",
+        "closed_unrecovered": "Chiusa (non recuperata)",
+        "cancelled": "Annullata"
+      },
+      "voucher": {
+        "open": "Aperto",
+        "partial": "Parziale",
+        "closed": "Chiuso",
+        "disputed": "Contestato",
+        "cancelled": "Annullato"
+      },
+      "priority": {
+        "low": "Bassa",
+        "normal": "Normale",
+        "high": "Alta",
+        "critical": "Critica"
+      }
+    }
+  },
+  "nav": {
+    "groups": {
+      "control": "Controllo",
+      "data": "Dati",
+      "system": "Sistema"
+    },
+    "items": {
+      "dashboard": "Centro di controllo",
+      "recoveryCases": "Recupero",
+      "reconciliation": "Riconciliazione",
+      "vouchers": "Buoni",
+      "movements": "Movimenti",
+      "import": "Importazioni",
+      "counterparties": "Controparti",
+      "sites": "Siti",
+      "palletTypes": "Tipi pallet",
+      "report": "Report",
+      "settings": "Impostazioni"
+    },
+    "ariaLabel": "Navigazione principale",
+    "operationsDesk": "Postazione operativa"
+  },
+  "topbar": {
+    "searchPlaceholder": "Cerca pratica, controparte o buono…",
+    "searchAriaLabel": "Ricerca globale",
+    "urgentActions": "Azioni urgenti",
+    "newCase": "Nuova pratica",
+    "searchHint": "CERCA"
+  },
+  "auth": {
+    "login": {
+      "title": "Accedi",
+      "subtitle": "Accedi al tuo workspace Pallet Recovery Control.",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Accedi",
+      "submitting": "Accesso in corso…",
+      "noAccount": "Non hai un account?",
+      "signUpLink": "Creane uno"
+    },
+    "signup": {
+      "title": "Crea il tuo account",
+      "subtitle": "Configura il workspace della tua organizzazione.",
+      "email": "Email",
+      "password": "Password",
+      "passwordHint": "Almeno 8 caratteri.",
+      "submit": "Crea account",
+      "submitting": "Creazione account…",
+      "hasAccount": "Hai già un account?",
+      "signInLink": "Accedi",
+      "confirmationSent": "Controlla la tua casella email per confermare l'indirizzo prima di accedere."
+    },
+    "error": {
+      "title": "Link non valido",
+      "description": "Il link di conferma è scaduto o non è più valido. Prova ad accedere di nuovo o registrati un'altra volta.",
+      "backToLogin": "Torna al login"
+    },
+    "validation": {
+      "emailRequired": "L'email è obbligatoria.",
+      "passwordRequired": "La password è obbligatoria.",
+      "passwordTooShort": "La password deve avere almeno {min} caratteri."
+    },
+    "errors": {
+      "userAlreadyRegistered": "Esiste già un account con questa email.",
+      "rateLimited": "Il servizio email di registrazione è temporaneamente limitato. Riprova più tardi.",
+      "emailNotAuthorized": "Registrazione temporaneamente non disponibile per questo indirizzo.",
+      "invalidEmail": "Inserisci un indirizzo email valido.",
+      "signupFailed": "Impossibile creare l'account. Riprova.",
+      "invalidCredentials": "Email o password non valide."
+    }
+  },
+  "onboarding": {
+    "title": "Configura la tua organizzazione",
+    "steps": {
+      "company": {
+        "label": "Azienda",
+        "title": "Informazioni aziendali",
+        "organizationName": "Nome organizzazione",
+        "legalName": "Ragione sociale",
+        "countryCode": "Paese"
+      },
+      "localization": {
+        "label": "Localizzazione",
+        "title": "Localizzazione",
+        "defaultLanguage": "Lingua predefinita",
+        "defaultCurrency": "Valuta di base",
+        "timezone": "Fuso orario"
+      },
+      "branding": {
+        "label": "Branding",
+        "title": "Branding del Client Portal",
+        "description": "Opzionale — puoi configurarlo in seguito dalle Impostazioni.",
+        "portalName": "Nome del portale",
+        "primaryColor": "Colore primario",
+        "logo": "Logo"
+      },
+      "operational": {
+        "label": "Configurazione operativa",
+        "title": "Tipi di pallet",
+        "description": "Opzionale — parti da un preset o aggiungili in seguito.",
+        "usePreset": "Parti da un preset",
+        "skipPresets": "Configurerò i tipi di pallet in seguito",
+        "configuredSingular": "{count} tipo pallet configurato.",
+        "configuredPlural": "{count} tipi pallet configurati."
+      },
+      "firstCustomer": {
+        "label": "Primo cliente",
+        "title": "Aggiungi il tuo primo cliente",
+        "description": "Opzionale — puoi aggiungere clienti in qualsiasi momento.",
+        "customerName": "Nome cliente",
+        "countryCode": "Paese"
+      },
+      "ready": {
+        "label": "Pronto",
+        "title": "Tutto pronto",
+        "description": "Il tuo workspace è pronto all'uso.",
+        "goToDashboard": "Vai alla dashboard"
+      }
+    },
+    "returnLater": "Potrai modificare tutto questo in seguito dalle Impostazioni.",
+    "subtitle": "Ogni pallet, buono e pratica di recupero appartiene alla tua organizzazione.",
+    "validation": {
+      "organizationNameTooShort": "Il nome deve avere almeno {min} caratteri.",
+      "organizationNameTooLong": "Il nome è troppo lungo."
+    },
+    "errors": {
+      "createFailed": "Impossibile creare l'organizzazione. Riprova."
+    }
+  },
+  "dashboard": {
+    "title": "Centro di controllo",
+    "kpis": {
+      "openPallets": "Pallet aperti",
+      "openExposure": "Esposizione economica aperta",
+      "recoveredPallets": "Pallet recuperati",
+      "recoveredValue": "Valore recuperato",
+      "casesDueSoon": "Pratiche in scadenza",
+      "overdueCases": "Pratiche scadute"
+    },
+    "topExposure": {
+      "title": "Controparti con maggiore esposizione",
+      "subtitle": "Controparti ordinate per valore da recuperare.",
+      "viewLink": "Controparti",
+      "empty": "Nessuna esposizione registrata."
+    },
+    "actionCenter": {
+      "title": "Pratiche che richiedono azione",
+      "subtitle": "Pratiche che richiedono attenzione operativa.",
+      "viewAll": "Vedi tutte",
+      "empty": "Nessuna pratica operativa aperta.",
+      "table": {
+        "case": "Pratica",
+        "counterparty": "Controparte",
+        "dueDate": "Scadenza",
+        "priority": "Priorità",
+        "status": "Stato",
+        "exposure": "Esposizione"
+      },
+      "palletsSuffix": "pallet"
+    },
+    "eyebrow": "Panoramica operativa",
+    "subtitle": "Esposizione, priorità e recuperi in un'unica vista operativa.",
+    "newVoucher": "Nuovo buono",
+    "newCase": "Nuova pratica",
+    "openExposureLabel": "Esposizione aperta",
+    "palletsOutstanding": "pallet outstanding",
+    "recoveryRate": "Recovery rate",
+    "palletsRecovered": "pallet recuperati",
+    "recoveredValueLabel": "Valore recuperato",
+    "historicalValueRecorded": "valore storico registrato",
+    "overdueExposureLabel": "Esposizione scaduta",
+    "casesPastDue": "pratiche oltre scadenza",
+    "getStarted": {
+      "title": "Imposta il controllo operativo",
+      "subtitle": "Tre passaggi per ottenere una dashboard realmente utile.",
+      "step1Title": "1. Crea le controparti",
+      "step1Description": "Clienti, debitori, retailer e trasportatori.",
+      "step2Title": "2. Importa i movimenti",
+      "step2Description": "Carica DDT e movimenti pallet da CSV.",
+      "step3Title": "3. Registra i buoni",
+      "step3Description": "Scadenze e quantità alimentano la riconciliazione."
+    },
+    "operationalHealth": {
+      "title": "Salute operativa",
+      "subtitle": "Scadenze e velocità di recupero.",
+      "openCasesSuffix": "pratiche operative aperte",
+      "casesDueWithin7Days": "Pratiche entro 7 gg",
+      "overdueCasesLabel": "Pratiche scadute",
+      "vouchersDueWithin7Days": "Buoni entro 7 gg",
+      "overdueVouchers": "Buoni scaduti"
+    },
+    "ageing": {
+      "title": "Ageing dell'esposizione",
+      "subtitle": "Valore outstanding per anzianità della pratica.",
+      "openReport": "Apri report"
+    }
+  },
+  "counterparties": {
+    "title": "Controparti",
+    "new": "Nuova controparte",
+    "fields": {
+      "name": "Nome",
+      "countryCode": "Paese",
+      "taxId": "Codice fiscale",
+      "vatId": "Partita IVA",
+      "addressLine1": "Indirizzo",
+      "addressLine2": "Indirizzo (riga 2)",
+      "city": "Città",
+      "region": "Provincia / regione",
+      "postalCode": "CAP",
+      "email": "Email",
+      "phone": "Telefono",
+      "tradingName": "Nome commerciale",
+      "registrationNumber": "Numero di registrazione"
+    },
+    "eyebrow": "Network",
+    "subtitle": "Clienti, debitori, punti vendita e partner coinvolti nei flussi pallet.",
+    "searchPlaceholder": "Cerca per nome, codice o P.IVA…",
+    "showInactive": "Mostra non attive",
+    "includingInactive": "Incluse non attive",
+    "empty": "Nessuna controparte registrata.",
+    "table": {
+      "legalName": "Ragione sociale",
+      "code": "Codice",
+      "type": "Tipologia",
+      "location": "Località",
+      "contact": "Contatto",
+      "status": "Stato"
+    },
+    "vatNotProvided": "P. IVA non indicata",
+    "active": "Attiva",
+    "inactive": "Non attiva",
+    "deactivate": "Disattiva",
+    "reactivate": "Riattiva",
+    "types": {
+      "customer": "Cliente",
+      "debtor": "Debitore",
+      "retailer": "Punto vendita",
+      "carrier": "Trasportatore",
+      "supplier": "Fornitore",
+      "other": "Altro"
+    },
+    "validation": {
+      "legalNameRequired": "La ragione sociale è obbligatoria."
+    },
+    "editTitle": "Modifica controparte",
+    "detail": {
+      "subtitle": "Portfolio operativo, esposizione e storico pallet della controparte.",
+      "openExposureFoot": "valore ancora da recuperare",
+      "openCases": "Pratiche operative",
+      "openCasesFoot": "aperte o in lavorazione",
+      "activeVouchers": "Buoni attivi",
+      "activeVouchersFoot": "aperti, parziali o contestati",
+      "recoveredPalletsFoot": "storico delle pratiche",
+      "recentCases": {
+        "title": "Pratiche recenti",
+        "subtitle": "Ultime attività di recovery collegate alla controparte.",
+        "empty": "Nessuna pratica registrata.",
+        "table": {
+          "pallet": "Pallet",
+          "outstanding": "Residuo",
+          "value": "Valore"
+        }
+      },
+      "profile": {
+        "title": "Anagrafica",
+        "noInternalCode": "Nessun codice interno"
+      },
+      "sites": {
+        "title": "Siti",
+        "subtitle": "Depositi e punti di consegna di questa controparte.",
+        "empty": "Nessun sito registrato per questa controparte."
+      },
+      "vouchers": {
+        "title": "Buoni recenti",
+        "subtitle": "Crediti pallet e scadenze.",
+        "openLink": "Apri buoni",
+        "empty": "Nessun buono registrato."
+      },
+      "movements": {
+        "title": "Movimenti recenti",
+        "subtitle": "Ultimi flussi pallet registrati.",
+        "empty": "Nessun movimento registrato."
+      },
+      "documentsTitle": "Documenti e prove della controparte"
+    }
+  },
+  "sites": {
+    "title": "Siti",
+    "new": "Nuovo sito",
+    "fields": {
+      "name": "Nome",
+      "countryCode": "Paese",
+      "addressLine1": "Indirizzo",
+      "addressLine2": "Indirizzo (riga 2)",
+      "city": "Città",
+      "region": "Provincia / regione",
+      "postalCode": "CAP",
+      "linkedCounterparty": "Controparte collegata",
+      "noCounterpartyOption": "Nessuna (sito/deposito interno)"
+    },
+    "eyebrow": "Master data",
+    "subtitle": "Depositi, stabilimenti e punti di consegna dove l'esposizione pallet è fisicamente localizzata.",
+    "searchPlaceholder": "Cerca per nome, codice o città…",
+    "showInactive": "Mostra non attive",
+    "includingInactive": "Incluse non attive",
+    "empty": "Nessun sito registrato. Aggiungi i depositi e i punti di consegna coinvolti nei flussi pallet.",
+    "table": {
+      "name": "Nome",
+      "code": "Codice",
+      "counterparty": "Controparte",
+      "location": "Località",
+      "status": "Stato"
+    },
+    "active": "Attivo",
+    "inactive": "Non attivo",
+    "deactivate": "Disattiva",
+    "reactivate": "Riattiva",
+    "validation": {
+      "nameRequired": "Il nome è obbligatorio."
+    }
+  },
+  "palletTypes": {
+    "title": "Tipi pallet",
+    "new": "Nuovo tipo pallet",
+    "showInactiveOnly": "Mostra solo attivi",
+    "showAllIncludingInactive": "Mostra anche non attivi",
+    "empty": "Nessun tipo pallet registrato. Aggiungi ad esempio EPAL EUR1, EPAL EUR2, CP.",
+    "table": {
+      "code": "Codice",
+      "description": "Descrizione",
+      "unitValue": "Valore unitario",
+      "status": "Stato"
+    },
+    "active": "Attivo",
+    "inactive": "Non attivo",
+    "deactivate": "Disattiva",
+    "reactivate": "Riattiva",
+    "validation": {
+      "codeRequired": "Il codice è obbligatorio.",
+      "descriptionRequired": "La descrizione è obbligatoria."
+    },
+    "editTitle": "Modifica tipo pallet",
+    "fields": {
+      "unitValue": "Valore unitario ({currency})",
+      "unitValueEditNote": "Le pratiche di recupero già aperte mantengono il valore unitario storico (snapshot): questa modifica vale solo per le nuove pratiche."
+    }
+  },
+  "movements": {
+    "title": "Movimenti",
+    "correct": "Correggi",
+    "eyebrow": "Movement ledger",
+    "subtitle": "Il ledger operativo che alimenta riconciliazione, saldi e tracciabilità documentale.",
+    "importCsv": "Importa CSV",
+    "filters": {
+      "all": "Tutti",
+      "outbound": "OUT",
+      "inbound": "IN"
+    },
+    "kpis": {
+      "movementsThisPage": "Movimenti in questa pagina",
+      "totalInView": "totali nella vista",
+      "palletsOut": "Pallet OUT",
+      "outboundThisPage": "uscite in questa pagina",
+      "palletsIn": "Pallet IN",
+      "inboundThisPage": "rientri in questa pagina"
+    },
+    "searchPlaceholder": "Cerca per numero documento o buono…",
+    "empty": "Nessun movimento in questa vista.",
+    "table": {
+      "date": "Data",
+      "flow": "Flusso",
+      "counterparty": "Controparte",
+      "pallet": "Pallet",
+      "site": "Sito",
+      "quantity": "Quantità",
+      "document": "Documento",
+      "voucher": "Buono"
+    },
+    "correctionNote": "correzione/storno",
+    "corrected": "Corretto",
+    "correctPage": {
+      "eyebrow": "Movement ledger",
+      "title": "Correggi movimento",
+      "subtitle": "Il ledger è immutabile: la correzione registra uno storno e, se necessario, un movimento sostitutivo.",
+      "originalMovement": "Movimento originale",
+      "correction": "Correzione",
+      "fields": {
+        "date": "Data",
+        "direction": "Direzione",
+        "counterparty": "Controparte",
+        "palletType": "Tipo pallet",
+        "quantity": "Quantità",
+        "document": "Documento"
+      }
+    },
+    "correctForm": {
+      "reasonLabel": "Motivo della correzione",
+      "reasonPlaceholder": "Es. quantità errata da import, controparte sbagliata…",
+      "reversalOnlyLabel": "Il movimento originale è completamente errato (solo storno, nessuna sostituzione)",
+      "replacementIntro": "Valori del movimento corretto che sostituirà quello originale:",
+      "fields": {
+        "date": "Data",
+        "direction": "Direzione",
+        "outbound": "OUT (uscita)",
+        "inbound": "IN (rientro)",
+        "quantity": "Quantità",
+        "documentType": "Tipo documento",
+        "documentNumber": "Numero documento"
+      },
+      "reverseButton": "Storna movimento",
+      "correctButton": "Correggi movimento"
+    },
+    "validation": {
+      "reasonTooShort": "Spiega il motivo della correzione (minimo 3 caratteri)."
+    },
+    "errors": {
+      "originalMovementNotFound": "Movimento originale non trovato.",
+      "alreadyCorrected": "Questo movimento è già stato corretto in precedenza.",
+      "invalidDirection": "Seleziona una direzione valida per il movimento corretto.",
+      "siteDifferentCounterparty": "Il sito selezionato non appartiene alla controparte del movimento.",
+      "correctionFailed": "Impossibile registrare la correzione.",
+      "reversedMessage": "Movimento stornato.",
+      "correctedMessage": "Movimento corretto."
+    }
+  },
+  "vouchers": {
+    "title": "Buoni",
+    "new": "Nuovo buono",
+    "validation": {
+      "numberRequired": "Il numero del buono è obbligatorio.",
+      "issueDateRequired": "La data di emissione è obbligatoria.",
+      "dueDateBeforeIssueDate": "La scadenza non può precedere la data di emissione."
+    },
+    "errors": {
+      "counterpartyNotFoundOrInactive": "Controparte non trovata o non attiva.",
+      "palletTypeNotFoundOrInactive": "Tipo pallet non trovato o non attivo.",
+      "siteDifferentCounterparty": "Il sito selezionato non appartiene alla controparte scelta.",
+      "duplicateNumber": "Esiste già un buono con questo numero.",
+      "createFailed": "Impossibile creare il buono.",
+      "notFound": "Buono non trovato.",
+      "cancelledCannotEdit": "Un buono annullato non può essere modificato.",
+      "quantityBelowRecovered": "La quantità non può essere inferiore a quanto già recuperato.",
+      "newQuantityBelowCommitted": "La nuova quantità lascerebbe solo {residual} pallet residui, ma le pratiche attive ne impegnano {committed}.",
+      "quantityBelowActiveCommitments": "La quantità non può essere inferiore agli impegni delle pratiche attive.",
+      "updateFailed": "Impossibile aggiornare il buono.",
+      "alreadyCancelled": "Buono già annullato.",
+      "cannotCancelWithRecoveries": "Non puoi annullare un buono con recuperi già registrati.",
+      "cannotCancelLinkedToCase": "Non puoi annullare un buono collegato a una pratica di recupero.",
+      "cancelFailed": "Impossibile annullare il buono.",
+      "cancelled": "Buono annullato."
+    },
+    "openRecovery": "Apri recovery",
+    "list": {
+      "eyebrow": "Crediti pallet",
+      "subtitle": "Scadenze, residui e collegamento diretto alle pratiche di recupero.",
+      "searchPlaceholder": "Cerca per numero buono…",
+      "kpis": {
+        "inView": "Buoni in vista",
+        "inViewFoot": "filtrati per stato selezionato",
+        "outstandingPallets": "Pallet residui",
+        "outstandingPalletsFoot": "ancora da recuperare",
+        "overdue": "Scaduti",
+        "overdueFoot": "richiedono attenzione"
+      },
+      "filters": {
+        "active": "Attivi",
+        "open": "Aperti",
+        "partial": "Parziali",
+        "disputed": "Contestati",
+        "closed": "Chiusi",
+        "all": "Tutti"
+      },
+      "overdueLabel": "Scaduto",
+      "empty": "Nessun buono in questa vista. Registra un buono per alimentare scadenziario e riconciliazione.",
+      "table": {
+        "voucher": "Buono",
+        "counterparty": "Controparte",
+        "pallet": "Pallet",
+        "issueDate": "Emissione",
+        "dueDate": "Scadenza",
+        "quantity": "Quantità",
+        "recovered": "Recuperato",
+        "outstanding": "Residuo",
+        "status": "Stato"
+      }
+    },
+    "detail": {
+      "eyebrow": "Credito pallet",
+      "kpis": {
+        "initialQuantity": "Quantità iniziale",
+        "recovered": "Recuperato",
+        "recoveredFoot": "registrato dalle pratiche collegate",
+        "outstanding": "Residuo",
+        "outstandingFoot": "ancora da recuperare",
+        "estimatedResidualValue": "Valore residuo stimato",
+        "estimatedResidualValueFoot": "al valore unitario corrente del pallet"
+      },
+      "linkedCases": {
+        "title": "Pratiche collegate",
+        "subtitle": "Recovery che aggiornano automaticamente questo buono.",
+        "empty": "Nessuna pratica collegata.",
+        "table": {
+          "case": "Pratica",
+          "recovery": "Recuperato / richiesto",
+          "dueDate": "Scadenza",
+          "priority": "Priorità",
+          "status": "Stato"
+        }
+      },
+      "details": {
+        "title": "Dettagli buono",
+        "counterparty": "Controparte",
+        "issueDate": "Emissione",
+        "dueDate": "Scadenza",
+        "palletValue": "Valore pallet",
+        "notes": "Note",
+        "notesEmpty": "—"
+      },
+      "cancelBlockedNotice": "L'annullamento è bloccato se esistono pratiche collegate o recuperi già registrati."
+    },
+    "form": {
+      "pageSubtitle": "Il buono alimenta riconciliazione, scadenzario e pratica di recupero.",
+      "prerequisiteError": "Prima di creare un buono servono almeno una controparte attiva e un tipo pallet attivo.",
+      "counterparty": "Controparte",
+      "palletType": "Tipo pallet",
+      "selectPlaceholder": "Seleziona…",
+      "site": "Sito",
+      "siteNone": "Nessuno",
+      "siteEmptyNotice": "Nessun sito registrato per questa controparte.",
+      "voucherNumber": "Numero buono / riferimento",
+      "voucherNumberPlaceholder": "es. BV-2026-001847",
+      "issueDate": "Data emissione",
+      "dueDate": "Scadenza recupero",
+      "quantity": "Quantità",
+      "notes": "Note",
+      "notesPlaceholder": "Riferimenti DDT, condizioni, informazioni utili al recupero…",
+      "submit": "Crea buono"
+    },
+    "editForm": {
+      "pageEyebrow": "Correzione controllata",
+      "pageTitle": "Modifica {voucherNumber}",
+      "pageSubtitle": "Correggi riferimento, date, quantità e note senza rompere la storia di recovery.",
+      "lockedNotice": "{palletTypeCode} · controparte e tipo pallet restano bloccati per preservare la coerenza delle pratiche collegate.",
+      "voucherNumber": "Numero buono / riferimento",
+      "issueDate": "Data emissione",
+      "dueDate": "Scadenza recupero",
+      "quantity": "Quantità",
+      "notes": "Note",
+      "save": "Salva modifiche"
+    },
+    "cancelForm": {
+      "confirmMessage": "Annullare questo buono? L'operazione è consentita solo se non esistono recuperi o pratiche collegate.",
+      "cancelButton": "Annulla buono",
+      "cancelling": "Annullamento…"
+    }
+  },
+  "bulkImport": {
+    "title": "Importazioni",
+    "uploadFile": "Carica file",
+    "mapColumns": "Mappa colonne",
+    "preview": "Anteprima",
+    "confirmImport": "Conferma importazione",
+    "validation": {
+      "tooManyRows": "Massimo {max} righe per import."
+    },
+    "errors": {
+      "missingPayload": "Payload di import mancante.",
+      "invalidPayload": "Payload di import non valido.",
+      "noRows": "Il file non contiene righe da importare.",
+      "batchCreateFailed": "Impossibile creare il batch di import.",
+      "interrupted": "Import interrotto dopo aver salvato {count} righe. Controlla il batch #{batchId} prima di reimportare il resto."
+    },
+    "vouchers": {
+      "eyebrow": "Crediti pallet",
+      "title": "Import buoni",
+      "subtitle": "Carica un file CSV, mappa le colonne e verifica l'anteprima prima di confermare: nessuna riga viene importata silenziosamente.",
+      "backToVouchers": "Torna ai buoni",
+      "previousImports": "Import precedenti",
+      "noImports": "Nessun import di buoni eseguito finora.",
+      "statusLabels": {
+        "processing": "In corso",
+        "completed": "Completato",
+        "failed": "Fallito"
+      },
+      "table": {
+        "file": "File",
+        "date": "Data",
+        "status": "Stato",
+        "totals": "Totali",
+        "valid": "Valide",
+        "invalid": "Non valide"
+      },
+      "wizard": {
+        "invalidFile": "Il file non contiene righe di dati valide.",
+        "prerequisiteNotice": "Crea almeno una controparte e un tipo pallet prima di importare buoni: servono per riconoscere le righe del file.",
+        "csvFileLabel": "File CSV buoni",
+        "expectedColumnsNote": "Colonne attese: numero buono, controparte, tipo pallet, data emissione, quantità, e opzionalmente scadenza recupero e note.",
+        "fieldLabels": {
+          "voucherNumber": "Numero buono",
+          "counterparty": "Controparte",
+          "palletType": "Tipo pallet",
+          "site": "Sito (opzionale)",
+          "issueDate": "Data emissione",
+          "recoveryDueDate": "Scadenza recupero",
+          "quantity": "Quantità",
+          "notes": "Note"
+        },
+        "columnMappingTitle": "1. Mappatura colonne",
+        "unmapped": "— non mappata —",
+        "previewTitle": "2. Anteprima e validazione",
+        "missingRequired": "Campi obbligatori non mappati: {fields}",
+        "totalRows": "Righe totali",
+        "validRows": "Valide",
+        "invalidRows": "Non valide",
+        "invalidRowsTitle": "Righe non valide (prime 50)",
+        "row": "Riga",
+        "reason": "Motivo",
+        "confirmImport": "Conferma import ({count} righe valide)",
+        "importing": "Import in corso…"
+      }
+    },
+    "movements": {
+      "pageTitle": "Import movimenti",
+      "previousImports": "Import precedenti",
+      "noImportsYet": "Nessun import eseguito finora.",
+      "table": {
+        "file": "File",
+        "date": "Data",
+        "status": "Stato",
+        "totalRows": "Righe totali",
+        "validRows": "Valide",
+        "invalidRows": "Non valide"
+      },
+      "status": {
+        "processing": "In corso",
+        "completed": "Completato",
+        "failed": "Fallito"
+      },
+      "csvFileLabel": "File CSV movimenti",
+      "expectedColumns": "Colonne attese: data movimento, controparte, tipo pallet, direzione (IN/OUT), quantità, e opzionalmente tipo documento, numero documento, numero buono, note.",
+      "prerequisiteMissing": "Crea almeno una controparte e un tipo pallet prima di importare movimenti: servono per riconoscere le righe del file.",
+      "fileEmptyError": "Il file non contiene righe di dati valide.",
+      "step1Title": "1. Mappatura colonne",
+      "step2Title": "2. Anteprima e validazione",
+      "unmapped": "— non mappata —",
+      "missingRequiredFields": "Campi obbligatori non mappati: {fields}",
+      "invalidRowsTitle": "Righe non valide (prime 50)",
+      "rowNumber": "Riga",
+      "reason": "Motivo",
+      "importing": "Import in corso…",
+      "confirmImport": "Conferma import ({count} righe valide)",
+      "fields": {
+        "movementDate": "Data movimento",
+        "counterparty": "Controparte",
+        "palletType": "Tipo pallet",
+        "site": "Sito (opzionale)",
+        "direction": "Direzione (IN/OUT)",
+        "quantity": "Quantità",
+        "documentType": "Tipo documento",
+        "documentNumber": "Numero documento",
+        "voucherNumber": "Numero buono",
+        "notes": "Note"
+      }
+    },
+    "rowErrors": {
+      "movementDateMissing": "Data movimento mancante",
+      "movementDateInvalid": "Data movimento non valida: \"{value}\"",
+      "counterpartyMissing": "Controparte mancante",
+      "counterpartyNotFound": "Controparte non trovata: \"{value}\"",
+      "palletTypeMissing": "Tipo pallet mancante",
+      "palletTypeNotFound": "Tipo pallet non trovato: \"{value}\"",
+      "directionMissing": "Direzione mancante",
+      "directionUnrecognized": "Direzione non riconosciuta: \"{value}\" (usa IN/OUT)",
+      "quantityMissing": "Quantità mancante",
+      "quantityInvalid": "Quantità non valida: \"{value}\" (deve essere un intero positivo)",
+      "siteIndicatedButCounterpartyUnresolved": "Sito \"{value}\" indicato ma la controparte non è stata risolta",
+      "siteAmbiguous": "Sito ambiguo: \"{value}\" corrisponde a più siti di questa controparte",
+      "siteNotBelongingToCounterparty": "Sito \"{value}\" non appartiene alla controparte selezionata",
+      "siteNotFound": "Sito non trovato: \"{value}\"",
+      "voucherNumberMissing": "Numero buono mancante",
+      "voucherNumberAlreadyExists": "Numero buono già esistente: \"{value}\"",
+      "voucherNumberDuplicateInFile": "Numero buono duplicato nel file: \"{value}\"",
+      "issueDateMissing": "Data emissione mancante",
+      "issueDateInvalid": "Data emissione non valida: \"{value}\"",
+      "dueDateInvalid": "Scadenza recupero non valida: \"{value}\"",
+      "dueDateBeforeIssueDate": "La scadenza non può precedere la data di emissione"
+    }
+  },
+  "reconciliation": {
+    "title": "Riconciliazione",
+    "eyebrow": "Controllo deterministico",
+    "subtitle": "Confronta OUT, IN e buoni per trasformare anomalie documentali in azioni di recupero.",
+    "createCase": "Crea pratica",
+    "metrics": {
+      "reconciledPositions": "Posizioni riconciliate",
+      "reconciledPositionsFoot": "controparte × tipo pallet",
+      "outstanding": "Outstanding",
+      "outstandingFoot": "pallet da spiegare o recuperare",
+      "estimatedValue": "Valore stimato",
+      "estimatedValueFoot": "esposizione teorica",
+      "anomalies": "Anomalie",
+      "anomaliesFoot": "{count} buoni scaduti"
+    },
+    "balanceTable": {
+      "title": "Saldo per controparte / tipo pallet",
+      "subtitle": "Vista quantitativa che alimenta il decisioning operativo.",
+      "counterparty": "Controparte",
+      "palletType": "Pallet",
+      "out": "OUT",
+      "in": "IN",
+      "theoreticalBalance": "Saldo teorico",
+      "openVouchers": "Buoni aperti",
+      "outstanding": "Outstanding",
+      "value": "Valore"
+    },
+    "emptyBalances": "Nessun movimento o buono registrato.",
+    "emptyFindings": "Nessuna anomalia rilevata.",
+    "findingsCount": "{count} segnalazioni",
+    "moreFindings": "+{count} altre",
+    "findings": {
+      "unbalancedMovements": "Movimenti non bilanciati",
+      "openVoucher": "Buoni aperti",
+      "duplicateDocument": "Documenti potenzialmente duplicati",
+      "missingDocumentation": "Movimenti senza documento",
+      "voucherDueSoon": "Buoni in scadenza",
+      "voucherOverdue": "Buoni scaduti"
+    },
+    "describe": {
+      "unbalancedMovementsOutstanding": "{quantity} pallet non rientrati",
+      "openVoucherOutstanding": "{quantity} pallet residui",
+      "duplicateDocument": "documento \"{document}\" ripetuto su {count} movimenti",
+      "missingDocumentation": "movimento senza numero documento",
+      "voucherDueSoon": "Buono in scadenza tra {days} giorni ({date})",
+      "voucherOverdue": "Buono scaduto da {days} giorni ({date})"
+    }
+  },
+  "recoveryCases": {
+    "title": "Pratiche di recupero",
+    "new": "Nuova pratica",
+    "validation": {
+      "selectCounterparty": "Seleziona una controparte.",
+      "selectPalletType": "Seleziona un tipo pallet."
+    },
+    "errors": {
+      "palletTypeNotFound": "Tipo pallet non trovato.",
+      "counterpartyNotFound": "Controparte non trovata.",
+      "voucherNotFound": "Buono non trovato.",
+      "voucherCounterpartyOrPalletTypeMismatch": "Il buono selezionato non appartiene alla stessa controparte e allo stesso tipo pallet.",
+      "voucherClosedOrCancelled": "Il buono è chiuso o annullato e non può generare una nuova pratica.",
+      "quantityExceedsVoucherOutstanding": "La quantità supera il residuo del buono ({outstanding} pallet).",
+      "activeCaseAlreadyLinked": "Esiste già una pratica attiva collegata a questo buono.",
+      "quantityExceedsVoucherResidual": "La quantità richiesta supera il residuo disponibile del buono.",
+      "siteDifferentCounterparty": "Il sito selezionato non appartiene alla controparte scelta.",
+      "createFailed": "Impossibile creare la pratica. Verifica dati e permessi.",
+      "recoveredExceedsClaimed": "La quantità recuperata supererebbe quella richiesta.",
+      "recoveryExceedsVoucherResidual": "Il recupero supererebbe il residuo del buono collegato.",
+      "fullRecoveryMustCoverRemaining": "Il recupero completo deve coprire tutto il residuo.",
+      "closedCaseOnlyNotes": "La pratica è chiusa; puoi aggiungere solo una nota.",
+      "caseNotFound": "Pratica non trovata.",
+      "assigneeNotMember": "L'utente selezionato non è un membro dell'organizzazione.",
+      "assignFailed": "Impossibile aggiornare l'assegnatario.",
+      "assigned": "Pratica assegnata.",
+      "unassigned": "Assegnazione rimossa.",
+      "eventFailed": "Impossibile registrare l'evento.",
+      "eventRecorded": "Evento registrato."
+    },
+    "eyebrow": "Operazioni di recupero",
+    "subtitle": "Coda operativa, priorità, scadenze e valore economico da recuperare.",
+    "searchPlaceholder": "Cerca per riferimento…",
+    "filters": {
+      "open": "Operative",
+      "recovered": "Recuperate",
+      "closed": "Chiuse",
+      "all": "Tutte"
+    },
+    "myQueue": "La mia coda",
+    "kpis": {
+      "casesThisPage": "Pratiche in questa pagina",
+      "totalFiltered": "{total} totali · {filter}",
+      "exposure": "Esposizione",
+      "outstandingThisPage": "{count} pallet residui, questa pagina",
+      "overdue": "Scadute",
+      "overdueThisPage": "nella pagina corrente"
+    },
+    "table": {
+      "case": "Pratica",
+      "counterparty": "Controparte",
+      "pallet": "Pallet",
+      "outstanding": "Residuo",
+      "exposure": "Esposizione",
+      "dueDate": "Scadenza",
+      "priority": "Priorità",
+      "status": "Stato",
+      "assignee": "Assegnata a"
+    },
+    "recoveredOfClaimed": "{recovered} / {claimed} recuperati",
+    "empty": "Nessuna pratica in questa vista.",
+    "unassigned": "Non assegnata",
+    "newPageTitle": "Nuova pratica di recupero",
+    "detail": {
+      "eyebrow": "Pratica di recupero",
+      "kpis": {
+        "claimed": "Richiesto",
+        "recovered": "Recuperato",
+        "completed": "{percent}% completato",
+        "outstanding": "Residuo",
+        "palletsToClose": "pallet da chiudere",
+        "exposure": "Esposizione",
+        "estimatedOutstandingValue": "valore residuo stimato"
+      },
+      "dossier": {
+        "title": "Dossier pratica",
+        "subtitle": "Informazioni che governano il recupero.",
+        "openedDate": "Data apertura",
+        "dueDate": "Scadenza",
+        "site": "Sito",
+        "unitValue": "Valore unitario",
+        "linkedVoucher": "Buono collegato",
+        "openVoucher": "Apri buono",
+        "assignee": "Assegnata a",
+        "notes": "Note"
+      },
+      "activity": {
+        "title": "Registra attività",
+        "subtitle": "Ogni evento aggiorna timeline e stato."
+      },
+      "timeline": {
+        "title": "Timeline operativa",
+        "subtitleCount": "{count} eventi registrati",
+        "empty": "Nessun evento registrato.",
+        "table": {
+          "date": "Data",
+          "event": "Evento",
+          "quantity": "Quantità",
+          "notes": "Note"
+        }
+      }
+    },
+    "form": {
+      "counterparty": "Controparte",
+      "selectPlaceholder": "— seleziona —",
+      "palletType": "Tipo pallet",
+      "site": "Sito",
+      "noSite": "Nessuno",
+      "noSitesForCounterparty": "Nessun sito registrato per questa controparte.",
+      "quantityClaimed": "Quantità richiesta",
+      "dueDate": "Scadenza",
+      "priority": "Priorità",
+      "notes": "Note",
+      "creating": "Creazione…",
+      "create": "Crea pratica"
+    },
+    "eventForm": {
+      "closedCaseNotice": "Questa pratica è chiusa; puoi comunque aggiungere una nota.",
+      "eventType": "Evento",
+      "quantityRemaining": "Quantità (residuo: {remaining})",
+      "recoveredTotalPreview": "Nuovo totale recuperato: {recovered}/{claimed} → stato: {status}",
+      "notes": "Note",
+      "saving": "Salvataggio…",
+      "addEvent": "Aggiungi evento"
+    }
+  },
+  "recoveryEvents": {
+    "title": "Eventi",
+    "types": {
+      "created": "Pratica creata",
+      "contact_attempt": "Contatto effettuato",
+      "response": "Risposta ricevuta",
+      "scheduled": "Recupero programmato",
+      "pickup": "Ritiro effettuato",
+      "partial_recovery": "Recupero parziale",
+      "full_recovery": "Recupero completo",
+      "dispute": "Contestazione",
+      "note": "Nota",
+      "closed": "Chiusura (non recuperato)"
+    }
+  },
+  "documents": {
+    "title": "Documenti",
+    "upload": "Carica documento",
+    "noDocuments": "Ancora nessun documento.",
+    "validation": {
+      "typeRequired": "Seleziona un tipo di documento."
+    },
+    "types": {
+      "ddt": "DDT",
+      "voucher": "Buono",
+      "voucherScan": "Scansione buono",
+      "pickupProof": "Prova di ritiro",
+      "deliveryProof": "Prova di consegna",
+      "palletPhoto": "Foto pallet",
+      "disputeEvidence": "Prova di contestazione",
+      "settlementDocument": "Documento di liquidazione",
+      "other": "Altro"
+    },
+    "errors": {
+      "linkedMovementDifferentCounterparty": "Il movimento collegato appartiene a un'altra controparte.",
+      "linkedVoucherDifferentCounterparty": "Il buono collegato appartiene a un'altra controparte.",
+      "linkedRecoveryCaseDifferentCounterparty": "La pratica collegata appartiene a un'altra controparte.",
+      "linkedRecoveryEventDifferentCounterparty": "L'evento collegato appartiene a un'altra controparte.",
+      "linkedSiteDifferentCounterparty": "Il sito collegato appartiene a un'altra controparte.",
+      "operationFailed": "Operazione non riuscita.",
+      "selectFileToUpload": "Seleziona un file da caricare.",
+      "fileContentMismatch": "Il contenuto del file non corrisponde al formato dichiarato.",
+      "uploadFailed": "Impossibile caricare il file. Verifica formato e dimensione.",
+      "uploadSuccess": "Documento caricato.",
+      "downloadLinkFailed": "Impossibile generare il link di download.",
+      "missingFilename": "Nome file mancante.",
+      "emptyFile": "Il file è vuoto.",
+      "fileTooLarge": "Il file supera la dimensione massima di 15 MB.",
+      "unsupportedFormat": "Formato non supportato. Usa PDF, JPG, PNG o WEBP.",
+      "extensionMismatch": "L'estensione del file non corrisponde al formato dichiarato."
+    },
+    "evidenceTitle": "Documenti e prove",
+    "countSingular": "{count} documento",
+    "countPlural": "{count} documenti",
+    "documentType": "Tipo documento",
+    "fileFieldLabel": "File (PDF, JPG, PNG, WEBP — max 15 MB)",
+    "notesOptional": "Note (opzionale)",
+    "table": {
+      "type": "Tipo",
+      "file": "File",
+      "uploadedBy": "Caricato da",
+      "date": "Data",
+      "visibility": "Visibilità",
+      "status": "Stato"
+    },
+    "visibility": {
+      "client": "Cliente",
+      "internal": "Interno"
+    },
+    "status": {
+      "active": "Attivo",
+      "superseded": "Superato"
+    },
+    "actions": {
+      "open": "Apri",
+      "makeInternal": "Rendi interno",
+      "share": "Condividi",
+      "markSuperseded": "Segna superato",
+      "reactivate": "Riattiva"
+    },
+    "shownOfTotal": "Mostrati i {shown} documenti più recenti su {total} totali."
+  },
+  "reports": {
+    "title": "Report",
+    "exportCsv": "Esporta CSV",
+    "csv": {
+      "counterparty": "Controparte",
+      "openCases": "Pratiche aperte",
+      "outstandingPallets": "Pallet outstanding",
+      "outstandingValue": "Valore outstanding",
+      "recoveredPalletsInPeriod": "Recuperato periodo (pallet)",
+      "recoveredValueInPeriod": "Recuperato periodo (valore)",
+      "maxAgeingDays": "Anzianità max (giorni)"
+    },
+    "eyebrow": "Value reporting",
+    "subtitle": "Misura outstanding e valore recuperato senza confondere stock odierno e recuperi del periodo.",
+    "dateFrom": "Dal",
+    "dateTo": "Al",
+    "applyPeriod": "Applica periodo",
+    "metrics": {
+      "outstandingPallets": "Outstanding pallet",
+      "currentSituation": "situazione corrente",
+      "outstandingValue": "Outstanding valore",
+      "recoveredInPeriod": "Recuperato nel periodo",
+      "recoveredValue": "Valore recuperato",
+      "periodRange": "{from} → {to}",
+      "casesOpenedInPeriod": "{count} pratiche aperte nel periodo"
+    },
+    "byCounterparty": {
+      "title": "Esposizione per controparte",
+      "subtitle": "Dove è concentrato il valore outstanding."
+    },
+    "emptyPeriod": "Nessun dato per il periodo selezionato.",
+    "ageingTitle": "Ageing",
+    "ageingSubtitle": "Valore outstanding per anzianità.",
+    "ageing": {
+      "d0to30": "0–30 gg",
+      "d31to60": "31–60 gg",
+      "d61to90": "61–90 gg",
+      "d90plus": "90+ gg"
+    },
+    "footnote": "L'outstanding è calcolato alla data odierna; i valori recuperati riflettono gli eventi registrati nel periodo selezionato."
+  },
+  "search": {
+    "title": "Ricerca",
+    "placeholder": "Cerca…",
+    "noResults": "Nessun risultato trovato.",
+    "eyebrow": "Ricerca globale",
+    "minChars": "Inserisci almeno due caratteri per cercare.",
+    "noResultsFor": "Nessun risultato per “{query}”.",
+    "resultsFor": "{count} risultati per “{query}”.",
+    "resultsCount": "{count} risultati",
+    "registryEntry": "Anagrafica",
+    "groups": {
+      "counterparties": "Controparti",
+      "cases": "Pratiche",
+      "vouchers": "Buoni"
+    },
+    "emptyCounterparties": "Nessuna controparte.",
+    "emptyCases": "Nessuna pratica.",
+    "emptyVouchers": "Nessun buono."
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "tabs": {
+      "company": "Azienda",
+      "localization": "Localizzazione",
+      "branding": "Branding",
+      "clientPortal": "Client Portal",
+      "team": "Team"
+    },
+    "company": {
+      "legalName": "Ragione sociale",
+      "tradingName": "Nome commerciale",
+      "countryCode": "Paese",
+      "taxId": "Codice fiscale",
+      "vatId": "Partita IVA",
+      "registrationNumber": "Numero di registrazione",
+      "addressLine1": "Indirizzo",
+      "addressLine2": "Indirizzo (riga 2)",
+      "city": "Città",
+      "region": "Provincia / regione",
+      "postalCode": "CAP",
+      "website": "Sito web",
+      "supportEmail": "Email di supporto",
+      "supportPhone": "Telefono di supporto"
+    },
+    "localization": {
+      "defaultLanguage": "Lingua predefinita",
+      "defaultCurrency": "Valuta di base",
+      "timezone": "Fuso orario",
+      "adminOnly": "Solo gli amministratori dell'organizzazione possono modificare queste impostazioni.",
+      "languageNames": {
+        "en": "Inglese",
+        "it": "Italiano"
+      }
+    },
+    "branding": {
+      "portalName": "Nome del portale",
+      "logo": "Logo",
+      "compactLogo": "Logo compatto",
+      "primaryColor": "Colore primario",
+      "secondaryColor": "Colore secondario",
+      "supportEmail": "Email di supporto",
+      "supportPhone": "Telefono di supporto",
+      "website": "Sito web",
+      "welcomeMessageFor": "Messaggio di benvenuto ({language})",
+      "uploadLogo": "Carica logo"
+    },
+    "team": {
+      "members": "Membri",
+      "role": "Ruolo",
+      "roles": {
+        "admin": "Admin",
+        "operator": "Operatore",
+        "viewer": "Osservatore"
+      }
+    },
+    "eyebrow": "Workspace",
+    "subtitle": "Identità organizzazione, account e modello di accesso corrente.",
+    "overview": {
+      "organization": {
+        "title": "Organizzazione",
+        "subtitle": "Workspace che isola dati e operazioni.",
+        "name": "Nome",
+        "slug": "Slug",
+        "createdAt": "Creata il"
+      },
+      "account": {
+        "title": "Il tuo account",
+        "subtitle": "Sessione e ruolo nel workspace.",
+        "email": "Email",
+        "security": "Sicurezza",
+        "rlsActive": "RLS attiva"
+      }
+    },
+    "clientPortalTab": {
+      "description": "Gestisci l'accesso al portale clienti dalla scheda di ogni singola controparte."
+    }
+  },
+  "clientPortal": {
+    "nav": {
+      "overview": "Panoramica",
+      "vouchers": "Buoni",
+      "movements": "Movimenti",
+      "recoveryCases": "Pratiche di recupero",
+      "documents": "Documenti"
+    },
+    "welcome": "Portale clienti",
+    "defaultWelcomeMessage": "Benvenuto nel tuo portale clienti.",
+    "readOnlyNotice": "Area riservata a sola lettura. Per correzioni o contestazioni contatta il tuo referente.",
+    "overview": {
+      "kpis": {
+        "outstandingPallets": {
+          "label": "Pallet in sospeso",
+          "foot": "ancora da restituire o recuperare"
+        },
+        "estimatedExposure": {
+          "label": "Esposizione stimata",
+          "foot": "valore residuo stimato"
+        },
+        "openVouchers": {
+          "label": "Buoni aperti",
+          "foot": "crediti pallet attivi"
+        },
+        "activeRecoveryCases": {
+          "label": "Recuperi attivi",
+          "foot": "pratiche in lavorazione"
+        },
+        "recoveredPallets": {
+          "label": "Pallet recuperati",
+          "foot": "totale storico"
+        },
+        "recoveredValue": {
+          "label": "Valore recuperato",
+          "foot": "totale storico"
+        }
+      },
+      "nextDue": {
+        "title": "Prossima scadenza",
+        "subtitle": "La pratica di recupero più urgente ancora aperta.",
+        "empty": "Nessuna scadenza imminente.",
+        "detailsPrefix": "Consulta",
+        "detailsLinkText": "le pratiche di recupero",
+        "detailsSuffix": "per i dettagli completi."
+      }
+    },
+    "documents": {
+      "title": "Documenti e prove",
+      "subtitle": "Documenti condivisi dal team di recupero.",
+      "empty": "Nessun documento condiviso al momento."
+    },
+    "movements": {
+      "title": "Movimenti pallet",
+      "subtitle": "Flussi in ingresso e uscita registrati per la tua azienda.",
+      "empty": "Nessun movimento registrato.",
+      "table": {
+        "date": "Data",
+        "flow": "Flusso",
+        "pallet": "Pallet",
+        "quantity": "Quantità",
+        "site": "Sito",
+        "document": "Documento"
+      },
+      "direction": {
+        "outbound": "USCITA",
+        "inbound": "ENTRATA"
+      }
+    },
+    "recoveryCases": {
+      "title": "Pratiche di recupero",
+      "subtitle": "Stato di avanzamento dei recuperi pallet in corso.",
+      "empty": "Nessuna pratica registrata.",
+      "table": {
+        "case": "Pratica",
+        "pallet": "Pallet",
+        "recovered": "Recuperato",
+        "outstanding": "Residuo",
+        "outstandingValue": "Valore residuo",
+        "dueDate": "Scadenza",
+        "status": "Stato"
+      }
+    },
+    "vouchers": {
+      "title": "Buoni pallet",
+      "subtitle": "Crediti pallet emessi e relativo stato di recupero.",
+      "empty": "Nessun buono registrato.",
+      "table": {
+        "voucher": "Buono",
+        "pallet": "Pallet",
+        "issued": "Emissione",
+        "dueDate": "Scadenza",
+        "quantity": "Quantità",
+        "recovered": "Recuperato",
+        "outstanding": "Residuo",
+        "status": "Stato"
+      }
+    }
+  },
+  "workspaceSelector": {
+    "title": "Scegli un workspace",
+    "description": "Il tuo account ha accesso a più di un workspace.",
+    "internal": "Operazioni interne",
+    "portal": "Client portal"
+  },
+  "errorPages": {
+    "notFound": {
+      "title": "Pagina non trovata",
+      "description": "La pagina che cerchi non esiste."
+    },
+    "generic": {
+      "title": "Qualcosa è andato storto",
+      "description": "Si è verificato un errore imprevisto. Riprova.",
+      "retry": "Riprova",
+      "ref": "Rif.:"
+    }
+  },
+  "clientPortalAccess": {
+    "errors": {
+      "noAccountFound": "Nessun account trovato con questa email. Il cliente deve prima registrarsi.",
+      "adminOnly": "Solo un amministratore può gestire l'accesso al portale clienti.",
+      "alreadyActiveElsewhere": "Questo account ha già accesso attivo al portale di un'altra controparte.",
+      "grantFailed": "Impossibile concedere l'accesso al portale.",
+      "granted": "Accesso al portale concesso."
+    },
+    "title": "Portale clienti",
+    "subtitle": "Utenti autorizzati a vedere i dati di questa controparte in sola lettura.",
+    "grantForm": {
+      "emailLabel": "Email cliente",
+      "emailPlaceholder": "cliente@azienda.it",
+      "granting": "Concessione…",
+      "grantButton": "Concedi accesso",
+      "adminHint": "Il cliente deve avere già un account (registrato su /signup) con questa email. Un account può avere accesso attivo a una sola controparte alla volta."
+    },
+    "readOnlyHint": "Solo un amministratore può concedere o revocare l'accesso al portale clienti. Di seguito lo stato attuale, in sola lettura.",
+    "empty": "Nessun utente portale per questa controparte.",
+    "table": {
+      "email": "Email",
+      "name": "Nome",
+      "grantedOn": "Concesso il",
+      "status": "Stato"
+    },
+    "status": {
+      "active": "Attivo",
+      "disabled": "Disattivato"
+    },
+    "actions": {
+      "deactivate": "Disattiva",
+      "reactivate": "Riattiva"
+    }
+  },
+  "import": {
+    "batch": {
+      "startedOn": "Avviato il {date}",
+      "completedOn": "completato il {date}",
+      "backToImports": "← Torna agli import"
+    }
+  }
+}

@@ -9,6 +9,10 @@ import {
   sanitizeFilename,
   validateDocumentFile,
 } from "@/lib/documents/storage-path";
+import { getDictionary } from "@/i18n/dictionaries";
+import { createTranslator } from "@/i18n/translator";
+
+const t = createTranslator(getDictionary("en"));
 
 const REAL_HEADERS: Record<string, number[]> = {
   "application/pdf": [0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x37], // "%PDF-1.7"
@@ -62,21 +66,21 @@ describe("isAllowedMimeType", () => {
 
 describe("validateDocumentFile", () => {
   it("accepts a valid PDF", () => {
-    expect(validateDocumentFile({ type: "application/pdf", size: 1024, name: "ddt.pdf" })).toEqual({ valid: true });
+    expect(validateDocumentFile({ type: "application/pdf", size: 1024, name: "ddt.pdf" }, t)).toEqual({ valid: true });
   });
 
   it("accepts a valid JPEG with either extension spelling", () => {
-    expect(validateDocumentFile({ type: "image/jpeg", size: 1024, name: "photo.jpg" }).valid).toBe(true);
-    expect(validateDocumentFile({ type: "image/jpeg", size: 1024, name: "photo.jpeg" }).valid).toBe(true);
+    expect(validateDocumentFile({ type: "image/jpeg", size: 1024, name: "photo.jpg" }, t).valid).toBe(true);
+    expect(validateDocumentFile({ type: "image/jpeg", size: 1024, name: "photo.jpeg" }, t).valid).toBe(true);
   });
 
   it("rejects a missing filename", () => {
-    const result = validateDocumentFile({ type: "application/pdf", size: 1024, name: "" });
+    const result = validateDocumentFile({ type: "application/pdf", size: 1024, name: "" }, t);
     expect(result.valid).toBe(false);
   });
 
   it("rejects an empty file", () => {
-    const result = validateDocumentFile({ type: "application/pdf", size: 0, name: "ddt.pdf" });
+    const result = validateDocumentFile({ type: "application/pdf", size: 0, name: "ddt.pdf" }, t);
     expect(result.valid).toBe(false);
   });
 
@@ -85,23 +89,23 @@ describe("validateDocumentFile", () => {
       type: "application/pdf",
       size: MAX_FILE_SIZE_BYTES + 1,
       name: "ddt.pdf",
-    });
+    }, t);
     expect(result.valid).toBe(false);
   });
 
   it("rejects a disallowed MIME type even with a matching extension", () => {
-    const result = validateDocumentFile({ type: "application/zip", size: 1024, name: "archive.zip" });
+    const result = validateDocumentFile({ type: "application/zip", size: 1024, name: "archive.zip" }, t);
     expect(result.valid).toBe(false);
   });
 
   it("rejects a MIME type that doesn't match the file extension", () => {
     // Declares image/png but names itself .pdf -- a renamed-executable style mismatch.
-    const result = validateDocumentFile({ type: "image/png", size: 1024, name: "invoice.pdf" });
+    const result = validateDocumentFile({ type: "image/png", size: 1024, name: "invoice.pdf" }, t);
     expect(result.valid).toBe(false);
   });
 
   it("rejects an executable disguised with an image MIME type", () => {
-    const result = validateDocumentFile({ type: "image/png", size: 1024, name: "payload.exe" });
+    const result = validateDocumentFile({ type: "image/png", size: 1024, name: "payload.exe" }, t);
     expect(result.valid).toBe(false);
   });
 });

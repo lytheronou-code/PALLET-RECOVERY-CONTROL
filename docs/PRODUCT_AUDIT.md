@@ -177,3 +177,39 @@ Still not built from the P1 list: **#3 Team management** (role UI beyond
 DB-level admin/operator/viewer, invites still blocked on SMTP), **#4
 Recovery planning/trips**, **#7 notification digests** (also blocked on
 SMTP). Reasoning unchanged from the prior P1 status update above.
+
+## Premium V4 status update (2026-09-19) — international self-service foundation
+
+The product's positioning changes with this pass: Pallet Recovery Control
+is no longer architected as an ESSEGI-specific application anywhere in the
+codebase. There is not a single ESSEGI name, assumption, or hardcoded
+business rule in the schema, RLS policies, or application code — every
+organization (ESSEGI included, as a future pilot on equal footing with any
+other tenant) configures its own company profile, locale, currency,
+timezone, country, and Client Portal branding through the same
+self-service Settings area and onboarding wizard.
+
+Delivered on `claude/premium-v4-international-selfservice` (PR open
+toward `main`, not merged): i18n architecture (dictionaries, locale
+resolution hierarchy, language switcher, locale-aware formatting),
+organization localization (`default_locale`/`default_currency`/
+`timezone`), international company/counterparty/site schema, self-service
+Organization Settings (Company/Localization/Branding/Client Portal tabs),
+white-label Client Portal branding (logo, portal name, brand color with
+automatic contrast, support info, "Powered by" attribution architected
+for future plan-gating), a guided 6-step onboarding wizard, friendly
+(never-raw) database error messages, and verification that the CSV
+import/export flows already support IT/EN column names. Full breakdown,
+including the one real validation-logic bug this phase's own adversarial
+QA found and fixed before it ever shipped to a real user, is in
+`docs/CURRENT_STATE.md`.
+
+**Explicitly not delivered in this pass, tracked as the next piece of
+work**: translating the remaining ~15-20 operational page bodies (table
+headers, inline labels) that still render Italian text regardless of
+viewer locale — the architecture and every DB-facing formatted value are
+already fully locale-aware, but full "the entire product renders in
+English" is not yet literally true end to end. Also not started, as
+explicitly scoped out of V4: Stripe/plans/billing, custom domain
+provisioning, SMTP-backed Client Portal invitation emails, full
+internal-app white-labeling.

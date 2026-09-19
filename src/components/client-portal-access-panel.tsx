@@ -6,18 +6,53 @@ import {
   setClientPortalMembershipActiveAction,
 } from "@/lib/actions/client-portal-admin";
 import { emptyFormState } from "@/lib/actions/form-state";
-import { formatDate } from "@/lib/format";
+import { createFormatters } from "@/lib/format";
 import type { ClientPortalMembershipRow } from "@/lib/data/client-portal-admin";
+import type { Locale } from "@/i18n/locale";
+
+// No `t` prop here: this is a "use client" component, and a Translator is a
+// function, which cannot cross the server/client boundary as a prop. The
+// parent Server Component resolves every needed string via t(...) into this
+// plain labels object instead (see organization-branding-form.tsx /
+// correct-movement-form.tsx for the same established shape).
+export type ClientPortalAccessPanelLabels = {
+  title: string;
+  subtitle: string;
+  emailLabel: string;
+  emailPlaceholder: string;
+  granting: string;
+  grantButton: string;
+  adminHint: string;
+  readOnlyHint: string;
+  empty: string;
+  tableEmail: string;
+  tableName: string;
+  tableGrantedOn: string;
+  tableStatus: string;
+  statusActive: string;
+  statusDisabled: string;
+  deactivate: string;
+  reactivate: string;
+};
 
 export function ClientPortalAccessPanel({
   counterpartyId,
   members,
   isAdmin,
+  locale,
+  currency,
+  timeZone,
+  labels,
 }: {
   counterpartyId: string;
   members: ClientPortalMembershipRow[];
   isAdmin: boolean;
+  locale: Locale;
+  currency: string;
+  timeZone: string;
+  labels: ClientPortalAccessPanelLabels;
 }) {
+  const { formatDate } = createFormatters(locale, currency, timeZone);
   const [state, formAction, pending] = useActionState(
     grantClientPortalAccessAction.bind(null, counterpartyId),
     emptyFormState,
@@ -34,8 +69,8 @@ export function ClientPortalAccessPanel({
     <section className="panel">
       <div className="panel-header">
         <div>
-          <h2 className="panel-title">Portale clienti</h2>
-          <div className="panel-subtitle">Utenti autorizzati a vedere i dati di questa controparte in sola lettura.</div>
+          <h2 className="panel-title">{labels.title}</h2>
+          <div className="panel-subtitle">{labels.subtitle}</div>
         </div>
       </div>
       <div className="panel-body">
@@ -45,44 +80,42 @@ export function ClientPortalAccessPanel({
               {state.error ? <div className="form-error" style={{ gridColumn: "1 / -1" }}>{state.error}</div> : null}
               {state.message ? <div className="form-message" style={{ gridColumn: "1 / -1" }}>{state.message}</div> : null}
               <div className="field">
-                <label htmlFor={`portal-email-${counterpartyId}`}>Email cliente</label>
+                <label htmlFor={`portal-email-${counterpartyId}`}>{labels.emailLabel}</label>
                 <input
                   id={`portal-email-${counterpartyId}`}
                   name="email"
                   type="email"
-                  placeholder="cliente@azienda.it"
+                  placeholder={labels.emailPlaceholder}
                   required
                 />
               </div>
               <button type="submit" className="btn btn-secondary btn-sm" disabled={pending}>
-                {pending ? "Concessione…" : "Concedi accesso"}
+                {pending ? labels.granting : labels.grantButton}
               </button>
             </form>
             <p className="muted" style={{ fontSize: 11, marginTop: 8, marginBottom: 16 }}>
-              Il cliente deve avere già un account (registrato su /signup) con questa email. Un account può avere
-              accesso attivo a una sola controparte alla volta.
+              {labels.adminHint}
             </p>
           </>
         ) : (
           <p className="muted" style={{ fontSize: 12, marginBottom: 16 }}>
-            Solo un amministratore può concedere o revocare l&apos;accesso al portale clienti. Di seguito lo stato
-            attuale in sola lettura.
+            {labels.readOnlyHint}
           </p>
         )}
 
         {rowError ? <div className="form-error" style={{ marginBottom: 12 }}>{rowError}</div> : null}
 
         {members.length === 0 ? (
-          <div className="empty-state">Nessun utente portale per questa controparte.</div>
+          <div className="empty-state">{labels.empty}</div>
         ) : (
           <div className="table-wrap">
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Email</th>
-                  <th>Nome</th>
-                  <th>Concesso il</th>
-                  <th>Stato</th>
+                  <th>{labels.tableEmail}</th>
+                  <th>{labels.tableName}</th>
+                  <th>{labels.tableGrantedOn}</th>
+                  <th>{labels.tableStatus}</th>
                   {isAdmin ? <th></th> : null}
                 </tr>
               </thead>
@@ -94,7 +127,7 @@ export function ClientPortalAccessPanel({
                     <td>{formatDate(member.createdAt)}</td>
                     <td>
                       <span className={"badge " + (member.active ? "badge-closed" : "badge-neutral")}>
-                        {member.active ? "Attivo" : "Disattivato"}
+                        {member.active ? labels.statusActive : labels.statusDisabled}
                       </span>
                     </td>
                     {isAdmin ? (
@@ -104,7 +137,7 @@ export function ClientPortalAccessPanel({
                           className="btn btn-ghost btn-sm"
                           onClick={() => handleToggle(member.id, !member.active)}
                         >
-                          {member.active ? "Disattiva" : "Riattiva"}
+                          {member.active ? labels.deactivate : labels.reactivate}
                         </button>
                       </td>
                     ) : null}

@@ -6,6 +6,24 @@ import { listSitesForCounterpartyAction } from "@/lib/actions/sites";
 import type { Counterparty } from "@/lib/data/counterparties";
 import type { PalletType } from "@/lib/data/pallet-types";
 
+export type VoucherFormLabels = {
+  counterparty: string;
+  palletType: string;
+  selectPlaceholder: string;
+  site: string;
+  siteNone: string;
+  siteEmptyNotice: string;
+  voucherNumber: string;
+  voucherNumberPlaceholder: string;
+  issueDate: string;
+  dueDate: string;
+  quantity: string;
+  notes: string;
+  notesPlaceholder: string;
+  submit: string;
+  submitting: string;
+};
+
 // See RecoveryCaseForm for the same contextual-site-picker rationale:
 // sites are fetched fresh for the selected counterparty rather than
 // filtered client-side out of a full org-wide list, and the DB enforces
@@ -14,10 +32,12 @@ export function VoucherForm({
   action,
   counterparties,
   palletTypes,
+  labels,
 }: {
   action: (prevState: FormState, formData: FormData) => Promise<FormState>;
   counterparties: Counterparty[];
   palletTypes: PalletType[];
+  labels: VoucherFormLabels;
 }) {
   const [state, formAction, pending] = useActionState(action, emptyFormState);
   const today = new Date().toISOString().slice(0, 10);
@@ -52,7 +72,7 @@ export function VoucherForm({
 
       <div className="form-grid-2">
         <div className="field">
-          <label htmlFor="counterpartyId">Controparte</label>
+          <label htmlFor="counterpartyId">{labels.counterparty}</label>
           <select
             id="counterpartyId"
             name="counterpartyId"
@@ -60,7 +80,7 @@ export function VoucherForm({
             value={counterpartyId}
             onChange={(e) => handleCounterpartyChange(e.target.value)}
           >
-            <option value="" disabled>Seleziona…</option>
+            <option value="" disabled>{labels.selectPlaceholder}</option>
             {counterparties.map((item) => (
               <option value={item.id} key={item.id}>{item.legal_name}</option>
             ))}
@@ -68,9 +88,9 @@ export function VoucherForm({
         </div>
 
         <div className="field">
-          <label htmlFor="palletTypeId">Tipo pallet</label>
+          <label htmlFor="palletTypeId">{labels.palletType}</label>
           <select id="palletTypeId" name="palletTypeId" required defaultValue="">
-            <option value="" disabled>Seleziona…</option>
+            <option value="" disabled>{labels.selectPlaceholder}</option>
             {palletTypes.map((item) => (
               <option value={item.id} key={item.id}>{item.code} — {item.description}</option>
             ))}
@@ -80,50 +100,50 @@ export function VoucherForm({
 
       {counterpartyId ? (
         <div className="field">
-          <label htmlFor="siteId">Sito</label>
+          <label htmlFor="siteId">{labels.site}</label>
           <select id="siteId" name="siteId" value={siteId} onChange={(e) => setSiteId(e.target.value)}>
-            <option value="">Nessuno</option>
+            <option value="">{labels.siteNone}</option>
             {sites.map((s) => (
               <option value={s.id} key={s.id}>{s.name}</option>
             ))}
           </select>
           {sites.length === 0 ? (
             <p className="muted" style={{ fontSize: 11, margin: "4px 0 0" }}>
-              Nessun sito registrato per questa controparte.
+              {labels.siteEmptyNotice}
             </p>
           ) : null}
         </div>
       ) : null}
 
       <div className="field">
-        <label htmlFor="voucherNumber">Numero buono / riferimento</label>
-        <input id="voucherNumber" name="voucherNumber" required placeholder="es. BV-2026-001847" />
+        <label htmlFor="voucherNumber">{labels.voucherNumber}</label>
+        <input id="voucherNumber" name="voucherNumber" required placeholder={labels.voucherNumberPlaceholder} />
       </div>
 
       <div className="form-grid-3">
         <div className="field">
-          <label htmlFor="issueDate">Data emissione</label>
+          <label htmlFor="issueDate">{labels.issueDate}</label>
           <input id="issueDate" name="issueDate" type="date" defaultValue={today} required />
         </div>
 
         <div className="field">
-          <label htmlFor="recoveryDueDate">Scadenza recupero</label>
+          <label htmlFor="recoveryDueDate">{labels.dueDate}</label>
           <input id="recoveryDueDate" name="recoveryDueDate" type="date" />
         </div>
 
         <div className="field">
-          <label htmlFor="quantity">Quantità</label>
+          <label htmlFor="quantity">{labels.quantity}</label>
           <input id="quantity" name="quantity" type="number" min="1" step="1" required />
         </div>
       </div>
 
       <div className="field">
-        <label htmlFor="notes">Note</label>
-        <textarea id="notes" name="notes" rows={3} placeholder="Riferimenti DDT, condizioni, informazioni utili al recupero…" />
+        <label htmlFor="notes">{labels.notes}</label>
+        <textarea id="notes" name="notes" rows={3} placeholder={labels.notesPlaceholder} />
       </div>
 
       <button type="submit" className="btn btn-primary" disabled={pending}>
-        {pending ? "Creazione…" : "Crea buono"}
+        {pending ? labels.submitting : labels.submit}
       </button>
     </form>
   );

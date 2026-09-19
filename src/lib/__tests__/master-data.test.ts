@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { counterpartySchema, palletTypeSchema, siteSchema } from "@/lib/validation/master-data";
+import { buildCounterpartySchema, buildPalletTypeSchema, buildSiteSchema } from "@/lib/validation/master-data";
+import { getDictionary } from "@/i18n/dictionaries";
+import { createTranslator } from "@/i18n/translator";
+
+const t = createTranslator(getDictionary("en"));
+const counterpartySchema = buildCounterpartySchema(t);
+const palletTypeSchema = buildPalletTypeSchema(t);
+const siteSchema = buildSiteSchema(t);
 
 describe("counterpartySchema", () => {
   it("accepts a minimal valid counterparty and defaults countryCode", () => {
@@ -40,6 +47,43 @@ describe("counterpartySchema", () => {
       email: "not-an-email",
     });
     expect(result.success).toBe(false);
+  });
+
+  it("accepts a real non-Italian ISO country code", () => {
+    const result = counterpartySchema.safeParse({
+      legalName: "Acme Logistics Ltd",
+      counterpartyType: "customer",
+      countryCode: "GB",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.countryCode).toBe("GB");
+    }
+  });
+
+  it("rejects a well-formed but unrecognized country code", () => {
+    const result = counterpartySchema.safeParse({
+      legalName: "Acme Logistics",
+      counterpartyType: "customer",
+      countryCode: "ZZ",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts the new optional international fields without requiring VAT", () => {
+    const result = counterpartySchema.safeParse({
+      legalName: "ABC Pallet Customer",
+      counterpartyType: "customer",
+      countryCode: "US",
+      tradingName: "ABC Co",
+      taxId: "12-3456789",
+      registrationNumber: "US-REG-1",
+      addressLine2: "Suite 400",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.vatNumber).toBeUndefined();
+    }
   });
 });
 

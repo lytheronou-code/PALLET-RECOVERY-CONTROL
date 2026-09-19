@@ -10,6 +10,15 @@ import {
   type MovementLookups,
 } from "@/lib/csv/movement-import";
 import { buildSiteLookup } from "@/lib/csv/site-lookup";
+import { getDictionary } from "@/i18n/dictionaries";
+import { createTranslator } from "@/i18n/translator";
+
+// Italian test translator: preserves this file's existing assertions
+// (written against the product's original hardcoded-Italian error text)
+// unchanged, now resolved through the dictionary instead of being
+// hardcoded in the validator itself.
+const t = createTranslator(getDictionary("it"));
+const tEn = createTranslator(getDictionary("en"));
 
 const headers = ["Data", "Cliente", "Pallet", "Sito", "Dir", "Qta", "DocTipo", "DocNum", "Buono", "Note"];
 
@@ -77,7 +86,7 @@ describe("normalizeDirection", () => {
 describe("validateMovementRow", () => {
   it("accepts a fully valid row and resolves ids", () => {
     const row = ["05/03/2026", "Acme Srl", "EPAL EUR1", "", "IN", "10", "DDT", "123", "V-1", "ok"];
-    const result = validateMovementRow(headers, row, mapping, lookups, 1);
+    const result = validateMovementRow(headers, row, mapping, lookups, 1, t);
     expect(result.valid).toBe(true);
     if (result.valid) {
       expect(result.movement).toEqual({
@@ -97,42 +106,42 @@ describe("validateMovementRow", () => {
 
   it("resolves a site by code first", () => {
     const row = ["05/03/2026", "Acme Srl", "EPAL EUR1", "MIL", "IN", "10", "", "", "", ""];
-    const result = validateMovementRow(headers, row, mapping, lookups, 1);
+    const result = validateMovementRow(headers, row, mapping, lookups, 1, t);
     expect(result.valid).toBe(true);
     if (result.valid) expect(result.movement.site_id).toBe("site-1");
   });
 
   it("falls back to matching a site by name when no code matches", () => {
     const row = ["05/03/2026", "Acme Srl", "EPAL EUR1", "Roma Hub", "IN", "10", "", "", "", ""];
-    const result = validateMovementRow(headers, row, mapping, lookups, 1);
+    const result = validateMovementRow(headers, row, mapping, lookups, 1, t);
     expect(result.valid).toBe(true);
     if (result.valid) expect(result.movement.site_id).toBe("site-2");
   });
 
   it("rejects a site that belongs to a different counterparty", () => {
     const row = ["05/03/2026", "Acme Srl", "EPAL EUR1", "Roma Deposito", "IN", "10", "", "", "", ""];
-    const result = validateMovementRow(headers, row, mapping, lookups, 1);
+    const result = validateMovementRow(headers, row, mapping, lookups, 1, t);
     expect(result.valid).toBe(false);
     if (!result.valid) expect(result.errors.join(" ")).toMatch(/non appartiene alla controparte/);
   });
 
   it("rejects a site that does not exist anywhere in the organization", () => {
     const row = ["05/03/2026", "Acme Srl", "EPAL EUR1", "Nonexistent Site", "IN", "10", "", "", "", ""];
-    const result = validateMovementRow(headers, row, mapping, lookups, 1);
+    const result = validateMovementRow(headers, row, mapping, lookups, 1, t);
     expect(result.valid).toBe(false);
     if (!result.valid) expect(result.errors.join(" ")).toMatch(/Sito non trovato/);
   });
 
   it("rejects an ambiguous site code shared by multiple sites of the same counterparty", () => {
     const row = ["05/03/2026", "Acme Srl", "EPAL EUR1", "DUP", "IN", "10", "", "", "", ""];
-    const result = validateMovementRow(headers, row, mapping, lookups, 1);
+    const result = validateMovementRow(headers, row, mapping, lookups, 1, t);
     expect(result.valid).toBe(false);
     if (!result.valid) expect(result.errors.join(" ")).toMatch(/ambiguo/);
   });
 
   it("rejects an unknown counterparty", () => {
     const row = ["05/03/2026", "Unknown Co", "EPAL EUR1", "", "IN", "10", "", "", "", ""];
-    const result = validateMovementRow(headers, row, mapping, lookups, 2);
+    const result = validateMovementRow(headers, row, mapping, lookups, 2, t);
     expect(result.valid).toBe(false);
     if (!result.valid) {
       expect(result.errors.join(" ")).toMatch(/Controparte non trovata/);
@@ -141,7 +150,7 @@ describe("validateMovementRow", () => {
 
   it("rejects a zero or negative quantity", () => {
     const row = ["05/03/2026", "Acme Srl", "EPAL EUR1", "", "IN", "0", "", "", "", ""];
-    const result = validateMovementRow(headers, row, mapping, lookups, 3);
+    const result = validateMovementRow(headers, row, mapping, lookups, 3, t);
     expect(result.valid).toBe(false);
     if (!result.valid) {
       expect(result.errors.join(" ")).toMatch(/Quantità non valida/);
@@ -150,16 +159,31 @@ describe("validateMovementRow", () => {
 
   it("rejects a non-integer quantity", () => {
     const row = ["05/03/2026", "Acme Srl", "EPAL EUR1", "", "IN", "3.5", "", "", "", ""];
-    const result = validateMovementRow(headers, row, mapping, lookups, 4);
+    const result = validateMovementRow(headers, row, mapping, lookups, 4, t);
     expect(result.valid).toBe(false);
   });
 
   it("collects multiple errors on the same row instead of stopping at the first", () => {
     const row = ["not-a-date", "Unknown Co", "Unknown Pallet", "", "sideways", "-1", "", "", "", ""];
-    const result = validateMovementRow(headers, row, mapping, lookups, 5);
+    const result = validateMovementRow(headers, row, mapping, lookups, 5, t);
     expect(result.valid).toBe(false);
     if (!result.valid) {
       expect(result.errors.length).toBe(5);
+    }
+  });
+
+  // Independent-review finding: per-row CSV validation errors were
+  // hardcoded Italian regardless of the viewer's locale. Pins that the
+  // same row now resolves to genuinely different, locale-correct text.
+  it("resolves the same validation error in the viewer's own locale", () => {
+    const row = ["05/03/2026", "Unknown Co", "EPAL EUR1", "", "IN", "10", "", "", "", ""];
+    const resultIt = validateMovementRow(headers, row, mapping, lookups, 1, t);
+    const resultEn = validateMovementRow(headers, row, mapping, lookups, 1, tEn);
+    expect(resultIt.valid).toBe(false);
+    expect(resultEn.valid).toBe(false);
+    if (!resultIt.valid && !resultEn.valid) {
+      expect(resultIt.errors.join(" ")).toMatch(/Controparte non trovata/);
+      expect(resultEn.errors.join(" ")).toMatch(/Counterparty not found/);
     }
   });
 });
@@ -170,7 +194,7 @@ describe("validateMovementRows", () => {
       ["05/03/2026", "Acme Srl", "EPAL EUR1", "", "IN", "10", "", "", "", ""],
       ["not-a-date", "Acme Srl", "EPAL EUR1", "", "IN", "10", "", "", "", ""],
     ];
-    const results = validateMovementRows(headers, rows, mapping, lookups);
+    const results = validateMovementRows(headers, rows, mapping, lookups, t);
     expect(results).toHaveLength(2);
     expect(results[0].rowNumber).toBe(1);
     expect(results[0].valid).toBe(true);

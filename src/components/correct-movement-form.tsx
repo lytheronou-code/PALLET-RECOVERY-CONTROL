@@ -5,7 +5,30 @@ import { correctMovementAction } from "@/lib/actions/movements";
 import { emptyFormState } from "@/lib/actions/form-state";
 import type { MovementListItem } from "@/lib/data/movements";
 
-export function CorrectMovementForm({ movement }: { movement: MovementListItem }) {
+export type CorrectMovementFormLabels = {
+  reason: string;
+  reasonPlaceholder: string;
+  reversalOnly: string;
+  replacementIntro: string;
+  date: string;
+  direction: string;
+  outbound: string;
+  inbound: string;
+  quantity: string;
+  documentType: string;
+  documentNumber: string;
+  saving: string;
+  reverseButton: string;
+  correctButton: string;
+};
+
+export function CorrectMovementForm({
+  movement,
+  labels,
+}: {
+  movement: MovementListItem;
+  labels: CorrectMovementFormLabels;
+}) {
   const action = correctMovementAction.bind(null, movement.id);
   const [state, formAction, pending] = useActionState(action, emptyFormState);
   const [reversalOnly, setReversalOnly] = useState(false);
@@ -19,8 +42,8 @@ export function CorrectMovementForm({ movement }: { movement: MovementListItem }
       {state.error ? <div className="form-error">{state.error}</div> : null}
 
       <div className="field">
-        <label htmlFor="reason">Motivo della correzione</label>
-        <textarea id="reason" name="reason" rows={2} required placeholder="Es. quantità errata da import, controparte sbagliata…" />
+        <label htmlFor="reason">{labels.reason}</label>
+        <textarea id="reason" name="reason" rows={2} required placeholder={labels.reasonPlaceholder} />
       </div>
 
       <label className="checkbox-field">
@@ -30,36 +53,36 @@ export function CorrectMovementForm({ movement }: { movement: MovementListItem }
           checked={reversalOnly}
           onChange={(e) => setReversalOnly(e.target.checked)}
         />
-        Il movimento originale è completamente errato (solo storno, nessuna sostituzione)
+        {labels.reversalOnly}
       </label>
 
       {!reversalOnly ? (
         <>
           <p className="muted" style={{ fontSize: 11, margin: "10px 0" }}>
-            Valori del movimento corretto che sostituirà quello originale:
+            {labels.replacementIntro}
           </p>
           <div className="form-grid-2">
             <div className="field">
-              <label htmlFor="movementDate">Data</label>
+              <label htmlFor="movementDate">{labels.date}</label>
               <input id="movementDate" name="movementDate" type="date" defaultValue={movement.movementDate} />
             </div>
             <div className="field">
-              <label htmlFor="direction">Direzione</label>
+              <label htmlFor="direction">{labels.direction}</label>
               <select id="direction" name="direction" defaultValue={movement.direction}>
-                <option value="outbound">OUT (uscita)</option>
-                <option value="inbound">IN (rientro)</option>
+                <option value="outbound">{labels.outbound}</option>
+                <option value="inbound">{labels.inbound}</option>
               </select>
             </div>
             <div className="field">
-              <label htmlFor="quantity">Quantità</label>
+              <label htmlFor="quantity">{labels.quantity}</label>
               <input id="quantity" name="quantity" type="number" min="1" step="1" defaultValue={movement.quantity} />
             </div>
             <div className="field">
-              <label htmlFor="documentType">Tipo documento</label>
+              <label htmlFor="documentType">{labels.documentType}</label>
               <input id="documentType" name="documentType" type="text" defaultValue={movement.documentType ?? ""} />
             </div>
             <div className="field">
-              <label htmlFor="documentNumber">Numero documento</label>
+              <label htmlFor="documentNumber">{labels.documentNumber}</label>
               <input id="documentNumber" name="documentNumber" type="text" defaultValue={movement.documentNumber ?? ""} />
             </div>
           </div>
@@ -67,7 +90,7 @@ export function CorrectMovementForm({ movement }: { movement: MovementListItem }
       ) : null}
 
       <button type="submit" className="btn btn-primary" disabled={pending}>
-        {pending ? "Salvataggio…" : reversalOnly ? "Storna movimento" : "Correggi movimento"}
+        {pending ? labels.saving : reversalOnly ? labels.reverseButton : labels.correctButton}
       </button>
     </form>
   );

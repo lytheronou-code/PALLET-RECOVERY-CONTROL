@@ -4,12 +4,24 @@ import { useActionState } from "react";
 import { emptyFormState, type FormState } from "@/lib/actions/form-state";
 import type { PalletType } from "@/lib/data/pallet-types";
 
+export type PalletTypeFormLabels = {
+  code: string;
+  description: string;
+  unitValue: string;
+  unitValueEditNote: string;
+  saving: string;
+  createSubmit: string;
+  saveSubmit: string;
+};
+
 export function PalletTypeForm({
   action,
   palletType,
+  labels,
 }: {
   action: (prevState: FormState, formData: FormData) => Promise<FormState>;
   palletType?: PalletType;
+  labels: PalletTypeFormLabels;
 }) {
   const [state, formAction, pending] = useActionState(action, emptyFormState);
 
@@ -18,12 +30,12 @@ export function PalletTypeForm({
       {state.error ? <div className="form-error">{state.error}</div> : null}
 
       <div className="field">
-        <label htmlFor="code">Codice</label>
+        <label htmlFor="code">{labels.code}</label>
         <input id="code" name="code" type="text" defaultValue={palletType?.code} placeholder="EPAL EUR1" required />
       </div>
 
       <div className="field">
-        <label htmlFor="description">Descrizione</label>
+        <label htmlFor="description">{labels.description}</label>
         <input
           id="description"
           name="description"
@@ -35,7 +47,7 @@ export function PalletTypeForm({
       </div>
 
       <div className="field">
-        <label htmlFor="unitValue">Valore unitario (€)</label>
+        <label htmlFor="unitValue">{labels.unitValue}</label>
         <input
           id="unitValue"
           name="unitValue"
@@ -49,13 +61,12 @@ export function PalletTypeForm({
 
       {palletType ? (
         <p className="muted" style={{ fontSize: 13, marginTop: -6, marginBottom: 14 }}>
-          Le pratiche di recupero già aperte mantengono il valore unitario storico (snapshot): questa modifica vale
-          solo per le nuove pratiche.
+          {labels.unitValueEditNote}
         </p>
       ) : null}
 
       <button type="submit" className="btn btn-primary" disabled={pending} style={{ width: "auto" }}>
-        {pending ? "Salvataggio…" : palletType ? "Salva modifiche" : "Crea tipo pallet"}
+        {pending ? labels.saving : palletType ? labels.saveSubmit : labels.createSubmit}
       </button>
     </form>
   );

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { RefreshCw } from "lucide-react";
+import { getClientTranslator } from "@/i18n/client";
 
 export default function AppRouteError({
   error,
@@ -14,18 +15,21 @@ export default function AppRouteError({
     console.error(error);
   }, [error]);
 
+  const { t } = getClientTranslator();
+
   return (
     <div className="shell">
       <div className="route-error">
-        <h2>Si è verificato un errore imprevisto</h2>
-        <p>
-          L&apos;operazione non è andata a buon fine. Riprova; se il problema persiste, controlla la connessione o
-          contatta l&apos;amministratore dell&apos;organizzazione.
-        </p>
-        {error.digest ? <p style={{ color: "var(--muted-2)", fontSize: 11 }}>Riferimento: {error.digest}</p> : null}
+        <h2>{t("errorPages.generic.title")}</h2>
+        <p>{t("errorPages.generic.description")}</p>
+        {error.digest ? (
+          <p style={{ color: "var(--muted-2)", fontSize: 11 }}>
+            {t("errorPages.generic.ref")} {error.digest}
+          </p>
+        ) : null}
         <button type="button" className="btn btn-primary btn-sm" onClick={reset}>
           <RefreshCw size={14} />
-          Riprova
+          {t("errorPages.generic.retry")}
         </button>
       </div>
     </div>

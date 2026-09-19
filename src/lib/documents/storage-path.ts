@@ -2,6 +2,13 @@
 // trust the original filename for authorization (paths are built here,
 // never accepted from the client), and validate the file itself
 // server-side rather than trusting the browser's reported MIME type alone.
+//
+// validateDocumentFile takes a Translator (same idiom as the
+// buildXSchema(t) Zod factories elsewhere in this codebase) so its
+// per-reason error messages -- which land directly in formState.error --
+// are locale-resolved rather than hardcoded, while staying pure/sync and
+// directly unit-testable.
+import type { Translator } from "@/i18n/translator";
 
 export const DOCUMENT_ENTITIES = [
   "counterparty",
@@ -101,22 +108,25 @@ export type FileValidationResult = { valid: true } | { valid: false; error: stri
 // browser-reported MIME type in isolation: it must also agree with the
 // file's own extension, since a renamed executable can freely claim
 // "image/png" as its MIME type.
-export function validateDocumentFile(file: { type: string; size: number; name: string }): FileValidationResult {
+export function validateDocumentFile(
+  file: { type: string; size: number; name: string },
+  t: Translator,
+): FileValidationResult {
   if (!file.name || !file.name.trim()) {
-    return { valid: false, error: "Nome file mancante." };
+    return { valid: false, error: t("documents.errors.missingFilename") };
   }
   if (!Number.isFinite(file.size) || file.size <= 0) {
-    return { valid: false, error: "Il file è vuoto." };
+    return { valid: false, error: t("documents.errors.emptyFile") };
   }
   if (file.size > MAX_FILE_SIZE_BYTES) {
-    return { valid: false, error: "Il file supera la dimensione massima di 15 MB." };
+    return { valid: false, error: t("documents.errors.fileTooLarge") };
   }
   if (!isAllowedMimeType(file.type)) {
-    return { valid: false, error: "Formato non supportato. Usa PDF, JPG, PNG o WEBP." };
+    return { valid: false, error: t("documents.errors.unsupportedFormat") };
   }
   const extension = extensionOf(file.name);
   if (!MIME_EXTENSIONS[file.type].includes(extension)) {
-    return { valid: false, error: "L'estensione del file non corrisponde al formato dichiarato." };
+    return { valid: false, error: t("documents.errors.extensionMismatch") };
   }
   return { valid: true };
 }

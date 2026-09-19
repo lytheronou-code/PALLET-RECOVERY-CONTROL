@@ -2,8 +2,27 @@
 
 import Link from "next/link";
 import { Bell, Plus, Search } from "lucide-react";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import type { Locale } from "@/i18n/locale";
 
-export function AppTopbar({ organizationName }: { organizationName: string }) {
+export type AppTopbarLabels = {
+  searchPlaceholder: string;
+  searchAriaLabel: string;
+  searchHint: string;
+  urgentActions: string;
+  newCase: string;
+  language: string;
+};
+
+export function AppTopbar({
+  organizationName,
+  locale,
+  labels,
+}: {
+  organizationName: string;
+  locale: Locale;
+  labels: AppTopbarLabels;
+}) {
   return (
     <header className="topbar">
       <form className="global-search" action="/search" method="get">
@@ -11,11 +30,11 @@ export function AppTopbar({ organizationName }: { organizationName: string }) {
         <input
           type="search"
           name="q"
-          aria-label="Ricerca globale"
-          placeholder="Cerca pratica, controparte o buono…"
+          aria-label={labels.searchAriaLabel}
+          placeholder={labels.searchPlaceholder}
           autoComplete="off"
         />
-        <span className="search-hint">SEARCH</span>
+        <span className="search-hint">{labels.searchHint}</span>
       </form>
 
       <div className="topbar-spacer" />
@@ -24,13 +43,15 @@ export function AppTopbar({ organizationName }: { organizationName: string }) {
         {organizationName}
       </span>
 
-      <Link href="/dashboard#action-center" className="topbar-icon" aria-label="Azioni urgenti">
+      <LanguageSwitcher locale={locale} ariaLabel={labels.language} />
+
+      <Link href="/dashboard#action-center" className="topbar-icon" aria-label={labels.urgentActions}>
         <Bell size={16} />
       </Link>
 
       <Link href="/recovery-cases/new" className="btn btn-primary">
         <Plus size={14} />
-        Nuova pratica
+        {labels.newCase}
       </Link>
     </header>
   );

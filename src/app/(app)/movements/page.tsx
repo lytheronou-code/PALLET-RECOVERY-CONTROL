@@ -2,15 +2,11 @@ import Link from "next/link";
 import { ArrowDownLeft, ArrowUpRight, Upload } from "lucide-react";
 import { requireMembership } from "@/lib/data/organization";
 import { listMovementsPage } from "@/lib/data/movements";
-import { formatDate, formatNumber } from "@/lib/format";
+import { getPageContext } from "@/i18n/server";
 import { parsePage } from "@/lib/pagination";
 import { Pagination } from "@/components/pagination";
 
-const FILTERS = [
-  { key: "all", label: "Tutti" },
-  { key: "outbound", label: "OUT" },
-  { key: "inbound", label: "IN" },
-] as const;
+const FILTER_KEYS = ["all", "outbound", "inbound"] as const;
 
 export default async function MovementsPage({
   searchParams,
@@ -18,11 +14,12 @@ export default async function MovementsPage({
   searchParams: Promise<{ direction?: string; q?: string; page?: string }>;
 }) {
   const membership = await requireMembership();
+  const { t, formatDate, formatNumber } = await getPageContext(membership.organizationId);
   const { direction, q, page: pageParam } = await searchParams;
-  const active = FILTERS.find((item) => item.key === direction) ?? FILTERS[0];
+  const activeKey = FILTER_KEYS.find((key) => key === direction) ?? "all";
   const page = parsePage(pageParam);
   const result = await listMovementsPage(membership.organizationId, {
-    direction: active.key === "all" ? undefined : active.key,
+    direction: activeKey === "all" ? undefined : activeKey,
     search: q,
     page,
   });
@@ -35,78 +32,76 @@ export default async function MovementsPage({
     <div className="shell">
       <div className="header">
         <div className="page-heading">
-          <div className="eyebrow">Movement ledger</div>
-          <h1 className="page-title">Movimenti pallet</h1>
-          <div className="page-subtitle">
-            Il ledger operativo che alimenta riconciliazione, saldi e tracciabilità documentale.
-          </div>
+          <div className="eyebrow">{t("movements.eyebrow")}</div>
+          <h1 className="page-title">{t("movements.title")}</h1>
+          <div className="page-subtitle">{t("movements.subtitle")}</div>
         </div>
         <Link href="/import" className="btn btn-primary">
           <Upload size={14} />
-          Importa CSV
+          {t("movements.importCsv")}
         </Link>
       </div>
 
       <div className="grid premium-kpis three">
         <div className="metric-card">
           <div className="metric-top">
-            <span className="metric-caption">Movimenti in questa pagina</span>
+            <span className="metric-caption">{t("movements.kpis.movementsThisPage")}</span>
           </div>
           <div className="metric-value">{formatNumber(movements.length)}</div>
-          <div className="metric-foot">{formatNumber(result.total)} totali nella vista</div>
+          <div className="metric-foot">{formatNumber(result.total)} {t("movements.kpis.totalInView")}</div>
         </div>
         <div className="metric-card">
           <div className="metric-top">
-            <span className="metric-caption">Pallet OUT</span>
+            <span className="metric-caption">{t("movements.kpis.palletsOut")}</span>
             <span className="metric-icon warning"><ArrowUpRight size={17} /></span>
           </div>
           <div className="metric-value">{formatNumber(outbound)}</div>
-          <div className="metric-foot">uscite in questa pagina</div>
+          <div className="metric-foot">{t("movements.kpis.outboundThisPage")}</div>
         </div>
         <div className="metric-card">
           <div className="metric-top">
-            <span className="metric-caption">Pallet IN</span>
+            <span className="metric-caption">{t("movements.kpis.palletsIn")}</span>
             <span className="metric-icon"><ArrowDownLeft size={17} /></span>
           </div>
           <div className="metric-value">{formatNumber(inbound)}</div>
-          <div className="metric-foot">rientri in questa pagina</div>
+          <div className="metric-foot">{t("movements.kpis.inboundThisPage")}</div>
         </div>
       </div>
 
       <form method="get" className="search-bar">
         {direction ? <input type="hidden" name="direction" value={direction} /> : null}
-        <input type="search" name="q" placeholder="Cerca per numero documento o buono…" defaultValue={q ?? ""} />
-        <button type="submit" className="btn btn-secondary btn-sm">Cerca</button>
+        <input type="search" name="q" placeholder={t("movements.searchPlaceholder")} defaultValue={q ?? ""} />
+        <button type="submit" className="btn btn-secondary btn-sm">{t("common.actions.search")}</button>
       </form>
 
       <div className="filter-bar">
-        {FILTERS.map((item) => (
+        {FILTER_KEYS.map((key) => (
           <Link
-            key={item.key}
-            href={item.key === "all" ? "/movements" : "/movements?direction=" + item.key}
-            className={"filter-pill" + (item.key === active.key ? " active" : "")}
+            key={key}
+            href={key === "all" ? "/movements" : "/movements?direction=" + key}
+            className={"filter-pill" + (key === activeKey ? " active" : "")}
           >
-            {item.label}
+            {t(`movements.filters.${key}`)}
           </Link>
         ))}
       </div>
 
       <div className="panel">
         {movements.length === 0 ? (
-          <div className="empty-state">Nessun movimento in questa vista.</div>
+          <div className="empty-state">{t("movements.empty")}</div>
         ) : (
           <div className="table-wrap">
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Data</th>
-                  <th>Flusso</th>
-                  <th>Controparte</th>
-                  <th>Pallet</th>
-                  <th>Sito</th>
-                  <th>Quantità</th>
-                  <th>Documento</th>
-                  <th>Buono</th>
+                  <th>{t("movements.table.date")}</th>
+                  <th>{t("movements.table.flow")}</th>
+                  <th>{t("movements.table.counterparty")}</th>
+                  <th>{t("movements.table.pallet")}</th>
+                  <th>{t("movements.table.site")}</th>
+                  <th>{t("movements.table.quantity")}</th>
+                  <th>{t("movements.table.document")}</th>
+                  <th>{t("movements.table.voucher")}</th>
                   <th></th>
                 </tr>
               </thead>
@@ -124,7 +119,7 @@ export default async function MovementsPage({
                         {item.counterpartyName}
                       </Link>
                       {item.correctionOfMovementId ? (
-                        <div className="row-subtitle">correzione/storno</div>
+                        <div className="row-subtitle">{t("movements.correctionNote")}</div>
                       ) : null}
                     </td>
                     <td>{item.palletTypeCode}</td>
@@ -137,10 +132,10 @@ export default async function MovementsPage({
                     <td>{item.voucherNumber ?? "—"}</td>
                     <td>
                       {item.isCorrected ? (
-                        <span className="badge badge-neutral">Corretto</span>
+                        <span className="badge badge-neutral">{t("movements.corrected")}</span>
                       ) : (
                         <Link href={"/movements/" + item.id + "/correct"} className="btn btn-ghost btn-sm">
-                          Correggi
+                          {t("movements.correct")}
                         </Link>
                       )}
                     </td>
@@ -158,6 +153,7 @@ export default async function MovementsPage({
         page={result.page}
         pageCount={result.pageCount}
         total={result.total}
+        t={t}
       />
     </div>
   );

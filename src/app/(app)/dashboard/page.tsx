@@ -15,7 +15,7 @@ import {
   getDashboardKpis,
   getTopExposureCounterparties,
 } from "@/lib/data/dashboard";
-import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
+import { getPageContext } from "@/i18n/server";
 import { PriorityBadge, StatusBadge } from "@/components/status-badge";
 
 export default async function DashboardPage() {
@@ -23,6 +23,8 @@ export default async function DashboardPage() {
   if (!membership) {
     redirect("/onboarding");
   }
+
+  const { t, formatCurrency, formatDate, formatNumber } = await getPageContext(membership.organizationId);
 
   const [kpis, insights, topCounterparties, actionableCases] = await Promise.all([
     getDashboardKpis(membership.organizationId),
@@ -39,19 +41,17 @@ export default async function DashboardPage() {
     <div className="shell">
       <div className="header">
         <div className="page-heading">
-          <div className="eyebrow">Operations overview</div>
-          <h1 className="page-title">Recovery Command Center</h1>
-          <div className="page-subtitle">
-            Esposizione, priorità e recuperi in un&apos;unica vista operativa.
-          </div>
+          <div className="eyebrow">{t("dashboard.eyebrow")}</div>
+          <h1 className="page-title">{t("dashboard.title")}</h1>
+          <div className="page-subtitle">{t("dashboard.subtitle")}</div>
         </div>
         <div className="header-actions">
           <Link href="/vouchers/new" className="btn btn-secondary">
             <Ticket size={14} />
-            Nuovo buono
+            {t("dashboard.newVoucher")}
           </Link>
           <Link href="/recovery-cases/new" className="btn btn-primary">
-            Nuova pratica
+            {t("dashboard.newCase")}
             <ArrowUpRight size={14} />
           </Link>
         </div>
@@ -60,38 +60,44 @@ export default async function DashboardPage() {
       <div className="grid premium-kpis">
         <div className="metric-card">
           <div className="metric-top">
-            <span className="metric-caption">Esposizione aperta</span>
+            <span className="metric-caption">{t("dashboard.openExposureLabel")}</span>
             <span className="metric-icon"><CircleDollarSign size={17} /></span>
           </div>
           <div className="metric-value">{formatCurrency(kpis.openExposure)}</div>
-          <div className="metric-foot"><strong>{formatNumber(kpis.openPallets)}</strong> pallet outstanding</div>
+          <div className="metric-foot">
+            <strong>{formatNumber(kpis.openPallets)}</strong> {t("dashboard.palletsOutstanding")}
+          </div>
         </div>
 
         <div className="metric-card">
           <div className="metric-top">
-            <span className="metric-caption">Recovery rate</span>
+            <span className="metric-caption">{t("dashboard.recoveryRate")}</span>
             <span className="metric-icon info"><Gauge size={17} /></span>
           </div>
           <div className="metric-value">{insights.recoveryRate}%</div>
-          <div className="metric-foot"><strong>{formatNumber(kpis.recoveredPallets)}</strong> pallet recuperati</div>
+          <div className="metric-foot">
+            <strong>{formatNumber(kpis.recoveredPallets)}</strong> {t("dashboard.palletsRecovered")}
+          </div>
         </div>
 
         <div className="metric-card">
           <div className="metric-top">
-            <span className="metric-caption">Valore recuperato</span>
+            <span className="metric-caption">{t("dashboard.recoveredValueLabel")}</span>
             <span className="metric-icon"><Boxes size={17} /></span>
           </div>
           <div className="metric-value">{formatCurrency(kpis.recoveredValue)}</div>
-          <div className="metric-foot">valore storico registrato</div>
+          <div className="metric-foot">{t("dashboard.historicalValueRecorded")}</div>
         </div>
 
         <div className="metric-card">
           <div className="metric-top">
-            <span className="metric-caption">Esposizione scaduta</span>
+            <span className="metric-caption">{t("dashboard.overdueExposureLabel")}</span>
             <span className="metric-icon danger"><TriangleAlert size={17} /></span>
           </div>
           <div className="metric-value">{formatCurrency(insights.overdueExposure)}</div>
-          <div className="metric-foot"><strong>{formatNumber(kpis.overdueCases)}</strong> pratiche oltre scadenza</div>
+          <div className="metric-foot">
+            <strong>{formatNumber(kpis.overdueCases)}</strong> {t("dashboard.casesPastDue")}
+          </div>
         </div>
       </div>
 
@@ -99,23 +105,23 @@ export default async function DashboardPage() {
         <div className="panel" style={{ marginBottom: 16 }}>
           <div className="panel-header">
             <div>
-              <h2 className="panel-title">Imposta il controllo operativo</h2>
-              <div className="panel-subtitle">Tre passaggi per ottenere una dashboard realmente utile.</div>
+              <h2 className="panel-title">{t("dashboard.getStarted.title")}</h2>
+              <div className="panel-subtitle">{t("dashboard.getStarted.subtitle")}</div>
             </div>
           </div>
           <div className="panel-body">
             <div className="quick-start">
               <Link href="/counterparties/new">
-                <strong>1. Crea le controparti</strong>
-                <span>Clienti, debitori, retailer e trasportatori.</span>
+                <strong>{t("dashboard.getStarted.step1Title")}</strong>
+                <span>{t("dashboard.getStarted.step1Description")}</span>
               </Link>
               <Link href="/import">
-                <strong>2. Importa i movimenti</strong>
-                <span>Carica DDT e movimenti pallet da CSV.</span>
+                <strong>{t("dashboard.getStarted.step2Title")}</strong>
+                <span>{t("dashboard.getStarted.step2Description")}</span>
               </Link>
               <Link href="/vouchers/new">
-                <strong>3. Registra i buoni</strong>
-                <span>Scadenze e quantità alimentano la riconciliazione.</span>
+                <strong>{t("dashboard.getStarted.step3Title")}</strong>
+                <span>{t("dashboard.getStarted.step3Description")}</span>
               </Link>
             </div>
           </div>
@@ -126,24 +132,24 @@ export default async function DashboardPage() {
         <section className="panel" id="action-center">
           <div className="panel-header">
             <div>
-              <h2 className="panel-title">Action center</h2>
-              <div className="panel-subtitle">Pratiche che richiedono attenzione operativa.</div>
+              <h2 className="panel-title">{t("dashboard.actionCenter.title")}</h2>
+              <div className="panel-subtitle">{t("dashboard.actionCenter.subtitle")}</div>
             </div>
-            <Link href="/recovery-cases" className="panel-link">Vedi tutte</Link>
+            <Link href="/recovery-cases" className="panel-link">{t("dashboard.actionCenter.viewAll")}</Link>
           </div>
           {actionableCases.length === 0 ? (
-            <div className="empty-state">Nessuna pratica operativa aperta.</div>
+            <div className="empty-state">{t("dashboard.actionCenter.empty")}</div>
           ) : (
             <div className="table-wrap">
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>Pratica</th>
-                    <th>Controparte</th>
-                    <th>Scadenza</th>
-                    <th>Priorità</th>
-                    <th>Stato</th>
-                    <th>Esposizione</th>
+                    <th>{t("dashboard.actionCenter.table.case")}</th>
+                    <th>{t("dashboard.actionCenter.table.counterparty")}</th>
+                    <th>{t("dashboard.actionCenter.table.dueDate")}</th>
+                    <th>{t("dashboard.actionCenter.table.priority")}</th>
+                    <th>{t("dashboard.actionCenter.table.status")}</th>
+                    <th>{t("dashboard.actionCenter.table.exposure")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -152,13 +158,15 @@ export default async function DashboardPage() {
                       <td>
                         <Link href={"/recovery-cases/" + item.id}>
                           <div className="row-title">{item.reference}</div>
-                          <div className="row-subtitle">{item.palletTypeCode} · {formatNumber(item.outstandingPallets)} pallet</div>
+                          <div className="row-subtitle">
+                            {item.palletTypeCode} · {formatNumber(item.outstandingPallets)} {t("dashboard.actionCenter.palletsSuffix")}
+                          </div>
                         </Link>
                       </td>
                       <td>{item.counterpartyName}</td>
                       <td>{formatDate(item.dueDate)}</td>
-                      <td><PriorityBadge priority={item.priority} /></td>
-                      <td><StatusBadge status={item.status} /></td>
+                      <td><PriorityBadge priority={item.priority} t={t} /></td>
+                      <td><StatusBadge status={item.status} t={t} /></td>
                       <td className="numeric">{formatCurrency(item.outstandingExposure)}</td>
                     </tr>
                   ))}
@@ -171,8 +179,8 @@ export default async function DashboardPage() {
         <section className="panel">
           <div className="panel-header">
             <div>
-              <h2 className="panel-title">Operational health</h2>
-              <div className="panel-subtitle">Scadenze e velocità di recupero.</div>
+              <h2 className="panel-title">{t("dashboard.operationalHealth.title")}</h2>
+              <div className="panel-subtitle">{t("dashboard.operationalHealth.subtitle")}</div>
             </div>
           </div>
           <div className="panel-body">
@@ -181,27 +189,29 @@ export default async function DashboardPage() {
                 <strong>{insights.recoveryRate}%</strong>
               </div>
               <div>
-                <div className="row-title">Recovery rate</div>
-                <div className="row-subtitle">{formatNumber(insights.openCases)} pratiche operative aperte</div>
+                <div className="row-title">{t("dashboard.recoveryRate")}</div>
+                <div className="row-subtitle">
+                  {formatNumber(insights.openCases)} {t("dashboard.operationalHealth.openCasesSuffix")}
+                </div>
               </div>
             </div>
 
             <div className="health-grid">
               <div className="health-tile">
                 <div className="health-value">{formatNumber(kpis.casesDueSoon)}</div>
-                <div className="health-label">Pratiche entro 7 gg</div>
+                <div className="health-label">{t("dashboard.operationalHealth.casesDueWithin7Days")}</div>
               </div>
               <div className="health-tile">
                 <div className="health-value">{formatNumber(kpis.overdueCases)}</div>
-                <div className="health-label">Pratiche scadute</div>
+                <div className="health-label">{t("dashboard.operationalHealth.overdueCasesLabel")}</div>
               </div>
               <div className="health-tile">
                 <div className="health-value">{formatNumber(insights.voucherDueSoon)}</div>
-                <div className="health-label">Buoni entro 7 gg</div>
+                <div className="health-label">{t("dashboard.operationalHealth.vouchersDueWithin7Days")}</div>
               </div>
               <div className="health-tile">
                 <div className="health-value">{formatNumber(insights.voucherOverdue)}</div>
-                <div className="health-label">Buoni scaduti</div>
+                <div className="health-label">{t("dashboard.operationalHealth.overdueVouchers")}</div>
               </div>
             </div>
           </div>
@@ -212,10 +222,10 @@ export default async function DashboardPage() {
         <section className="panel">
           <div className="panel-header">
             <div>
-              <h2 className="panel-title">Ageing dell&apos;esposizione</h2>
-              <div className="panel-subtitle">Valore outstanding per anzianità della pratica.</div>
+              <h2 className="panel-title">{t("dashboard.ageing.title")}</h2>
+              <div className="panel-subtitle">{t("dashboard.ageing.subtitle")}</div>
             </div>
-            <Link href="/report" className="panel-link">Apri report</Link>
+            <Link href="/report" className="panel-link">{t("dashboard.ageing.openReport")}</Link>
           </div>
           <div className="panel-body">
             <div className="chart-list">
@@ -238,14 +248,14 @@ export default async function DashboardPage() {
         <section className="panel">
           <div className="panel-header">
             <div>
-              <h2 className="panel-title">Top esposizioni</h2>
-              <div className="panel-subtitle">Controparti ordinate per valore da recuperare.</div>
+              <h2 className="panel-title">{t("dashboard.topExposure.title")}</h2>
+              <div className="panel-subtitle">{t("dashboard.topExposure.subtitle")}</div>
             </div>
-            <Link href="/counterparties" className="panel-link">Controparti</Link>
+            <Link href="/counterparties" className="panel-link">{t("dashboard.topExposure.viewLink")}</Link>
           </div>
           <div className="panel-body">
             {topCounterparties.length === 0 ? (
-              <div className="empty-state" style={{ padding: "20px 0" }}>Nessuna esposizione registrata.</div>
+              <div className="empty-state" style={{ padding: "20px 0" }}>{t("dashboard.topExposure.empty")}</div>
             ) : (
               <div className="chart-list">
                 {topCounterparties.map((item) => (

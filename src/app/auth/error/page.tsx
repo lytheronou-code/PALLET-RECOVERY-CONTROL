@@ -1,15 +1,16 @@
 import Link from "next/link";
+import { getT } from "@/i18n/server";
 
-export default function AuthErrorPage() {
+export default async function AuthErrorPage() {
+  const { t } = await getT();
+
   return (
     <div className="auth-shell">
       <div className="auth-card card">
-        <h1>Link non valido</h1>
-        <p className="subtitle">
-          Il link di conferma è scaduto o non è più valido. Prova ad accedere di nuovo o registrati un&apos;altra volta.
-        </p>
+        <h1>{t("auth.error.title")}</h1>
+        <p className="subtitle">{t("auth.error.description")}</p>
         <Link href="/login" className="btn btn-primary">
-          Torna al login
+          {t("auth.error.backToLogin")}
         </Link>
       </div>
     </div>

@@ -2,19 +2,21 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { onboardingSchema } from "@/lib/validation/auth";
+import { buildOnboardingSchema } from "@/lib/validation/auth";
 import type { FormState } from "@/lib/actions/form-state";
+import { getT } from "@/i18n/server";
 
 export async function createOrganizationAction(
   _prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const parsed = onboardingSchema.safeParse({
+  const { t } = await getT();
+  const parsed = buildOnboardingSchema(t).safeParse({
     organizationName: formData.get("organizationName"),
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Dati non validi" };
+    return { error: parsed.error.issues[0]?.message ?? t("common.errors.generic") };
   }
 
   const supabase = await createClient();
@@ -31,8 +33,8 @@ export async function createOrganizationAction(
   });
 
   if (error) {
-    return { error: "Impossibile creare l'organizzazione. Riprova." };
+    return { error: t("onboarding.errors.createFailed") };
   }
 
-  redirect("/dashboard");
+  redirect("/onboarding/setup?step=company");
 }

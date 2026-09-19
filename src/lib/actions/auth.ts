@@ -3,9 +3,10 @@
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import { loginSchema, signupSchema } from "@/lib/validation/auth";
+import { buildLoginSchema, buildSignupSchema } from "@/lib/validation/auth";
 import { mapSignupError } from "@/lib/auth/signup-error";
 import type { FormState } from "@/lib/actions/form-state";
+import { getT } from "@/i18n/server";
 
 function sanitizeNextPath(next: FormDataEntryValue | null): string {
   if (typeof next !== "string" || !next.startsWith("/") || next.startsWith("//")) {
@@ -18,20 +19,21 @@ export async function signInAction(
   _prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const parsed = loginSchema.safeParse({
+  const { t } = await getT();
+  const parsed = buildLoginSchema(t).safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Dati non validi" };
+    return { error: parsed.error.issues[0]?.message ?? t("common.errors.generic") };
   }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error) {
-    return { error: "Credenziali non valide" };
+    return { error: t("auth.errors.invalidCredentials") };
   }
 
   redirect(sanitizeNextPath(formData.get("next")));
@@ -41,13 +43,14 @@ export async function signUpAction(
   _prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  const parsed = signupSchema.safeParse({
+  const { t } = await getT();
+  const parsed = buildSignupSchema(t).safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Dati non validi" };
+    return { error: parsed.error.issues[0]?.message ?? t("common.errors.generic") };
   }
 
   const originHeader = (await headers()).get("origin");
@@ -61,14 +64,14 @@ export async function signUpAction(
   });
 
   if (error) {
-    return { error: mapSignupError(error.message) };
+    return { error: mapSignupError(error.message, t) };
   }
 
   if (data.session) {
     redirect("/onboarding");
   }
 
-  return { message: "Controlla la tua email per confermare l'account prima di accedere." };
+  return { message: t("auth.signup.confirmationSent") };
 }
 
 export async function signOutAction() {

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { voucherSchema } from "@/lib/validation/voucher";
+import { buildVoucherEditSchema, buildVoucherSchema } from "@/lib/validation/voucher";
+import { getDictionary } from "@/i18n/dictionaries";
+import { createTranslator } from "@/i18n/translator";
+
+const t = createTranslator(getDictionary("en"));
+const voucherSchema = buildVoucherSchema(t);
 
 const valid = {
   counterpartyId: "11111111-1111-4111-8111-111111111111",
@@ -29,8 +34,8 @@ describe("voucherSchema", () => {
     expect(voucherSchema.safeParse({ ...valid, recoveryDueDate: "" }).success).toBe(true);
   });
 
-  it("keeps date validation for edit payloads", async () => {
-    const { voucherEditSchema } = await import("@/lib/validation/voucher");
+  it("keeps date validation for edit payloads", () => {
+    const voucherEditSchema = buildVoucherEditSchema(t);
     expect(voucherEditSchema.safeParse({
       voucherNumber: "BV-EDIT",
       issueDate: "2026-09-18",

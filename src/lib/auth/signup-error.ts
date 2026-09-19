@@ -1,21 +1,23 @@
-export function mapSignupError(message: string): string {
+import type { Translator } from "@/i18n/translator";
+
+export function mapSignupError(message: string, t: Translator): string {
   const normalized = message.toLowerCase();
 
   if (normalized.includes("user already registered")) {
-    return "Utente già registrato";
+    return t("auth.errors.userAlreadyRegistered");
   }
 
   if (normalized.includes("rate limit")) {
-    return "Il servizio email di registrazione è temporaneamente limitato. Riprova più tardi.";
+    return t("auth.errors.rateLimited");
   }
 
   if (normalized.includes("email address not authorized")) {
-    return "Registrazione temporaneamente non disponibile per questo indirizzo.";
+    return t("auth.errors.emailNotAuthorized");
   }
 
   if (normalized.includes("email address") && normalized.includes("invalid")) {
-    return "Indirizzo email non valido";
+    return t("auth.errors.invalidEmail");
   }
 
-  return "Impossibile creare l'account";
+  return t("auth.errors.signupFailed");
 }

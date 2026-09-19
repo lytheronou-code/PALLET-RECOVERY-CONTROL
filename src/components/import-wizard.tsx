@@ -4,7 +4,6 @@ import { useActionState, useMemo, useState } from "react";
 import { parseCsv } from "@/lib/csv/parse";
 import {
   MOVEMENT_FIELDS,
-  MOVEMENT_FIELD_LABELS,
   REQUIRED_MOVEMENT_FIELDS,
   buildLookupKey,
   missingRequiredMappings,
@@ -15,9 +14,44 @@ import {
 } from "@/lib/csv/movement-import";
 import { buildSiteLookup, type SiteRecord } from "@/lib/csv/site-lookup";
 import { commitMovementImportAction, type ImportActionState } from "@/lib/actions/import";
+import { getDictionary } from "@/i18n/dictionaries";
+import { createTranslator } from "@/i18n/translator";
+import type { Locale } from "@/i18n/locale";
 
 type LookupOption = { id: string; code: string | null; legalName?: string };
 
+// Plain, already-resolved strings only -- this crosses the server -> client
+// boundary as a prop from import/page.tsx's getPageContext(), so it can
+// never carry a t() function itself (see src/components/documents-section.tsx
+// and src/components/organization-branding-form.tsx for the same pattern).
+export type ImportWizardLabels = {
+  fileEmptyError: string;
+  prerequisiteMissing: string;
+  csvFileLabel: string;
+  expectedColumns: string;
+  step1Title: string;
+  unmapped: string;
+  step2Title: string;
+  missingRequiredFieldsTemplate: string;
+  totalRows: string;
+  validRows: string;
+  invalidRows: string;
+  invalidRowsTitle: string;
+  rowNumber: string;
+  reason: string;
+  back: string;
+  importing: string;
+  confirmImportTemplate: string;
+  fields: Record<MovementField, string>;
+};
+
+function fillTemplate(template: string, vars: Record<string, string>): string {
+  return template.replace(/\{(\w+)\}/g, (match, name: string) => (name in vars ? vars[name] : match));
+}
+
+// English/Italian recognition hints for auto-mapping uploaded CSV headers --
+// these are matched against the *file's own* column names, not rendered as
+// UI copy, so they stay independent of the active viewer locale.
 const AUTO_MAP_HINTS: Record<MovementField, string[]> = {
   movementDate: ["data", "date", "data movimento", "movement date"],
   counterparty: ["controparte", "cliente", "counterparty", "customer", "ragione sociale"],
@@ -47,11 +81,20 @@ export function ImportWizard({
   counterparties,
   palletTypes,
   sites,
+  labels,
+  locale,
 }: {
   counterparties: LookupOption[];
   palletTypes: LookupOption[];
   sites: SiteRecord[];
+  labels: ImportWizardLabels;
+  locale: Locale;
 }) {
+  // Locale (a plain string, unlike a bound t() function) can cross the
+  // server -> client boundary as a prop, so per-row CSV validation errors
+  // -- which depend on the *data*, not just static labels -- can still be
+  // translated here instead of only at the initial render.
+  const t = useMemo(() => createTranslator(getDictionary(locale)), [locale]);
   const [step, setStep] = useState<"upload" | "review">("upload");
   const [filename, setFilename] = useState("");
   const [headers, setHeaders] = useState<string[]>([]);
@@ -74,8 +117,8 @@ export function ImportWizard({
   }, [counterparties, palletTypes, sites]);
 
   const results = useMemo(
-    () => (step === "review" ? validateMovementRows(headers, rows, mapping, lookups) : []),
-    [step, headers, rows, mapping, lookups],
+    () => (step === "review" ? validateMovementRows(headers, rows, mapping, lookups, t) : []),
+    [step, headers, rows, mapping, lookups, t],
   );
   const validCount = results.filter((r) => r.valid).length;
   const invalidResults = results.filter((r): r is Extract<typeof r, { valid: false }> => !r.valid);
@@ -91,7 +134,7 @@ export function ImportWizard({
     const text = await file.text();
     const parsed = parseCsv(text);
     if (parsed.headers.length === 0 || parsed.rows.length === 0) {
-      setParseError("Il file non contiene righe di dati valide.");
+      setParseError(labels.fileEmptyError);
       return;
     }
     setFilename(file.name);
@@ -106,13 +149,10 @@ export function ImportWizard({
       <div className="card">
         {parseError ? <div className="form-error">{parseError}</div> : null}
         {counterparties.length === 0 || palletTypes.length === 0 ? (
-          <div className="form-message">
-            Crea almeno una controparte e un tipo pallet prima di importare movimenti: servono per riconoscere le
-            righe del file.
-          </div>
+          <div className="form-message">{labels.prerequisiteMissing}</div>
         ) : null}
         <div className="field">
-          <label htmlFor="csvFile">File CSV movimenti</label>
+          <label htmlFor="csvFile">{labels.csvFileLabel}</label>
           <input
             id="csvFile"
             type="file"
@@ -123,10 +163,7 @@ export function ImportWizard({
             }}
           />
         </div>
-        <p className="muted" style={{ fontSize: 13 }}>
-          Colonne attese: data movimento, controparte, tipo pallet, direzione (IN/OUT), quantità, e opzionalmente
-          tipo documento, numero documento, numero buono, note.
-        </p>
+        <p className="muted" style={{ fontSize: 13 }}>{labels.expectedColumns}</p>
       </div>
     );
   }
@@ -136,12 +173,12 @@ export function ImportWizard({
       {actionState.error ? <div className="form-error">{actionState.error}</div> : null}
 
       <div className="card" style={{ marginBottom: 16 }}>
-        <h2 style={{ marginTop: 0, fontSize: 16 }}>1. Mappatura colonne — {filename}</h2>
+        <h2 style={{ marginTop: 0, fontSize: 16 }}>{labels.step1Title} — {filename}</h2>
         <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           {MOVEMENT_FIELDS.map((field) => (
             <div className="field" key={field}>
               <label htmlFor={`map-${field}`}>
-                {MOVEMENT_FIELD_LABELS[field]}
+                {labels.fields[field]}
                 {REQUIRED_MOVEMENT_FIELDS.includes(field) ? " *" : ""}
               </label>
               <select
@@ -151,7 +188,7 @@ export function ImportWizard({
                   setMapping((prev) => ({ ...prev, [field]: e.target.value || undefined }))
                 }
               >
-                <option value="">— non mappata —</option>
+                <option value="">{labels.unmapped}</option>
                 {headers.map((h) => (
                   <option key={h} value={h}>
                     {h}
@@ -164,23 +201,25 @@ export function ImportWizard({
       </div>
 
       <div className="card" style={{ marginBottom: 16 }}>
-        <h2 style={{ marginTop: 0, fontSize: 16 }}>2. Anteprima e validazione</h2>
+        <h2 style={{ marginTop: 0, fontSize: 16 }}>{labels.step2Title}</h2>
         {missing.length > 0 ? (
           <div className="form-error">
-            Campi obbligatori non mappati: {missing.map((f) => MOVEMENT_FIELD_LABELS[f]).join(", ")}
+            {fillTemplate(labels.missingRequiredFieldsTemplate, {
+              fields: missing.map((f) => labels.fields[f]).join(", "),
+            })}
           </div>
         ) : (
           <div className="grid kpis" style={{ marginBottom: 16 }}>
             <div className="card">
-              <div className="kpi-label">Righe totali</div>
+              <div className="kpi-label">{labels.totalRows}</div>
               <div className="kpi-value">{results.length}</div>
             </div>
             <div className="card">
-              <div className="kpi-label">Valide</div>
+              <div className="kpi-label">{labels.validRows}</div>
               <div className="kpi-value">{validCount}</div>
             </div>
             <div className="card">
-              <div className="kpi-label">Non valide</div>
+              <div className="kpi-label">{labels.invalidRows}</div>
               <div className="kpi-value">{invalidResults.length}</div>
             </div>
           </div>
@@ -188,12 +227,12 @@ export function ImportWizard({
 
         {invalidResults.length > 0 ? (
           <>
-            <h3 style={{ fontSize: 14 }}>Righe non valide (prime 50)</h3>
+            <h3 style={{ fontSize: 14 }}>{labels.invalidRowsTitle}</h3>
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Riga</th>
-                  <th>Motivo</th>
+                  <th>{labels.rowNumber}</th>
+                  <th>{labels.reason}</th>
                 </tr>
               </thead>
               <tbody>
@@ -218,7 +257,7 @@ export function ImportWizard({
             style={{ width: "auto" }}
             onClick={() => setStep("upload")}
           >
-            Indietro
+            {labels.back}
           </button>
           <button
             type="submit"
@@ -226,7 +265,9 @@ export function ImportWizard({
             style={{ width: "auto" }}
             disabled={pending || missing.length > 0 || validCount === 0}
           >
-            {pending ? "Import in corso…" : `Conferma import (${validCount} righe valide)`}
+            {pending
+              ? labels.importing
+              : fillTemplate(labels.confirmImportTemplate, { count: String(validCount) })}
           </button>
         </div>
       </form>

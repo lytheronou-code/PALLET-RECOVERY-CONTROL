@@ -6,11 +6,20 @@ import { listSitesForCounterpartyAction } from "@/lib/actions/sites";
 import { emptyFormState } from "@/lib/actions/form-state";
 import { PRIORITIES } from "@/lib/validation/recovery-case";
 
-const PRIORITY_LABELS: Record<(typeof PRIORITIES)[number], string> = {
-  low: "Bassa",
-  normal: "Normale",
-  high: "Alta",
-  critical: "Critica",
+export type RecoveryCaseFormLabels = {
+  counterparty: string;
+  selectPlaceholder: string;
+  palletType: string;
+  site: string;
+  noSite: string;
+  noSitesForCounterparty: string;
+  quantityClaimed: string;
+  dueDate: string;
+  priority: string;
+  priorityOptions: Record<(typeof PRIORITIES)[number], string>;
+  notes: string;
+  creating: string;
+  create: string;
 };
 
 // The site picker is contextual: it only ever offers sites belonging to
@@ -24,6 +33,7 @@ export function RecoveryCaseForm({
   counterparties,
   palletTypes,
   defaults,
+  labels,
 }: {
   counterparties: { id: string; legalName: string }[];
   palletTypes: { id: string; code: string }[];
@@ -33,6 +43,7 @@ export function RecoveryCaseForm({
     voucherId?: string;
     quantityClaimed?: number;
   };
+  labels: RecoveryCaseFormLabels;
 }) {
   const [state, formAction, pending] = useActionState(createRecoveryCaseAction, emptyFormState);
   const [counterpartyId, setCounterpartyId] = useState(defaults?.counterpartyId ?? "");
@@ -67,7 +78,7 @@ export function RecoveryCaseForm({
       {defaults?.voucherId ? <input type="hidden" name="voucherId" value={defaults.voucherId} /> : null}
 
       <div className="field">
-        <label htmlFor="counterpartyId">Controparte</label>
+        <label htmlFor="counterpartyId">{labels.counterparty}</label>
         <select
           id="counterpartyId"
           name="counterpartyId"
@@ -76,7 +87,7 @@ export function RecoveryCaseForm({
           required
         >
           <option value="" disabled>
-            — seleziona —
+            {labels.selectPlaceholder}
           </option>
           {counterparties.map((c) => (
             <option key={c.id} value={c.id}>
@@ -87,10 +98,10 @@ export function RecoveryCaseForm({
       </div>
 
       <div className="field">
-        <label htmlFor="palletTypeId">Tipo pallet</label>
+        <label htmlFor="palletTypeId">{labels.palletType}</label>
         <select id="palletTypeId" name="palletTypeId" defaultValue={defaults?.palletTypeId ?? ""} required>
           <option value="" disabled>
-            — seleziona —
+            {labels.selectPlaceholder}
           </option>
           {palletTypes.map((p) => (
             <option key={p.id} value={p.id}>
@@ -102,9 +113,9 @@ export function RecoveryCaseForm({
 
       {counterpartyId ? (
         <div className="field">
-          <label htmlFor="siteId">Sito</label>
+          <label htmlFor="siteId">{labels.site}</label>
           <select id="siteId" name="siteId" value={siteId} onChange={(e) => setSiteId(e.target.value)}>
-            <option value="">Nessuno</option>
+            <option value="">{labels.noSite}</option>
             {sites.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
@@ -113,7 +124,7 @@ export function RecoveryCaseForm({
           </select>
           {sites.length === 0 ? (
             <p className="muted" style={{ fontSize: 11, margin: "4px 0 0" }}>
-              Nessun sito registrato per questa controparte.
+              {labels.noSitesForCounterparty}
             </p>
           ) : null}
         </div>
@@ -121,7 +132,7 @@ export function RecoveryCaseForm({
 
       <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <div className="field">
-          <label htmlFor="quantityClaimed">Quantità richiesta</label>
+          <label htmlFor="quantityClaimed">{labels.quantityClaimed}</label>
           <input
             id="quantityClaimed"
             name="quantityClaimed"
@@ -133,29 +144,29 @@ export function RecoveryCaseForm({
           />
         </div>
         <div className="field">
-          <label htmlFor="dueDate">Scadenza</label>
+          <label htmlFor="dueDate">{labels.dueDate}</label>
           <input id="dueDate" name="dueDate" type="date" />
         </div>
       </div>
 
       <div className="field">
-        <label htmlFor="priority">Priorità</label>
+        <label htmlFor="priority">{labels.priority}</label>
         <select id="priority" name="priority" defaultValue="normal">
           {PRIORITIES.map((p) => (
             <option key={p} value={p}>
-              {PRIORITY_LABELS[p]}
+              {labels.priorityOptions[p]}
             </option>
           ))}
         </select>
       </div>
 
       <div className="field">
-        <label htmlFor="notes">Note</label>
+        <label htmlFor="notes">{labels.notes}</label>
         <textarea id="notes" name="notes" rows={3} />
       </div>
 
       <button type="submit" className="btn btn-primary" disabled={pending} style={{ width: "auto" }}>
-        {pending ? "Creazione…" : "Crea pratica"}
+        {pending ? labels.creating : labels.create}
       </button>
     </form>
   );

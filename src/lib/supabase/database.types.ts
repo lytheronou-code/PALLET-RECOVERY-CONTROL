@@ -70,6 +70,7 @@ export type Database = {
         Row: {
           active: boolean
           address_line: string | null
+          address_line_2: string | null
           city: string | null
           code: string | null
           counterparty_type: string
@@ -82,11 +83,15 @@ export type Database = {
           phone: string | null
           postal_code: string | null
           province: string | null
+          registration_number: string | null
+          tax_id: string | null
+          trading_name: string | null
           vat_number: string | null
         }
         Insert: {
           active?: boolean
           address_line?: string | null
+          address_line_2?: string | null
           city?: string | null
           code?: string | null
           counterparty_type?: string
@@ -99,11 +104,15 @@ export type Database = {
           phone?: string | null
           postal_code?: string | null
           province?: string | null
+          registration_number?: string | null
+          tax_id?: string | null
+          trading_name?: string | null
           vat_number?: string | null
         }
         Update: {
           active?: boolean
           address_line?: string | null
+          address_line_2?: string | null
           city?: string | null
           code?: string | null
           counterparty_type?: string
@@ -116,9 +125,19 @@ export type Database = {
           phone?: string | null
           postal_code?: string | null
           province?: string | null
+          registration_number?: string | null
+          tax_id?: string | null
+          trading_name?: string | null
           vat_number?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "counterparties_country_code_fkey"
+            columns: ["country_code"]
+            isOneToOne: false
+            referencedRelation: "country_codes"
+            referencedColumns: ["code"]
+          },
           {
             foreignKeyName: "counterparties_organization_id_fkey"
             columns: ["organization_id"]
@@ -127,6 +146,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      country_codes: {
+        Row: {
+          code: string
+          enabled: boolean
+          is_iso: boolean
+        }
+        Insert: {
+          code: string
+          enabled?: boolean
+          is_iso: boolean
+        }
+        Update: {
+          code?: string
+          enabled?: boolean
+          is_iso?: boolean
+        }
+        Relationships: []
       }
       document_events: {
         Row: {
@@ -356,6 +393,94 @@ export type Database = {
           },
         ]
       }
+      organization_branding: {
+        Row: {
+          compact_logo_path: string | null
+          created_at: string
+          logo_path: string | null
+          organization_id: string
+          portal_name: string | null
+          primary_color: string | null
+          secondary_color: string | null
+          support_email: string | null
+          support_phone: string | null
+          updated_at: string
+          website: string | null
+          welcome_message_en: string | null
+          welcome_message_it: string | null
+        }
+        Insert: {
+          compact_logo_path?: string | null
+          created_at?: string
+          logo_path?: string | null
+          organization_id: string
+          portal_name?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          support_email?: string | null
+          support_phone?: string | null
+          updated_at?: string
+          website?: string | null
+          welcome_message_en?: string | null
+          welcome_message_it?: string | null
+        }
+        Update: {
+          compact_logo_path?: string | null
+          created_at?: string
+          logo_path?: string | null
+          organization_id?: string
+          portal_name?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          support_email?: string | null
+          support_phone?: string | null
+          updated_at?: string
+          website?: string | null
+          welcome_message_en?: string | null
+          welcome_message_it?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_branding_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_branding_localizations: {
+        Row: {
+          created_at: string
+          locale: string
+          organization_id: string
+          updated_at: string
+          welcome_message: string | null
+        }
+        Insert: {
+          created_at?: string
+          locale: string
+          organization_id: string
+          updated_at?: string
+          welcome_message?: string | null
+        }
+        Update: {
+          created_at?: string
+          locale?: string
+          organization_id?: string
+          updated_at?: string
+          welcome_message?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_branding_localizations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           created_at: string
@@ -397,24 +522,83 @@ export type Database = {
       }
       organizations: {
         Row: {
+          address_line_1: string | null
+          address_line_2: string | null
+          city: string | null
+          country_code: string | null
           created_at: string
+          default_currency: string
+          default_locale: string
           id: string
+          legal_name: string | null
           name: string
+          postal_code: string | null
+          region: string | null
+          registration_number: string | null
           slug: string
+          support_email: string | null
+          support_phone: string | null
+          tax_id: string | null
+          timezone: string
+          trading_name: string | null
+          vat_id: string | null
+          website: string | null
         }
         Insert: {
+          address_line_1?: string | null
+          address_line_2?: string | null
+          city?: string | null
+          country_code?: string | null
           created_at?: string
+          default_currency?: string
+          default_locale?: string
           id?: string
+          legal_name?: string | null
           name: string
+          postal_code?: string | null
+          region?: string | null
+          registration_number?: string | null
           slug: string
+          support_email?: string | null
+          support_phone?: string | null
+          tax_id?: string | null
+          timezone?: string
+          trading_name?: string | null
+          vat_id?: string | null
+          website?: string | null
         }
         Update: {
+          address_line_1?: string | null
+          address_line_2?: string | null
+          city?: string | null
+          country_code?: string | null
           created_at?: string
+          default_currency?: string
+          default_locale?: string
           id?: string
+          legal_name?: string | null
           name?: string
+          postal_code?: string | null
+          region?: string | null
+          registration_number?: string | null
           slug?: string
+          support_email?: string | null
+          support_phone?: string | null
+          tax_id?: string | null
+          timezone?: string
+          trading_name?: string | null
+          vat_id?: string | null
+          website?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "organizations_country_code_fkey"
+            columns: ["country_code"]
+            isOneToOne: false
+            referencedRelation: "country_codes"
+            referencedColumns: ["code"]
+          },
+        ]
       }
       pallet_movements: {
         Row: {
@@ -587,6 +771,7 @@ export type Database = {
           display_name: string | null
           email: string
           id: string
+          preferred_locale: string | null
           updated_at: string
         }
         Insert: {
@@ -594,6 +779,7 @@ export type Database = {
           display_name?: string | null
           email: string
           id: string
+          preferred_locale?: string | null
           updated_at?: string
         }
         Update: {
@@ -601,6 +787,7 @@ export type Database = {
           display_name?: string | null
           email?: string
           id?: string
+          preferred_locale?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -797,6 +984,7 @@ export type Database = {
         Row: {
           active: boolean
           address_line: string | null
+          address_line_2: string | null
           city: string | null
           code: string | null
           counterparty_id: string | null
@@ -811,6 +999,7 @@ export type Database = {
         Insert: {
           active?: boolean
           address_line?: string | null
+          address_line_2?: string | null
           city?: string | null
           code?: string | null
           counterparty_id?: string | null
@@ -825,6 +1014,7 @@ export type Database = {
         Update: {
           active?: boolean
           address_line?: string | null
+          address_line_2?: string | null
           city?: string | null
           code?: string | null
           counterparty_id?: string | null
@@ -837,6 +1027,13 @@ export type Database = {
           province?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "sites_country_code_fkey"
+            columns: ["country_code"]
+            isOneToOne: false
+            referencedRelation: "country_codes"
+            referencedColumns: ["code"]
+          },
           {
             foreignKeyName: "sites_org_counterparty_fk"
             columns: ["organization_id", "counterparty_id"]
@@ -974,6 +1171,145 @@ export type Database = {
           id: string
           user_id: string
         }[]
+      }
+      admin_update_organization_branding: {
+        Args: {
+          p_compact_logo_path?: string
+          p_logo_path?: string
+          p_organization_id: string
+          p_portal_name?: string
+          p_primary_color?: string
+          p_secondary_color?: string
+          p_support_email?: string
+          p_support_phone?: string
+          p_website?: string
+        }
+        Returns: {
+          compact_logo_path: string | null
+          created_at: string
+          logo_path: string | null
+          organization_id: string
+          portal_name: string | null
+          primary_color: string | null
+          secondary_color: string | null
+          support_email: string | null
+          support_phone: string | null
+          updated_at: string
+          website: string | null
+          welcome_message_en: string | null
+          welcome_message_it: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "organization_branding"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_update_organization_branding_localization: {
+        Args: {
+          p_locale: string
+          p_organization_id: string
+          p_welcome_message?: string
+        }
+        Returns: {
+          created_at: string
+          locale: string
+          organization_id: string
+          updated_at: string
+          welcome_message: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "organization_branding_localizations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_update_organization_company: {
+        Args: {
+          p_address_line_1?: string
+          p_address_line_2?: string
+          p_city?: string
+          p_country_code?: string
+          p_legal_name?: string
+          p_organization_id: string
+          p_postal_code?: string
+          p_region?: string
+          p_registration_number?: string
+          p_support_email?: string
+          p_support_phone?: string
+          p_tax_id?: string
+          p_trading_name?: string
+          p_vat_id?: string
+          p_website?: string
+        }
+        Returns: {
+          address_line_1: string | null
+          address_line_2: string | null
+          city: string | null
+          country_code: string | null
+          created_at: string
+          default_currency: string
+          default_locale: string
+          id: string
+          legal_name: string | null
+          name: string
+          postal_code: string | null
+          region: string | null
+          registration_number: string | null
+          slug: string
+          support_email: string | null
+          support_phone: string | null
+          tax_id: string | null
+          timezone: string
+          trading_name: string | null
+          vat_id: string | null
+          website: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "organizations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_update_organization_localization: {
+        Args: {
+          p_default_currency?: string
+          p_default_locale?: string
+          p_organization_id: string
+          p_timezone?: string
+        }
+        Returns: {
+          address_line_1: string | null
+          address_line_2: string | null
+          city: string | null
+          country_code: string | null
+          created_at: string
+          default_currency: string
+          default_locale: string
+          id: string
+          legal_name: string | null
+          name: string
+          postal_code: string | null
+          region: string | null
+          registration_number: string | null
+          slug: string
+          support_email: string | null
+          support_phone: string | null
+          tax_id: string | null
+          timezone: string
+          trading_name: string | null
+          vat_id: string | null
+          website: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "organizations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       bootstrap_organization: {
         Args: { p_name: string }

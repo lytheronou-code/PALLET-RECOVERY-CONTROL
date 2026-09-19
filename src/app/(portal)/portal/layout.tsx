@@ -2,32 +2,79 @@ import { LogOut } from "lucide-react";
 import { requirePortalContext } from "@/lib/data/portal";
 import { signOutAction } from "@/lib/actions/auth";
 import { PortalNav } from "@/components/portal-nav";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { resolveLocaleAndOrgSettings } from "@/i18n/resolve";
+import { getDictionary } from "@/i18n/dictionaries";
+import { createTranslator } from "@/i18n/translator";
+import { getOrganizationBranding, getOrganizationBrandingLocalizations, getBrandingImageUrl } from "@/lib/data/branding";
+import { resolveWelcomeMessage } from "@/lib/branding/welcome-message";
+import { getReadableTextColor } from "@/lib/branding/color";
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const context = await requirePortalContext();
+  const { locale, org } = await resolveLocaleAndOrgSettings(context.organizationId);
+  const t = createTranslator(getDictionary(locale));
+  const [branding, welcomeMessageLocalizations] = await Promise.all([
+    getOrganizationBranding(context.organizationId),
+    getOrganizationBrandingLocalizations(context.organizationId),
+  ]);
+  const logoUrl = await getBrandingImageUrl(branding?.logo_path ?? null);
+
+  const portalName = branding?.portal_name || context.counterpartyName;
+  const welcomeMessage = resolveWelcomeMessage(welcomeMessageLocalizations, locale, org.defaultLocale, t);
+
+  const brandStyle: React.CSSProperties & Record<string, string> = {};
+  if (branding?.primary_color) {
+    brandStyle["--accent"] = branding.primary_color;
+    brandStyle["--portal-text-on-accent"] = getReadableTextColor(branding.primary_color);
+  }
 
   return (
-    <div style={{ maxWidth: 1100, margin: "0 auto", padding: "24px 20px 48px" }}>
+    <div className="portal-shell" style={{ maxWidth: 1100, margin: "0 auto", padding: "24px 20px 48px", ...brandStyle }}>
       <div className="header" style={{ marginBottom: 8 }}>
         <div className="page-heading">
-          <div className="eyebrow">Portale clienti</div>
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={logoUrl} alt={portalName} className="portal-brand-logo" style={{ marginBottom: 6 }} />
+          ) : (
+            <div className="eyebrow">{portalName}</div>
+          )}
           <h1 className="page-title">{context.counterpartyName}</h1>
+          <div className="page-subtitle">{welcomeMessage}</div>
         </div>
-        <form action={signOutAction}>
-          <button type="submit" className="btn btn-secondary btn-sm">
-            <LogOut size={14} />
-            Esci
-          </button>
-        </form>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <LanguageSwitcher locale={locale} ariaLabel={t("common.language")} />
+          <form action={signOutAction}>
+            <button type="submit" className="btn btn-secondary btn-sm">
+              <LogOut size={14} />
+              {t("common.actions.signOut")}
+            </button>
+          </form>
+        </div>
       </div>
 
-      <PortalNav />
+      <PortalNav
+        labels={{
+          overview: t("clientPortal.nav.overview"),
+          vouchers: t("clientPortal.nav.vouchers"),
+          movements: t("clientPortal.nav.movements"),
+          recoveryCases: t("clientPortal.nav.recoveryCases"),
+          documents: t("clientPortal.nav.documents"),
+        }}
+      />
 
       {children}
 
       <p className="muted" style={{ fontSize: 11, marginTop: 24 }}>
-        Area riservata a sola lettura. Per correzioni o contestazioni contatta il tuo referente.
+        {t("clientPortal.readOnlyNotice")}
+        {branding?.support_email ? ` ${branding.support_email}` : ""}
+        {branding?.support_phone ? ` · ${branding.support_phone}` : ""}
       </p>
+
+      {/* Discreet, always-on attribution for now -- deliberately a plain
+          text line (not a config flag) so a future plan-controlled toggle
+          can gate this line without restructuring the layout. */}
+      <p className="portal-powered-by">{t("common.poweredBy", { product: "Pallet Recovery Control" })}</p>
     </div>
   );
 }

@@ -1,5 +1,5 @@
-import { listPortalMovements } from "@/lib/data/portal";
-import { formatDate, formatNumber } from "@/lib/format";
+import { getPortalContext, listPortalMovements } from "@/lib/data/portal";
+import { getPageContext } from "@/i18n/server";
 import { parsePage } from "@/lib/pagination";
 import { Pagination } from "@/components/pagination";
 
@@ -10,29 +10,30 @@ export default async function PortalMovementsPage({
 }) {
   const { page: pageParam } = await searchParams;
   const page = parsePage(pageParam);
-  const result = await listPortalMovements(page);
+  const [context, result] = await Promise.all([getPortalContext(), listPortalMovements(page)]);
+  const { t, formatDate, formatNumber } = await getPageContext(context?.organizationId);
 
   return (
     <section className="panel">
       <div className="panel-header">
         <div>
-          <h2 className="panel-title">Movimenti pallet</h2>
-          <div className="panel-subtitle">Flussi in ingresso e uscita registrati per la tua azienda.</div>
+          <h2 className="panel-title">{t("clientPortal.movements.title")}</h2>
+          <div className="panel-subtitle">{t("clientPortal.movements.subtitle")}</div>
         </div>
       </div>
       {result.items.length === 0 ? (
-        <div className="empty-state">Nessun movimento registrato.</div>
+        <div className="empty-state">{t("clientPortal.movements.empty")}</div>
       ) : (
         <div className="table-wrap">
           <table className="data-table">
             <thead>
               <tr>
-                <th>Data</th>
-                <th>Flusso</th>
-                <th>Pallet</th>
-                <th>Quantità</th>
-                <th>Sito</th>
-                <th>Documento</th>
+                <th>{t("clientPortal.movements.table.date")}</th>
+                <th>{t("clientPortal.movements.table.flow")}</th>
+                <th>{t("clientPortal.movements.table.pallet")}</th>
+                <th>{t("clientPortal.movements.table.quantity")}</th>
+                <th>{t("clientPortal.movements.table.site")}</th>
+                <th>{t("clientPortal.movements.table.document")}</th>
               </tr>
             </thead>
             <tbody>
@@ -41,7 +42,9 @@ export default async function PortalMovementsPage({
                   <td>{formatDate(item.movementDate)}</td>
                   <td>
                     <span className={"badge " + (item.direction === "outbound" ? "badge-open" : "badge-closed")}>
-                      {item.direction === "outbound" ? "OUT" : "IN"}
+                      {item.direction === "outbound"
+                        ? t("clientPortal.movements.direction.outbound")
+                        : t("clientPortal.movements.direction.inbound")}
                     </span>
                   </td>
                   <td>{item.palletTypeCode}</td>
@@ -54,7 +57,7 @@ export default async function PortalMovementsPage({
           </table>
         </div>
       )}
-      <Pagination basePath="/portal/movements" params={{}} page={result.page} pageCount={result.pageCount} total={result.total} />
+      <Pagination basePath="/portal/movements" params={{}} page={result.page} pageCount={result.pageCount} total={result.total} t={t} />
     </section>
   );
 }

@@ -4,11 +4,14 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireMembership } from "@/lib/data/organization";
-import { palletTypeSchema } from "@/lib/validation/master-data";
+import { buildPalletTypeSchema } from "@/lib/validation/master-data";
+import { mapDatabaseError } from "@/lib/errors/friendly";
+import { getT } from "@/i18n/server";
+import type { Translator } from "@/i18n/translator";
 import type { FormState } from "@/lib/actions/form-state";
 
-function parsePalletTypeForm(formData: FormData) {
-  return palletTypeSchema.safeParse({
+function parsePalletTypeForm(formData: FormData, t: Translator) {
+  return buildPalletTypeSchema(t).safeParse({
     code: formData.get("code"),
     description: formData.get("description"),
     unitValue: formData.get("unitValue"),
@@ -20,10 +23,11 @@ export async function createPalletTypeAction(
   formData: FormData,
 ): Promise<FormState> {
   const membership = await requireMembership();
-  const parsed = parsePalletTypeForm(formData);
+  const { t } = await getT(membership.organizationId);
+  const parsed = parsePalletTypeForm(formData, t);
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Dati non validi" };
+    return { error: parsed.error.issues[0]?.message ?? t("common.errors.generic") };
   }
 
   const supabase = await createClient();
@@ -35,9 +39,7 @@ export async function createPalletTypeAction(
   });
 
   if (error) {
-    return {
-      error: error.code === "23505" ? "Codice già esistente" : "Impossibile creare il tipo pallet.",
-    };
+    return { error: mapDatabaseError(error, t) };
   }
 
   revalidatePath("/pallet-types");
@@ -52,10 +54,11 @@ export async function updatePalletTypeAction(
   formData: FormData,
 ): Promise<FormState> {
   const membership = await requireMembership();
-  const parsed = parsePalletTypeForm(formData);
+  const { t } = await getT(membership.organizationId);
+  const parsed = parsePalletTypeForm(formData, t);
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Dati non validi" };
+    return { error: parsed.error.issues[0]?.message ?? t("common.errors.generic") };
   }
 
   const supabase = await createClient();
@@ -70,9 +73,7 @@ export async function updatePalletTypeAction(
     .eq("organization_id", membership.organizationId);
 
   if (error) {
-    return {
-      error: error.code === "23505" ? "Codice già esistente" : "Impossibile aggiornare il tipo pallet.",
-    };
+    return { error: mapDatabaseError(error, t) };
   }
 
   revalidatePath("/pallet-types");

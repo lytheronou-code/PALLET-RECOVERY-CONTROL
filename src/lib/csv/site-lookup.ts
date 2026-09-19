@@ -1,3 +1,5 @@
+import type { Translator } from "@/i18n/translator";
+
 // Shared by movement and voucher CSV import: resolves an optional "site"
 // column value against the counterparty already resolved for that row.
 // Independent review requirement: site resolution must never silently
@@ -75,10 +77,11 @@ export function resolveSite(
   counterpartyId: string | undefined,
   rawValue: string,
   lookup: SiteLookup,
+  t: Translator,
 ): SiteResolution {
   if (!rawValue) return { status: "empty" };
   if (!counterpartyId) {
-    return { status: "error", message: `Sito "${rawValue}" indicato ma la controparte non è stata risolta` };
+    return { status: "error", message: t("bulkImport.rowErrors.siteIndicatedButCounterpartyUnresolved", { value: rawValue }) };
   }
 
   const key = normalizeKey(rawValue);
@@ -86,7 +89,7 @@ export function resolveSite(
   const byCode = lookup.byCounterpartyAndCode.get(counterpartyId)?.get(key);
   if (byCode) {
     if (byCode.length > 1) {
-      return { status: "error", message: `Sito ambiguo: "${rawValue}" corrisponde a più siti di questa controparte` };
+      return { status: "error", message: t("bulkImport.rowErrors.siteAmbiguous", { value: rawValue }) };
     }
     return { status: "resolved", siteId: byCode[0] };
   }
@@ -94,14 +97,14 @@ export function resolveSite(
   const byName = lookup.byCounterpartyAndName.get(counterpartyId)?.get(key);
   if (byName) {
     if (byName.length > 1) {
-      return { status: "error", message: `Sito ambiguo: "${rawValue}" corrisponde a più siti di questa controparte` };
+      return { status: "error", message: t("bulkImport.rowErrors.siteAmbiguous", { value: rawValue }) };
     }
     return { status: "resolved", siteId: byName[0] };
   }
 
   if (lookup.allCodeKeys.has(key) || lookup.allNameKeys.has(key)) {
-    return { status: "error", message: `Sito "${rawValue}" non appartiene alla controparte selezionata` };
+    return { status: "error", message: t("bulkImport.rowErrors.siteNotBelongingToCounterparty", { value: rawValue }) };
   }
 
-  return { status: "error", message: `Sito non trovato: "${rawValue}"` };
+  return { status: "error", message: t("bulkImport.rowErrors.siteNotFound", { value: rawValue }) };
 }

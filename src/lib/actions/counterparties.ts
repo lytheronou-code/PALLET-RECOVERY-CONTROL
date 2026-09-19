@@ -4,16 +4,23 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireMembership } from "@/lib/data/organization";
-import { counterpartySchema } from "@/lib/validation/master-data";
+import { buildCounterpartySchema } from "@/lib/validation/master-data";
+import { mapDatabaseError } from "@/lib/errors/friendly";
+import { getT } from "@/i18n/server";
+import type { Translator } from "@/i18n/translator";
 import type { FormState } from "@/lib/actions/form-state";
 
-function parseCounterpartyForm(formData: FormData) {
-  return counterpartySchema.safeParse({
+function parseCounterpartyForm(formData: FormData, t: Translator) {
+  return buildCounterpartySchema(t).safeParse({
     legalName: formData.get("legalName"),
+    tradingName: formData.get("tradingName"),
     code: formData.get("code"),
     vatNumber: formData.get("vatNumber"),
+    taxId: formData.get("taxId"),
+    registrationNumber: formData.get("registrationNumber"),
     counterpartyType: formData.get("counterpartyType"),
     addressLine: formData.get("addressLine"),
+    addressLine2: formData.get("addressLine2"),
     postalCode: formData.get("postalCode"),
     city: formData.get("city"),
     province: formData.get("province"),
@@ -28,20 +35,25 @@ export async function createCounterpartyAction(
   formData: FormData,
 ): Promise<FormState> {
   const membership = await requireMembership();
-  const parsed = parseCounterpartyForm(formData);
+  const { t } = await getT(membership.organizationId);
+  const parsed = parseCounterpartyForm(formData, t);
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Dati non validi" };
+    return { error: parsed.error.issues[0]?.message ?? t("common.errors.generic") };
   }
 
   const supabase = await createClient();
   const { error } = await supabase.from("counterparties").insert({
     organization_id: membership.organizationId,
     legal_name: parsed.data.legalName,
+    trading_name: parsed.data.tradingName || null,
     code: parsed.data.code || null,
     vat_number: parsed.data.vatNumber || null,
+    tax_id: parsed.data.taxId || null,
+    registration_number: parsed.data.registrationNumber || null,
     counterparty_type: parsed.data.counterpartyType,
     address_line: parsed.data.addressLine || null,
+    address_line_2: parsed.data.addressLine2 || null,
     postal_code: parsed.data.postalCode || null,
     city: parsed.data.city || null,
     province: parsed.data.province || null,
@@ -51,7 +63,7 @@ export async function createCounterpartyAction(
   });
 
   if (error) {
-    return { error: "Impossibile creare la controparte. Verifica i permessi." };
+    return { error: mapDatabaseError(error, t) };
   }
 
   revalidatePath("/counterparties");
@@ -64,10 +76,11 @@ export async function updateCounterpartyAction(
   formData: FormData,
 ): Promise<FormState> {
   const membership = await requireMembership();
-  const parsed = parseCounterpartyForm(formData);
+  const { t } = await getT(membership.organizationId);
+  const parsed = parseCounterpartyForm(formData, t);
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Dati non validi" };
+    return { error: parsed.error.issues[0]?.message ?? t("common.errors.generic") };
   }
 
   const supabase = await createClient();
@@ -75,10 +88,14 @@ export async function updateCounterpartyAction(
     .from("counterparties")
     .update({
       legal_name: parsed.data.legalName,
+      trading_name: parsed.data.tradingName || null,
       code: parsed.data.code || null,
       vat_number: parsed.data.vatNumber || null,
+      tax_id: parsed.data.taxId || null,
+      registration_number: parsed.data.registrationNumber || null,
       counterparty_type: parsed.data.counterpartyType,
       address_line: parsed.data.addressLine || null,
+      address_line_2: parsed.data.addressLine2 || null,
       postal_code: parsed.data.postalCode || null,
       city: parsed.data.city || null,
       province: parsed.data.province || null,
@@ -90,7 +107,7 @@ export async function updateCounterpartyAction(
     .eq("organization_id", membership.organizationId);
 
   if (error) {
-    return { error: "Impossibile aggiornare la controparte. Verifica i permessi." };
+    return { error: mapDatabaseError(error, t) };
   }
 
   revalidatePath("/counterparties");

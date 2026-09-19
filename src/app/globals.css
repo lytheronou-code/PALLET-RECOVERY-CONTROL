@@ -246,6 +246,22 @@ button { color: inherit; }
 }
 .topbar-icon:hover { border-color: #b8c5d3; background: var(--surface-soft); }
 
+.language-switcher { display: inline-flex; border: 1px solid var(--border); border-radius: 9px; overflow: hidden; background: #fff; }
+.language-switcher form { display: contents; }
+.language-option {
+  border: none;
+  background: transparent;
+  color: var(--text-soft);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  padding: 8px 11px;
+  cursor: pointer;
+}
+.language-option:hover:not(:disabled) { background: var(--surface-soft); }
+.language-option.active { background: var(--accent); color: #fff; cursor: default; }
+.language-option + .language-option { border-left: 1px solid var(--border); }
+
 .shell { max-width: 1440px; margin: 0 auto; padding: 30px 30px 46px; }
 .header {
   display: flex;
@@ -402,6 +418,7 @@ button { color: inherit; }
   transition: border-color .15s ease, box-shadow .15s ease;
 }
 .field textarea { min-height: 82px; resize: vertical; }
+.field-hint { font-size: 11px; color: var(--muted); }
 .field input:focus, .field select:focus, .field textarea:focus {
   border-color: #79c9be;
   box-shadow: 0 0 0 3px rgba(15,118,110,.09);
@@ -424,6 +441,15 @@ button { color: inherit; }
 .btn:hover:not(:disabled) { transform: translateY(-1px); }
 .btn:disabled { opacity: .55; cursor: not-allowed; }
 .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 6px 16px rgba(15,118,110,.15); }
+/* Client Portal white-label: --accent/--portal-text-on-accent are overridden
+   inline, scoped to .portal-shell only, from the organization's validated
+   primary_color -- the internal app's own :root values are never touched,
+   so operators always see the product's own branding regardless of any
+   tenant's portal configuration. */
+.portal-shell .btn-primary { color: var(--portal-text-on-accent, #fff); }
+.portal-shell .language-option.active { color: var(--portal-text-on-accent, #fff); }
+.portal-brand-logo { height: 32px; display: block; }
+.portal-powered-by { font-size: 10px; color: var(--muted-2); text-align: center; margin-top: 8px; }
 .btn-primary:hover:not(:disabled) { background: var(--accent-strong); }
 .btn-secondary { background: #fff; color: var(--text-soft); border-color: var(--border); box-shadow: var(--shadow-xs); }
 .btn-secondary:hover:not(:disabled) { border-color: var(--border-strong); background: var(--surface-soft); }

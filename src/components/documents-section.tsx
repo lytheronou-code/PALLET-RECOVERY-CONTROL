@@ -9,23 +9,71 @@ import {
   type DocumentLinkContext,
 } from "@/lib/actions/documents";
 import { emptyFormState } from "@/lib/actions/form-state";
-import { DOCUMENT_TYPES, DOCUMENT_TYPE_LABELS } from "@/lib/validation/document";
-import { formatDate, formatFileSize } from "@/lib/format";
+import { DOCUMENT_TYPES } from "@/lib/validation/document";
+import { createFormatters } from "@/lib/format";
 import type { DocumentListItem } from "@/lib/data/documents";
+import type { Locale } from "@/i18n/locale";
 
 type RevalidateLink = Pick<DocumentLinkContext, "counterpartyId" | "recoveryCaseId" | "voucherId" | "movementId">;
+
+// Plain, already-resolved strings only -- built server-side in
+// documents-panel.tsx via getPageContext()/t() and passed down here, since a
+// "use client" component cannot receive a t() function as a prop. See
+// src/components/organization-branding-form.tsx for the same shape.
+export type DocumentsSectionLabels = {
+  countSingular: string;
+  countPlural: string;
+  documentType: string;
+  fileFieldLabel: string;
+  notesOptional: string;
+  uploadButton: string;
+  uploading: string;
+  noDocuments: string;
+  table: {
+    type: string;
+    file: string;
+    uploadedBy: string;
+    date: string;
+    visibility: string;
+    status: string;
+  };
+  visibility: { client: string; internal: string };
+  status: { active: string; superseded: string };
+  actions: {
+    open: string;
+    makeInternal: string;
+    share: string;
+    markSuperseded: string;
+    reactivate: string;
+  };
+  shownOfTotalTemplate: string;
+  documentTypeLabels: Record<(typeof DOCUMENT_TYPES)[number], string>;
+};
+
+function fillTemplate(template: string, vars: Record<string, string>): string {
+  return template.replace(/\{(\w+)\}/g, (match, name: string) => (name in vars ? vars[name] : match));
+}
 
 export function DocumentsSection({
   title,
   link,
   items,
   total,
+  locale,
+  currency,
+  timeZone,
+  labels,
 }: {
   title: string;
   link: DocumentLinkContext;
   items: DocumentListItem[];
   total: number;
+  locale: Locale;
+  currency: string;
+  timeZone: string;
+  labels: DocumentsSectionLabels;
 }) {
+  const { formatDate, formatFileSize } = createFormatters(locale, currency, timeZone);
   const [state, formAction, pending] = useActionState(uploadDocumentAction.bind(null, link), emptyFormState);
   const [rowError, setRowError] = useState<string | null>(null);
   const revalidateLink: RevalidateLink = link;
@@ -60,7 +108,9 @@ export function DocumentsSection({
       <div className="panel-header">
         <div>
           <h2 className="panel-title">{title}</h2>
-          <div className="panel-subtitle">{total} {total === 1 ? "documento" : "documenti"}</div>
+          <div className="panel-subtitle">
+            {fillTemplate(total === 1 ? labels.countSingular : labels.countPlural, { count: String(total) })}
+          </div>
         </div>
       </div>
       <div className="panel-body">
@@ -69,17 +119,17 @@ export function DocumentsSection({
           {state.message ? <div className="form-message">{state.message}</div> : null}
           <div className="form-grid-2">
             <div className="field">
-              <label htmlFor={`documentType-${link.entityId}`}>Tipo documento</label>
+              <label htmlFor={`documentType-${link.entityId}`}>{labels.documentType}</label>
               <select id={`documentType-${link.entityId}`} name="documentType" defaultValue="other">
                 {DOCUMENT_TYPES.map((type) => (
                   <option key={type} value={type}>
-                    {DOCUMENT_TYPE_LABELS[type]}
+                    {labels.documentTypeLabels[type]}
                   </option>
                 ))}
               </select>
             </div>
             <div className="field">
-              <label htmlFor={`file-${link.entityId}`}>File (PDF, JPG, PNG, WEBP — max 15 MB)</label>
+              <label htmlFor={`file-${link.entityId}`}>{labels.fileFieldLabel}</label>
               <input
                 id={`file-${link.entityId}`}
                 name="file"
@@ -90,11 +140,11 @@ export function DocumentsSection({
             </div>
           </div>
           <div className="field">
-            <label htmlFor={`notes-${link.entityId}`}>Note (opzionale)</label>
+            <label htmlFor={`notes-${link.entityId}`}>{labels.notesOptional}</label>
             <textarea id={`notes-${link.entityId}`} name="notes" rows={2} />
           </div>
           <button type="submit" className="btn btn-primary btn-sm" disabled={pending}>
-            {pending ? "Caricamento…" : "Carica documento"}
+            {pending ? labels.uploading : labels.uploadButton}
           </button>
         </form>
 
@@ -106,7 +156,7 @@ export function DocumentsSection({
 
         {items.length === 0 ? (
           <div className="empty-state" style={{ marginTop: 16 }}>
-            Nessun documento caricato.
+            {labels.noDocuments}
           </div>
         ) : (
           <>
@@ -114,19 +164,21 @@ export function DocumentsSection({
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>Tipo</th>
-                    <th>File</th>
-                    <th>Caricato da</th>
-                    <th>Data</th>
-                    <th>Visibilità</th>
-                    <th>Stato</th>
+                    <th>{labels.table.type}</th>
+                    <th>{labels.table.file}</th>
+                    <th>{labels.table.uploadedBy}</th>
+                    <th>{labels.table.date}</th>
+                    <th>{labels.table.visibility}</th>
+                    <th>{labels.table.status}</th>
                     <th></th>
                   </tr>
                 </thead>
                 <tbody>
                   {items.map((doc) => (
                     <tr key={doc.id}>
-                      <td>{DOCUMENT_TYPE_LABELS[doc.documentType as keyof typeof DOCUMENT_TYPE_LABELS] ?? doc.documentType}</td>
+                      <td>
+                        {labels.documentTypeLabels[doc.documentType as (typeof DOCUMENT_TYPES)[number]] ?? doc.documentType}
+                      </td>
                       <td>
                         <div className="row-title">{doc.originalFilename}</div>
                         <div className="row-subtitle">
@@ -138,33 +190,33 @@ export function DocumentsSection({
                       <td>{formatDate(doc.uploadedAt)}</td>
                       <td>
                         <span className={"badge " + (doc.visibility === "client" ? "badge-closed" : "badge-neutral")}>
-                          {doc.visibility === "client" ? "Cliente" : "Interno"}
+                          {doc.visibility === "client" ? labels.visibility.client : labels.visibility.internal}
                         </span>
                       </td>
                       <td>
                         <span className={"badge " + (doc.status === "active" ? "badge-closed" : "badge-neutral")}>
-                          {doc.status === "active" ? "Attivo" : "Superato"}
+                          {doc.status === "active" ? labels.status.active : labels.status.superseded}
                         </span>
                       </td>
                       <td>
                         <div style={{ display: "flex", gap: 6, justifyContent: "flex-end", flexWrap: "wrap" }}>
                           <button type="button" className="btn btn-ghost btn-sm" onClick={() => handleDownload(doc.id)}>
-                            Apri
+                            {labels.actions.open}
                           </button>
                           <button
                             type="button"
                             className="btn btn-ghost btn-sm"
                             onClick={() => handleSetVisibility(doc.id, doc.visibility === "client" ? "internal" : "client")}
                           >
-                            {doc.visibility === "client" ? "Rendi interno" : "Condividi"}
+                            {doc.visibility === "client" ? labels.actions.makeInternal : labels.actions.share}
                           </button>
                           {doc.status === "active" ? (
                             <button type="button" className="btn btn-ghost btn-sm" onClick={() => handleSetStatus(doc.id, "superseded")}>
-                              Segna superato
+                              {labels.actions.markSuperseded}
                             </button>
                           ) : (
                             <button type="button" className="btn btn-ghost btn-sm" onClick={() => handleSetStatus(doc.id, "active")}>
-                              Riattiva
+                              {labels.actions.reactivate}
                             </button>
                           )}
                         </div>
@@ -176,7 +228,7 @@ export function DocumentsSection({
             </div>
             {total > items.length ? (
               <p className="muted" style={{ fontSize: 11, marginTop: 8 }}>
-                Mostrati i {items.length} documenti più recenti su {total} totali.
+                {fillTemplate(labels.shownOfTotalTemplate, { shown: String(items.length), total: String(total) })}
               </p>
             ) : null}
           </>
