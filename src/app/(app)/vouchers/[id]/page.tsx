@@ -7,6 +7,7 @@ import { cancelVoucherAction } from "@/lib/actions/vouchers";
 import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
 import { PriorityBadge, StatusBadge, VoucherStatusBadge } from "@/components/status-badge";
 import { VoucherCancelForm } from "@/components/voucher-cancel-form";
+import { DocumentsPanel } from "@/components/documents-panel";
 
 export default async function VoucherDetailPage({
   params,
@@ -140,6 +141,17 @@ export default async function VoucherDetailPage({
             </div>
           </div>
         </aside>
+      </div>
+
+      <div style={{ marginTop: 16 }}>
+        <DocumentsPanel
+          link={{
+            counterpartyId: voucher.counterpartyId,
+            entity: "voucher",
+            entityId: voucher.id,
+            voucherId: voucher.id,
+          }}
+        />
       </div>
     </div>
   );

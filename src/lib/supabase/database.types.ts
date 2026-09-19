@@ -14,6 +14,58 @@ export type Database = {
   }
   public: {
     Tables: {
+      client_portal_memberships: {
+        Row: {
+          active: boolean
+          counterparty_id: string
+          created_at: string
+          id: string
+          organization_id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          counterparty_id: string
+          created_at?: string
+          id?: string
+          organization_id: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          counterparty_id?: string
+          created_at?: string
+          id?: string
+          organization_id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_portal_memberships_org_counterparty_fk"
+            columns: ["organization_id", "counterparty_id"]
+            isOneToOne: false
+            referencedRelation: "counterparties"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "client_portal_memberships_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_portal_memberships_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       counterparties: {
         Row: {
           active: boolean
@@ -72,6 +124,184 @@ export type Database = {
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_events: {
+        Row: {
+          actor_user_id: string | null
+          document_id: string
+          event_type: string
+          id: string
+          notes: string | null
+          occurred_at: string
+          organization_id: string
+        }
+        Insert: {
+          actor_user_id?: string | null
+          document_id: string
+          event_type: string
+          id?: string
+          notes?: string | null
+          occurred_at?: string
+          organization_id: string
+        }
+        Update: {
+          actor_user_id?: string | null
+          document_id?: string
+          event_type?: string
+          id?: string
+          notes?: string | null
+          occurred_at?: string
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_events_actor_user_id_fkey"
+            columns: ["actor_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_events_org_document_fk"
+            columns: ["organization_id", "document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "document_events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documents: {
+        Row: {
+          counterparty_id: string
+          created_at: string
+          document_type: string
+          file_size: number
+          id: string
+          mime_type: string
+          movement_id: string | null
+          notes: string | null
+          organization_id: string
+          original_filename: string
+          recovery_case_id: string | null
+          recovery_event_id: string | null
+          site_id: string | null
+          status: string
+          storage_path: string
+          updated_at: string
+          uploaded_at: string
+          uploaded_by: string | null
+          visibility: string
+          voucher_id: string | null
+        }
+        Insert: {
+          counterparty_id: string
+          created_at?: string
+          document_type: string
+          file_size: number
+          id?: string
+          mime_type: string
+          movement_id?: string | null
+          notes?: string | null
+          organization_id: string
+          original_filename: string
+          recovery_case_id?: string | null
+          recovery_event_id?: string | null
+          site_id?: string | null
+          status?: string
+          storage_path: string
+          updated_at?: string
+          uploaded_at?: string
+          uploaded_by?: string | null
+          visibility?: string
+          voucher_id?: string | null
+        }
+        Update: {
+          counterparty_id?: string
+          created_at?: string
+          document_type?: string
+          file_size?: number
+          id?: string
+          mime_type?: string
+          movement_id?: string | null
+          notes?: string | null
+          organization_id?: string
+          original_filename?: string
+          recovery_case_id?: string | null
+          recovery_event_id?: string | null
+          site_id?: string | null
+          status?: string
+          storage_path?: string
+          updated_at?: string
+          uploaded_at?: string
+          uploaded_by?: string | null
+          visibility?: string
+          voucher_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_org_counterparty_fk"
+            columns: ["organization_id", "counterparty_id"]
+            isOneToOne: false
+            referencedRelation: "counterparties"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "documents_org_movement_fk"
+            columns: ["organization_id", "movement_id"]
+            isOneToOne: false
+            referencedRelation: "pallet_movements"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "documents_org_recovery_case_fk"
+            columns: ["organization_id", "recovery_case_id"]
+            isOneToOne: false
+            referencedRelation: "recovery_cases"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "documents_org_recovery_event_fk"
+            columns: ["organization_id", "recovery_event_id"]
+            isOneToOne: false
+            referencedRelation: "recovery_events"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "documents_org_site_fk"
+            columns: ["organization_id", "site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "documents_org_voucher_fk"
+            columns: ["organization_id", "voucher_id"]
+            isOneToOne: false
+            referencedRelation: "vouchers"
+            referencedColumns: ["organization_id", "id"]
+          },
+          {
+            foreignKeyName: "documents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -736,6 +966,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_grant_client_portal_access: {
+        Args: { p_counterparty_id: string; p_email: string }
+        Returns: {
+          active: boolean
+          email: string
+          id: string
+          user_id: string
+        }[]
+      }
       bootstrap_organization: {
         Args: { p_name: string }
         Returns: {
@@ -759,7 +998,103 @@ export type Database = {
           reversal_id: string
         }[]
       }
+      is_client_portal_member: {
+        Args: { p_counterparty_id: string; p_organization_id: string }
+        Returns: boolean
+      }
+      is_client_visible_document_path: {
+        Args: { p_storage_path: string }
+        Returns: boolean
+      }
       is_org_member: { Args: { p_organization_id: string }; Returns: boolean }
+      portal_counterparty_summary: {
+        Args: never
+        Returns: {
+          active_recovery_cases_count: number
+          estimated_exposure: number
+          next_due_date: string
+          open_vouchers_count: number
+          outstanding_pallets: number
+          recovered_pallets: number
+          recovered_value: number
+        }[]
+      }
+      portal_current_context: {
+        Args: never
+        Returns: {
+          counterparty_id: string
+          organization_id: string
+        }[]
+      }
+      portal_get_context: {
+        Args: never
+        Returns: {
+          counterparty_id: string
+          counterparty_name: string
+          organization_id: string
+          role: string
+        }[]
+      }
+      portal_get_document_storage_path: {
+        Args: { p_document_id: string }
+        Returns: string
+      }
+      portal_list_documents: {
+        Args: { p_page?: number; p_page_size?: number }
+        Returns: {
+          document_type: string
+          id: string
+          original_filename: string
+          total_count: number
+          uploaded_at: string
+        }[]
+      }
+      portal_list_movements: {
+        Args: { p_page?: number; p_page_size?: number }
+        Returns: {
+          direction: string
+          document_number: string
+          document_type: string
+          id: string
+          movement_date: string
+          pallet_type_code: string
+          quantity: number
+          site_name: string
+          total_count: number
+        }[]
+      }
+      portal_list_recovery_cases: {
+        Args: { p_page?: number; p_page_size?: number }
+        Returns: {
+          due_date: string
+          id: string
+          opened_at: string
+          outstanding_quantity: number
+          outstanding_value: number
+          pallet_type_code: string
+          quantity_claimed: number
+          quantity_recovered: number
+          reference: string
+          status: string
+          total_count: number
+        }[]
+      }
+      portal_list_vouchers: {
+        Args: { p_page?: number; p_page_size?: number }
+        Returns: {
+          id: string
+          issue_date: string
+          outstanding_quantity: number
+          pallet_type_code: string
+          quantity: number
+          recovered_quantity: number
+          recovery_due_date: string
+          site_name: string
+          status: string
+          total_count: number
+          voucher_number: string
+        }[]
+      }
       record_recovery_event: {
         Args: {
           p_case_id: string
@@ -791,6 +1126,42 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "recovery_cases"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      update_document_state: {
+        Args: {
+          p_document_id: string
+          p_new_status?: string
+          p_new_visibility?: string
+          p_notes?: string
+        }
+        Returns: {
+          counterparty_id: string
+          created_at: string
+          document_type: string
+          file_size: number
+          id: string
+          mime_type: string
+          movement_id: string | null
+          notes: string | null
+          organization_id: string
+          original_filename: string
+          recovery_case_id: string | null
+          recovery_event_id: string | null
+          site_id: string | null
+          status: string
+          storage_path: string
+          updated_at: string
+          uploaded_at: string
+          uploaded_by: string | null
+          visibility: string
+          voucher_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "documents"
           isOneToOne: true
           isSetofReturn: false
         }

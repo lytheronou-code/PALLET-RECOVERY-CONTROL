@@ -43,7 +43,10 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (user && (pathname === "/login" || pathname === "/signup")) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    // "/" resolves the right destination (internal app, client portal, a
+    // choice between the two, or onboarding) instead of assuming every
+    // signed-in user belongs in the internal app.
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   return response;
