@@ -116,8 +116,8 @@ export default async function CounterpartyDetailPage({
                       <td className="numeric">{formatNumber(item.outstandingQuantity)}</td>
                       <td className="numeric">{formatCurrency(item.outstandingValue)}</td>
                       <td>{formatDate(item.dueDate)}</td>
-                      <td><PriorityBadge priority={item.priority} /></td>
-                      <td><StatusBadge status={item.status} /></td>
+                      <td><PriorityBadge priority={item.priority} t={t} /></td>
+                      <td><StatusBadge status={item.status} t={t} /></td>
                     </tr>
                   ))}
                 </tbody>
@@ -209,7 +209,7 @@ export default async function CounterpartyDetailPage({
                       <td>{item.palletTypeCode}</td>
                       <td className="numeric">{formatNumber(Math.max(0, item.quantity - item.recoveredQuantity))}</td>
                       <td>{formatDate(item.recoveryDueDate)}</td>
-                      <td><VoucherStatusBadge status={item.status} /></td>
+                      <td><VoucherStatusBadge status={item.status} t={t} /></td>
                     </tr>
                   ))}
                 </tbody>

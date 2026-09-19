@@ -49,14 +49,14 @@ export default async function PortalVouchersPage({
                   <td className="numeric">{formatNumber(item.quantity)}</td>
                   <td className="numeric">{formatNumber(item.recoveredQuantity)}</td>
                   <td className="numeric"><strong>{formatNumber(item.outstandingQuantity)}</strong></td>
-                  <td><VoucherStatusBadge status={item.status} /></td>
+                  <td><VoucherStatusBadge status={item.status} t={t} /></td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       )}
-      <Pagination basePath="/portal/vouchers" params={{}} page={result.page} pageCount={result.pageCount} total={result.total} />
+      <Pagination basePath="/portal/vouchers" params={{}} page={result.page} pageCount={result.pageCount} total={result.total} t={t} />
     </section>
   );
 }

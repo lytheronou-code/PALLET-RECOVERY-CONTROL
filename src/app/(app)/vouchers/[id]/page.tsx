@@ -41,7 +41,7 @@ export default async function VoucherDetailPage({
           <div className="page-subtitle">{voucher.counterpartyName} · {voucher.palletTypeCode}</div>
         </div>
         <div className="header-actions">
-          <VoucherStatusBadge status={voucher.status} />
+          <VoucherStatusBadge status={voucher.status} t={t} />
           {canEdit ? (
             <Link href={"/vouchers/" + voucher.id + "/edit"} className="btn btn-secondary">
               <Pencil size={14} />
@@ -102,8 +102,8 @@ export default async function VoucherDetailPage({
                       <td><Link className="row-title" href={"/recovery-cases/" + item.id}>{item.reference}</Link></td>
                       <td className="numeric">{formatNumber(item.quantityRecovered)} / {formatNumber(item.quantityClaimed)}</td>
                       <td>{formatDate(item.dueDate)}</td>
-                      <td><PriorityBadge priority={item.priority} /></td>
-                      <td><StatusBadge status={item.status} /></td>
+                      <td><PriorityBadge priority={item.priority} t={t} /></td>
+                      <td><StatusBadge status={item.status} t={t} /></td>
                     </tr>
                   ))}
                 </tbody>

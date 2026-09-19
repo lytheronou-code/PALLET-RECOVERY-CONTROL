@@ -27,7 +27,7 @@ export default async function PortalDocumentsPage({
       ) : (
         <PortalDocumentsTable items={result.items} locale={locale} currency={currency} timeZone={timeZone} />
       )}
-      <Pagination basePath="/portal/documents" params={{}} page={result.page} pageCount={result.pageCount} total={result.total} />
+      <Pagination basePath="/portal/documents" params={{}} page={result.page} pageCount={result.pageCount} total={result.total} t={t} />
     </section>
   );
 }

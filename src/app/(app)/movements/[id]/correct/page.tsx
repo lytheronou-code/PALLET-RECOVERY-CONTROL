@@ -11,7 +11,7 @@ export default async function CorrectMovementPage({
   params: Promise<{ id: string }>;
 }) {
   const membership = await requireMembership();
-  const { formatDate, formatNumber } = await getPageContext(membership.organizationId);
+  const { t, formatDate, formatNumber } = await getPageContext(membership.organizationId);
   const { id } = await params;
   const movement = await getMovement(membership.organizationId, id);
 
@@ -21,28 +21,26 @@ export default async function CorrectMovementPage({
     <div className="shell" style={{ maxWidth: 640 }}>
       <div className="header">
         <div className="page-heading">
-          <div className="eyebrow">Movement ledger</div>
-          <h1 className="page-title">Correggi movimento</h1>
-          <div className="page-subtitle">
-            Il ledger è immutabile: la correzione registra uno storno e, se necessario, un movimento sostitutivo.
-          </div>
+          <div className="eyebrow">{t("movements.correctPage.eyebrow")}</div>
+          <h1 className="page-title">{t("movements.correctPage.title")}</h1>
+          <div className="page-subtitle">{t("movements.correctPage.subtitle")}</div>
         </div>
       </div>
 
       <section className="panel" style={{ marginBottom: 16 }}>
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">Movimento originale</h2>
+            <h2 className="panel-title">{t("movements.correctPage.originalMovement")}</h2>
           </div>
         </div>
         <div className="panel-body">
           <dl className="definition-list">
-            <dt>Data</dt><dd>{formatDate(movement.movementDate)}</dd>
-            <dt>Direzione</dt><dd>{movement.direction === "outbound" ? "OUT" : "IN"}</dd>
-            <dt>Controparte</dt><dd>{movement.counterpartyName}</dd>
-            <dt>Tipo pallet</dt><dd>{movement.palletTypeCode}</dd>
-            <dt>Quantità</dt><dd>{formatNumber(movement.quantity)}</dd>
-            <dt>Documento</dt><dd>{movement.documentNumber ?? "—"}</dd>
+            <dt>{t("movements.correctPage.fields.date")}</dt><dd>{formatDate(movement.movementDate)}</dd>
+            <dt>{t("movements.correctPage.fields.direction")}</dt><dd>{movement.direction === "outbound" ? "OUT" : "IN"}</dd>
+            <dt>{t("movements.correctPage.fields.counterparty")}</dt><dd>{movement.counterpartyName}</dd>
+            <dt>{t("movements.correctPage.fields.palletType")}</dt><dd>{movement.palletTypeCode}</dd>
+            <dt>{t("movements.correctPage.fields.quantity")}</dt><dd>{formatNumber(movement.quantity)}</dd>
+            <dt>{t("movements.correctPage.fields.document")}</dt><dd>{movement.documentNumber ?? "—"}</dd>
           </dl>
         </div>
       </section>
@@ -50,11 +48,29 @@ export default async function CorrectMovementPage({
       <section className="panel">
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">Correzione</h2>
+            <h2 className="panel-title">{t("movements.correctPage.correction")}</h2>
           </div>
         </div>
         <div className="panel-body">
-          <CorrectMovementForm movement={movement} />
+          <CorrectMovementForm
+            movement={movement}
+            labels={{
+              reason: t("movements.correctForm.reasonLabel"),
+              reasonPlaceholder: t("movements.correctForm.reasonPlaceholder"),
+              reversalOnly: t("movements.correctForm.reversalOnlyLabel"),
+              replacementIntro: t("movements.correctForm.replacementIntro"),
+              date: t("movements.correctForm.fields.date"),
+              direction: t("movements.correctForm.fields.direction"),
+              outbound: t("movements.correctForm.fields.outbound"),
+              inbound: t("movements.correctForm.fields.inbound"),
+              quantity: t("movements.correctForm.fields.quantity"),
+              documentType: t("movements.correctForm.fields.documentType"),
+              documentNumber: t("movements.correctForm.fields.documentNumber"),
+              saving: t("common.actions.saving"),
+              reverseButton: t("movements.correctForm.reverseButton"),
+              correctButton: t("movements.correctForm.correctButton"),
+            }}
+          />
         </div>
       </section>
 

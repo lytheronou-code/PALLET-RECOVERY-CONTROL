@@ -55,7 +55,7 @@ export default async function PortalMovementsPage({
           </table>
         </div>
       )}
-      <Pagination basePath="/portal/movements" params={{}} page={result.page} pageCount={result.pageCount} total={result.total} />
+      <Pagination basePath="/portal/movements" params={{}} page={result.page} pageCount={result.pageCount} total={result.total} t={t} />
     </section>
   );
 }

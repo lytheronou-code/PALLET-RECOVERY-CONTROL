@@ -31,7 +31,9 @@
       "remove": "Remove",
       "select": "Select",
       "clear": "Clear",
-      "signOut": "Sign out"
+      "signOut": "Sign out",
+      "open": "Open",
+      "apply": "Apply"
     },
     "pagination": {
       "page": "Page",
@@ -39,7 +41,8 @@
       "previous": "Previous",
       "next": "Next",
       "showingResults": "Showing {from}–{to} of {total}",
-      "perPage": "Per page"
+      "perPage": "Per page",
+      "results": "results"
     },
     "emptyState": {
       "title": "Nothing here yet",
@@ -77,7 +80,32 @@
       "confirm": "Yes, delete"
     },
     "language": "Language",
-    "poweredBy": "Powered by {product}"
+    "poweredBy": "Powered by {product}",
+    "status": {
+      "recoveryCase": {
+        "open": "Open",
+        "contacted": "Contacted",
+        "scheduled": "Scheduled",
+        "partial": "Partial",
+        "recovered": "Recovered",
+        "disputed": "Disputed",
+        "closed_unrecovered": "Closed (unrecovered)",
+        "cancelled": "Cancelled"
+      },
+      "voucher": {
+        "open": "Open",
+        "partial": "Partial",
+        "closed": "Closed",
+        "disputed": "Disputed",
+        "cancelled": "Cancelled"
+      },
+      "priority": {
+        "low": "Low",
+        "normal": "Normal",
+        "high": "High",
+        "critical": "Critical"
+      }
+    }
   },
   "nav": {
     "groups": {
@@ -214,10 +242,61 @@
       "overdueCases": "Overdue cases"
     },
     "topExposure": {
-      "title": "Highest exposure counterparties"
+      "title": "Highest exposure counterparties",
+      "subtitle": "Counterparties ranked by value to recover.",
+      "viewLink": "Counterparties",
+      "empty": "No exposure recorded."
     },
     "actionCenter": {
-      "title": "Cases requiring action"
+      "title": "Cases requiring action",
+      "subtitle": "Cases that need operational attention.",
+      "viewAll": "View all",
+      "empty": "No open operational cases.",
+      "table": {
+        "case": "Case",
+        "counterparty": "Counterparty",
+        "dueDate": "Due date",
+        "priority": "Priority",
+        "status": "Status",
+        "exposure": "Exposure"
+      },
+      "palletsSuffix": "pallet"
+    },
+    "eyebrow": "Operations overview",
+    "subtitle": "Exposure, priority and recoveries in a single operational view.",
+    "newVoucher": "New voucher",
+    "newCase": "New case",
+    "openExposureLabel": "Open exposure",
+    "palletsOutstanding": "pallet outstanding",
+    "recoveryRate": "Recovery rate",
+    "palletsRecovered": "pallet recovered",
+    "recoveredValueLabel": "Recovered value",
+    "historicalValueRecorded": "historical value recorded",
+    "overdueExposureLabel": "Overdue exposure",
+    "casesPastDue": "cases past due",
+    "getStarted": {
+      "title": "Set up operational control",
+      "subtitle": "Three steps to a dashboard that's actually useful.",
+      "step1Title": "1. Create counterparties",
+      "step1Description": "Customers, debtors, retailers and carriers.",
+      "step2Title": "2. Import movements",
+      "step2Description": "Upload DDTs and pallet movements from CSV.",
+      "step3Title": "3. Register vouchers",
+      "step3Description": "Due dates and quantities feed reconciliation."
+    },
+    "operationalHealth": {
+      "title": "Operational health",
+      "subtitle": "Due dates and recovery velocity.",
+      "openCasesSuffix": "open operational cases",
+      "casesDueWithin7Days": "Cases due within 7 days",
+      "overdueCasesLabel": "Overdue cases",
+      "vouchersDueWithin7Days": "Vouchers due within 7 days",
+      "overdueVouchers": "Overdue vouchers"
+    },
+    "ageing": {
+      "title": "Exposure ageing",
+      "subtitle": "Outstanding value by case age.",
+      "openReport": "Open report"
     }
   },
   "counterparties": {
@@ -235,6 +314,33 @@
       "postalCode": "Postal code",
       "email": "Email",
       "phone": "Phone"
+    },
+    "eyebrow": "Network",
+    "subtitle": "Customers, debtors, retail points and partners involved in pallet flows.",
+    "searchPlaceholder": "Search by name, code or VAT number…",
+    "showInactive": "Show inactive",
+    "includingInactive": "Including inactive",
+    "empty": "No counterparties registered yet.",
+    "table": {
+      "legalName": "Legal name",
+      "code": "Code",
+      "type": "Type",
+      "location": "Location",
+      "contact": "Contact",
+      "status": "Status"
+    },
+    "vatNotProvided": "VAT number not provided",
+    "active": "Active",
+    "inactive": "Inactive",
+    "deactivate": "Deactivate",
+    "reactivate": "Reactivate",
+    "types": {
+      "customer": "Customer",
+      "debtor": "Debtor",
+      "retailer": "Retail point",
+      "carrier": "Carrier",
+      "supplier": "Supplier",
+      "other": "Other"
     }
   },
   "sites": {
@@ -248,15 +354,107 @@
       "city": "City",
       "region": "Region / state",
       "postalCode": "Postal code"
-    }
+    },
+    "eyebrow": "Master data",
+    "subtitle": "Depots, plants and delivery points where pallet exposure is physically located.",
+    "searchPlaceholder": "Search by name, code or city…",
+    "showInactive": "Show inactive",
+    "includingInactive": "Including inactive",
+    "empty": "No sites registered yet. Add the depots and delivery points involved in pallet flows.",
+    "table": {
+      "name": "Name",
+      "code": "Code",
+      "counterparty": "Counterparty",
+      "location": "Location",
+      "status": "Status"
+    },
+    "active": "Active",
+    "inactive": "Inactive",
+    "deactivate": "Deactivate",
+    "reactivate": "Reactivate"
   },
   "palletTypes": {
     "title": "Pallet types",
-    "new": "New pallet type"
+    "new": "New pallet type",
+    "showInactiveOnly": "Show active only",
+    "showAllIncludingInactive": "Show including inactive",
+    "empty": "No pallet type registered yet. Add e.g. EPAL EUR1, EPAL EUR2, CP.",
+    "table": {
+      "code": "Code",
+      "description": "Description",
+      "unitValue": "Unit value",
+      "status": "Status"
+    },
+    "active": "Active",
+    "inactive": "Inactive",
+    "deactivate": "Deactivate",
+    "reactivate": "Reactivate"
   },
   "movements": {
     "title": "Movements",
-    "correct": "Correct movement"
+    "correct": "Correct",
+    "eyebrow": "Movement ledger",
+    "subtitle": "The operational ledger that feeds reconciliation, balances and document traceability.",
+    "importCsv": "Import CSV",
+    "filters": {
+      "all": "All",
+      "outbound": "OUT",
+      "inbound": "IN"
+    },
+    "kpis": {
+      "movementsThisPage": "Movements on this page",
+      "totalInView": "total in this view",
+      "palletsOut": "Pallets OUT",
+      "outboundThisPage": "outbound on this page",
+      "palletsIn": "Pallets IN",
+      "inboundThisPage": "inbound on this page"
+    },
+    "searchPlaceholder": "Search by document number or voucher…",
+    "empty": "No movements in this view.",
+    "table": {
+      "date": "Date",
+      "flow": "Flow",
+      "counterparty": "Counterparty",
+      "pallet": "Pallet",
+      "site": "Site",
+      "quantity": "Quantity",
+      "document": "Document",
+      "voucher": "Voucher"
+    },
+    "correctionNote": "correction/reversal",
+    "corrected": "Corrected",
+    "correctPage": {
+      "eyebrow": "Movement ledger",
+      "title": "Correct movement",
+      "subtitle": "The ledger is immutable: a correction records a reversal and, if needed, a replacement movement.",
+      "originalMovement": "Original movement",
+      "correction": "Correction",
+      "fields": {
+        "date": "Date",
+        "direction": "Direction",
+        "counterparty": "Counterparty",
+        "palletType": "Pallet type",
+        "quantity": "Quantity",
+        "document": "Document"
+      }
+    },
+    "correctForm": {
+      "reasonLabel": "Reason for the correction",
+      "reasonPlaceholder": "E.g. wrong quantity from import, wrong counterparty…",
+      "reversalOnlyLabel": "The original movement is entirely wrong (reversal only, no replacement)",
+      "replacementIntro": "Values for the corrected movement that will replace the original:",
+      "fields": {
+        "date": "Date",
+        "direction": "Direction",
+        "outbound": "OUT (outbound)",
+        "inbound": "IN (inbound)",
+        "quantity": "Quantity",
+        "documentType": "Document type",
+        "documentNumber": "Document number"
+      },
+      "reverseButton": "Reverse movement",
+      "correctButton": "Correct movement"
+    }
   },
   "vouchers": {
     "title": "Vouchers",

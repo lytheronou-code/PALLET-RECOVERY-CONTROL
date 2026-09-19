@@ -64,7 +64,7 @@ export default async function SearchPage({
                 <Link className="search-result" key={item.id} href={"/recovery-cases/" + item.id}>
                   <div style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "space-between" }}>
                     <span className="search-result-title">{item.reference}</span>
-                    <StatusBadge status={item.status} />
+                    <StatusBadge status={item.status} t={t} />
                   </div>
                   <div className="search-result-meta">{item.counterpartyName}</div>
                 </Link>
@@ -81,7 +81,7 @@ export default async function SearchPage({
                 <Link className="search-result" key={item.id} href={"/vouchers/" + item.id}>
                   <div style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "space-between" }}>
                     <span className="search-result-title">{item.voucherNumber}</span>
-                    <VoucherStatusBadge status={item.status} />
+                    <VoucherStatusBadge status={item.status} t={t} />
                   </div>
                   <div className="search-result-meta">{item.counterpartyName}</div>
                 </Link>

@@ -156,8 +156,8 @@ export default async function RecoveryCasesPage({
                         {formatDate(item.dueDate)}
                       </span>
                     </td>
-                    <td><PriorityBadge priority={item.priority} /></td>
-                    <td><StatusBadge status={item.status} /></td>
+                    <td><PriorityBadge priority={item.priority} t={t} /></td>
+                    <td><StatusBadge status={item.status} t={t} /></td>
                     <td>
                       <AssigneePicker caseId={item.id} assigneeUserId={item.assigneeUserId} members={members} />
                     </td>
@@ -175,6 +175,7 @@ export default async function RecoveryCasesPage({
         page={result.page}
         pageCount={result.pageCount}
         total={result.total}
+      t={t}
       />
     </div>
   );

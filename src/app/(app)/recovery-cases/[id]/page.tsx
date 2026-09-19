@@ -44,8 +44,8 @@ export default async function RecoveryCaseDetailPage({
           </div>
         </div>
         <div className="header-actions">
-          <PriorityBadge priority={recoveryCase.priority} />
-          <StatusBadge status={recoveryCase.status} />
+          <PriorityBadge priority={recoveryCase.priority} t={t} />
+          <StatusBadge status={recoveryCase.status} t={t} />
         </div>
       </div>
 

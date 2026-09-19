@@ -31,7 +31,9 @@
       "remove": "Rimuovi",
       "select": "Seleziona",
       "clear": "Azzera",
-      "signOut": "Esci"
+      "signOut": "Esci",
+      "open": "Apri",
+      "apply": "Applica"
     },
     "pagination": {
       "page": "Pagina",
@@ -39,7 +41,8 @@
       "previous": "Precedente",
       "next": "Successiva",
       "showingResults": "Visualizzati {from}–{to} di {total}",
-      "perPage": "Per pagina"
+      "perPage": "Per pagina",
+      "results": "risultati"
     },
     "emptyState": {
       "title": "Ancora nessun elemento",
@@ -77,7 +80,32 @@
       "confirm": "Sì, elimina"
     },
     "language": "Lingua",
-    "poweredBy": "Offerto da {product}"
+    "poweredBy": "Offerto da {product}",
+    "status": {
+      "recoveryCase": {
+        "open": "Aperta",
+        "contacted": "Contattata",
+        "scheduled": "Programmata",
+        "partial": "Parziale",
+        "recovered": "Recuperata",
+        "disputed": "Contestata",
+        "closed_unrecovered": "Chiusa (non recuperata)",
+        "cancelled": "Annullata"
+      },
+      "voucher": {
+        "open": "Aperto",
+        "partial": "Parziale",
+        "closed": "Chiuso",
+        "disputed": "Contestato",
+        "cancelled": "Annullato"
+      },
+      "priority": {
+        "low": "Bassa",
+        "normal": "Normale",
+        "high": "Alta",
+        "critical": "Critica"
+      }
+    }
   },
   "nav": {
     "groups": {
@@ -214,10 +242,61 @@
       "overdueCases": "Pratiche scadute"
     },
     "topExposure": {
-      "title": "Controparti con maggiore esposizione"
+      "title": "Controparti con maggiore esposizione",
+      "subtitle": "Controparti ordinate per valore da recuperare.",
+      "viewLink": "Controparti",
+      "empty": "Nessuna esposizione registrata."
     },
     "actionCenter": {
-      "title": "Pratiche che richiedono azione"
+      "title": "Pratiche che richiedono azione",
+      "subtitle": "Pratiche che richiedono attenzione operativa.",
+      "viewAll": "Vedi tutte",
+      "empty": "Nessuna pratica operativa aperta.",
+      "table": {
+        "case": "Pratica",
+        "counterparty": "Controparte",
+        "dueDate": "Scadenza",
+        "priority": "Priorità",
+        "status": "Stato",
+        "exposure": "Esposizione"
+      },
+      "palletsSuffix": "pallet"
+    },
+    "eyebrow": "Panoramica operativa",
+    "subtitle": "Esposizione, priorità e recuperi in un'unica vista operativa.",
+    "newVoucher": "Nuovo buono",
+    "newCase": "Nuova pratica",
+    "openExposureLabel": "Esposizione aperta",
+    "palletsOutstanding": "pallet outstanding",
+    "recoveryRate": "Recovery rate",
+    "palletsRecovered": "pallet recuperati",
+    "recoveredValueLabel": "Valore recuperato",
+    "historicalValueRecorded": "valore storico registrato",
+    "overdueExposureLabel": "Esposizione scaduta",
+    "casesPastDue": "pratiche oltre scadenza",
+    "getStarted": {
+      "title": "Imposta il controllo operativo",
+      "subtitle": "Tre passaggi per ottenere una dashboard realmente utile.",
+      "step1Title": "1. Crea le controparti",
+      "step1Description": "Clienti, debitori, retailer e trasportatori.",
+      "step2Title": "2. Importa i movimenti",
+      "step2Description": "Carica DDT e movimenti pallet da CSV.",
+      "step3Title": "3. Registra i buoni",
+      "step3Description": "Scadenze e quantità alimentano la riconciliazione."
+    },
+    "operationalHealth": {
+      "title": "Salute operativa",
+      "subtitle": "Scadenze e velocità di recupero.",
+      "openCasesSuffix": "pratiche operative aperte",
+      "casesDueWithin7Days": "Pratiche entro 7 gg",
+      "overdueCasesLabel": "Pratiche scadute",
+      "vouchersDueWithin7Days": "Buoni entro 7 gg",
+      "overdueVouchers": "Buoni scaduti"
+    },
+    "ageing": {
+      "title": "Ageing dell'esposizione",
+      "subtitle": "Valore outstanding per anzianità della pratica.",
+      "openReport": "Apri report"
     }
   },
   "counterparties": {
@@ -235,6 +314,33 @@
       "postalCode": "CAP",
       "email": "Email",
       "phone": "Telefono"
+    },
+    "eyebrow": "Network",
+    "subtitle": "Clienti, debitori, punti vendita e partner coinvolti nei flussi pallet.",
+    "searchPlaceholder": "Cerca per nome, codice o P.IVA…",
+    "showInactive": "Mostra non attive",
+    "includingInactive": "Incluse non attive",
+    "empty": "Nessuna controparte registrata.",
+    "table": {
+      "legalName": "Ragione sociale",
+      "code": "Codice",
+      "type": "Tipologia",
+      "location": "Località",
+      "contact": "Contatto",
+      "status": "Stato"
+    },
+    "vatNotProvided": "P. IVA non indicata",
+    "active": "Attiva",
+    "inactive": "Non attiva",
+    "deactivate": "Disattiva",
+    "reactivate": "Riattiva",
+    "types": {
+      "customer": "Cliente",
+      "debtor": "Debitore",
+      "retailer": "Punto vendita",
+      "carrier": "Trasportatore",
+      "supplier": "Fornitore",
+      "other": "Altro"
     }
   },
   "sites": {
@@ -248,15 +354,107 @@
       "city": "Città",
       "region": "Provincia / regione",
       "postalCode": "CAP"
-    }
+    },
+    "eyebrow": "Master data",
+    "subtitle": "Depositi, stabilimenti e punti di consegna dove l'esposizione pallet è fisicamente localizzata.",
+    "searchPlaceholder": "Cerca per nome, codice o città…",
+    "showInactive": "Mostra non attive",
+    "includingInactive": "Incluse non attive",
+    "empty": "Nessun sito registrato. Aggiungi i depositi e i punti di consegna coinvolti nei flussi pallet.",
+    "table": {
+      "name": "Nome",
+      "code": "Codice",
+      "counterparty": "Controparte",
+      "location": "Località",
+      "status": "Stato"
+    },
+    "active": "Attivo",
+    "inactive": "Non attivo",
+    "deactivate": "Disattiva",
+    "reactivate": "Riattiva"
   },
   "palletTypes": {
     "title": "Tipi pallet",
-    "new": "Nuovo tipo pallet"
+    "new": "Nuovo tipo pallet",
+    "showInactiveOnly": "Mostra solo attivi",
+    "showAllIncludingInactive": "Mostra anche non attivi",
+    "empty": "Nessun tipo pallet registrato. Aggiungi ad esempio EPAL EUR1, EPAL EUR2, CP.",
+    "table": {
+      "code": "Codice",
+      "description": "Descrizione",
+      "unitValue": "Valore unitario",
+      "status": "Stato"
+    },
+    "active": "Attivo",
+    "inactive": "Non attivo",
+    "deactivate": "Disattiva",
+    "reactivate": "Riattiva"
   },
   "movements": {
     "title": "Movimenti",
-    "correct": "Correggi movimento"
+    "correct": "Correggi",
+    "eyebrow": "Movement ledger",
+    "subtitle": "Il ledger operativo che alimenta riconciliazione, saldi e tracciabilità documentale.",
+    "importCsv": "Importa CSV",
+    "filters": {
+      "all": "Tutti",
+      "outbound": "OUT",
+      "inbound": "IN"
+    },
+    "kpis": {
+      "movementsThisPage": "Movimenti in questa pagina",
+      "totalInView": "totali nella vista",
+      "palletsOut": "Pallet OUT",
+      "outboundThisPage": "uscite in questa pagina",
+      "palletsIn": "Pallet IN",
+      "inboundThisPage": "rientri in questa pagina"
+    },
+    "searchPlaceholder": "Cerca per numero documento o buono…",
+    "empty": "Nessun movimento in questa vista.",
+    "table": {
+      "date": "Data",
+      "flow": "Flusso",
+      "counterparty": "Controparte",
+      "pallet": "Pallet",
+      "site": "Sito",
+      "quantity": "Quantità",
+      "document": "Documento",
+      "voucher": "Buono"
+    },
+    "correctionNote": "correzione/storno",
+    "corrected": "Corretto",
+    "correctPage": {
+      "eyebrow": "Movement ledger",
+      "title": "Correggi movimento",
+      "subtitle": "Il ledger è immutabile: la correzione registra uno storno e, se necessario, un movimento sostitutivo.",
+      "originalMovement": "Movimento originale",
+      "correction": "Correzione",
+      "fields": {
+        "date": "Data",
+        "direction": "Direzione",
+        "counterparty": "Controparte",
+        "palletType": "Tipo pallet",
+        "quantity": "Quantità",
+        "document": "Documento"
+      }
+    },
+    "correctForm": {
+      "reasonLabel": "Motivo della correzione",
+      "reasonPlaceholder": "Es. quantità errata da import, controparte sbagliata…",
+      "reversalOnlyLabel": "Il movimento originale è completamente errato (solo storno, nessuna sostituzione)",
+      "replacementIntro": "Valori del movimento corretto che sostituirà quello originale:",
+      "fields": {
+        "date": "Data",
+        "direction": "Direzione",
+        "outbound": "OUT (uscita)",
+        "inbound": "IN (rientro)",
+        "quantity": "Quantità",
+        "documentType": "Tipo documento",
+        "documentNumber": "Numero documento"
+      },
+      "reverseButton": "Storna movimento",
+      "correctButton": "Correggi movimento"
+    }
   },
   "vouchers": {
     "title": "Buoni",

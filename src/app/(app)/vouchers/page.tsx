@@ -149,7 +149,7 @@ export default async function VouchersPage({
                       <td className="numeric">{formatNumber(item.quantity)}</td>
                       <td className="numeric">{formatNumber(item.recoveredQuantity)}</td>
                       <td className="numeric"><strong>{formatNumber(item.outstandingQuantity)}</strong></td>
-                      <td><VoucherStatusBadge status={item.status} /></td>
+                      <td><VoucherStatusBadge status={item.status} t={t} /></td>
                       <td>
                         {canRecover ? (
                           <Link href={"/recovery-cases/new?" + params.toString()} className="btn btn-secondary btn-sm">
@@ -172,6 +172,7 @@ export default async function VouchersPage({
         page={result.page}
         pageCount={result.pageCount}
         total={result.total}
+      t={t}
       />
     </div>
   );

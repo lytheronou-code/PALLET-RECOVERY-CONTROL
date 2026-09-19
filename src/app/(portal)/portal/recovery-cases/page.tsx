@@ -47,14 +47,14 @@ export default async function PortalRecoveryCasesPage({
                   <td className="numeric">{formatNumber(item.outstandingQuantity)}</td>
                   <td className="numeric">{formatCurrency(item.outstandingValue)}</td>
                   <td>{formatDate(item.dueDate)}</td>
-                  <td><StatusBadge status={item.status} /></td>
+                  <td><StatusBadge status={item.status} t={t} /></td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       )}
-      <Pagination basePath="/portal/recovery-cases" params={{}} page={result.page} pageCount={result.pageCount} total={result.total} />
+      <Pagination basePath="/portal/recovery-cases" params={{}} page={result.page} pageCount={result.pageCount} total={result.total} t={t} />
     </section>
   );
 }
