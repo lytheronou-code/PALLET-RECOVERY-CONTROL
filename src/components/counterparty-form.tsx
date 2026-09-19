@@ -5,6 +5,7 @@ import { emptyFormState, type FormState } from "@/lib/actions/form-state";
 import { COUNTERPARTY_TYPES } from "@/lib/validation/master-data";
 import type { Counterparty } from "@/lib/data/counterparties";
 import { CountrySelect } from "@/components/country-select";
+import type { Locale } from "@/i18n/locale";
 
 export type CounterpartyFormLabels = {
   legalName: string;
@@ -32,10 +33,12 @@ export function CounterpartyForm({
   action,
   counterparty,
   labels,
+  locale,
 }: {
   action: (prevState: FormState, formData: FormData) => Promise<FormState>;
   counterparty?: Counterparty;
   labels: CounterpartyFormLabels;
+  locale: Locale;
 }) {
   const [state, formAction, pending] = useActionState(action, emptyFormState);
 
@@ -132,7 +135,7 @@ export function CounterpartyForm({
 
       <div className="field" style={{ maxWidth: 260 }}>
         <label htmlFor="countryCode">{labels.countryCode}</label>
-        <CountrySelect id="countryCode" name="countryCode" defaultValue={counterparty?.country_code} />
+        <CountrySelect id="countryCode" name="countryCode" defaultValue={counterparty?.country_code} locale={locale} />
       </div>
 
       <button type="submit" className="btn btn-primary" disabled={pending} style={{ width: "auto" }}>

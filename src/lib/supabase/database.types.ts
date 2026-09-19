@@ -132,6 +132,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "counterparties_country_code_fkey"
+            columns: ["country_code"]
+            isOneToOne: false
+            referencedRelation: "country_codes"
+            referencedColumns: ["code"]
+          },
+          {
             foreignKeyName: "counterparties_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -139,6 +146,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      country_codes: {
+        Row: {
+          code: string
+          enabled: boolean
+          is_iso: boolean
+        }
+        Insert: {
+          code: string
+          enabled?: boolean
+          is_iso: boolean
+        }
+        Update: {
+          code?: string
+          enabled?: boolean
+          is_iso?: boolean
+        }
+        Relationships: []
       }
       document_events: {
         Row: {
@@ -565,7 +590,15 @@ export type Database = {
           vat_id?: string | null
           website?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "organizations_country_code_fkey"
+            columns: ["country_code"]
+            isOneToOne: false
+            referencedRelation: "country_codes"
+            referencedColumns: ["code"]
+          },
+        ]
       }
       pallet_movements: {
         Row: {
@@ -994,6 +1027,13 @@ export type Database = {
           province?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "sites_country_code_fkey"
+            columns: ["country_code"]
+            isOneToOne: false
+            referencedRelation: "country_codes"
+            referencedColumns: ["code"]
+          },
           {
             foreignKeyName: "sites_org_counterparty_fk"
             columns: ["organization_id", "counterparty_id"]

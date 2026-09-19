@@ -37,7 +37,7 @@ export default async function SettingsPage({
   const activeTab: SettingsTab = isSettingsTab(tabParam) ? tabParam : "company";
 
   const membership = await requireMembership();
-  const { t, formatDate } = await getPageContext(membership.organizationId);
+  const { t, formatDate, locale } = await getPageContext(membership.organizationId);
   const isAdmin = membership.role === "admin";
   const roleKey = ROLE_LABEL_KEYS[membership.role as keyof typeof ROLE_LABEL_KEYS];
   const supabase = await createClient();
@@ -147,6 +147,7 @@ export default async function SettingsPage({
             isAdmin ? (
               <OrganizationCompanyForm
                 organization={org}
+                locale={locale}
                 labels={{
                   legalName: t("settings.company.legalName"),
                   tradingName: t("settings.company.tradingName"),

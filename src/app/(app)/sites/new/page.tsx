@@ -10,7 +10,7 @@ export default async function NewSitePage({
   searchParams: Promise<{ counterpartyId?: string }>;
 }) {
   const membership = await requireMembership();
-  const { t } = await getPageContext(membership.organizationId);
+  const { t, locale } = await getPageContext(membership.organizationId);
   const { counterpartyId } = await searchParams;
   const counterparties = await listCounterparties(membership.organizationId);
 
@@ -28,6 +28,7 @@ export default async function NewSitePage({
             action={createSiteAction}
             counterparties={counterparties}
             defaultCounterpartyId={counterpartyId}
+            locale={locale}
             labels={{
               name: t("sites.fields.name"),
               code: t("sites.table.code"),

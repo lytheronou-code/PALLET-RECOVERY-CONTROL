@@ -5,7 +5,7 @@ import { getPageContext } from "@/i18n/server";
 
 export default async function NewCounterpartyPage() {
   const membership = await requireMembership();
-  const { t } = await getPageContext(membership.organizationId);
+  const { t, locale } = await getPageContext(membership.organizationId);
 
   return (
     <div className="shell" style={{ maxWidth: 640 }}>
@@ -15,6 +15,7 @@ export default async function NewCounterpartyPage() {
       <div className="card">
         <CounterpartyForm
           action={createCounterpartyAction}
+          locale={locale}
           labels={{
             legalName: t("counterparties.table.legalName"),
             tradingName: t("counterparties.fields.tradingName"),

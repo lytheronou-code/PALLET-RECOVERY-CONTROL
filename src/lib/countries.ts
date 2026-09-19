@@ -1,243 +1,84 @@
-// Independent-review finding: this file previously described itself as
-// "ISO 3166-1 alpha-2 country codes" without qualification, which is
-// inaccurate -- the full standard currently has ~249 officially assigned
-// codes (UN member states plus dependent territories/special areas like
-// Greenland, Puerto Rico, Macao, the Faroe Islands, ...), and this list is
-// a deliberately smaller, explicitly curated subset, not that full set.
+// Independent-review correction (see PR #9 discussion): the previous
+// version of this file was a deliberately curated ~197-entry subset
+// (UN member states + 4 extras) that excluded real, officially assigned
+// ISO 3166-1 alpha-2 codes for dependent territories/special areas --
+// Puerto Rico, Macao, Greenland, Gibraltar, the Faroe Islands, and
+// others. That made it impossible to represent a real counterparty,
+// site, or organization legitimately located in one of those
+// territories, which is a genuine business restriction this B2B
+// logistics product has no reason to impose: a customer registered in
+// one jurisdiction can have sites, customers or carriers in another.
 //
-// Coverage, exact and verified (see countries.test.ts for the parity
-// check against this comment):
-//   - All 193 United Nations member states.
-//   - Four additional entries chosen for real-world B2B trade/logistics
-//     relevance: HK (Hong Kong), TW (Taiwan), VA (Holy See/Vatican City)
-//     -- all three ARE officially assigned ISO 3166-1 codes despite not
-//     being UN members -- and XK (Kosovo), which is NOT an official ISO
-//     3166-1 code. XK is a deliberate non-ISO product extension: Kosovo
-//     is a real trading partner with no assigned ISO code, and XK is the
-//     same "exceptionally reserved" / user-assigned code already used for
-//     it by the EU, Eurostat and SWIFT, so it is kept here rather than
-//     omitting a real country or inventing a different code.
+// This file now lists the COMPLETE set of currently, officially assigned
+// ISO 3166-1 alpha-2 codes -- 249 entries -- with no exclusions. Every
+// entry was cross-checked against ICU/CLDR's own region data (see
+// countries.test.ts: every code here resolves to a real, non-echoed
+// localized name via Intl.DisplayNames in both "en" and "it").
 //
-// No dependent territories beyond the four above are included (no
-// Greenland, Puerto Rico, Macao, Gibraltar, French Guiana, ...) -- this is
-// a B2B logistics product whose customers are companies registered in a
-// country, not a full geographic gazetteer, and every omitted code is a
-// real, deliberate omission rather than an oversight.
-//
-// Adding a country/territory later is additive: add a row here (English
-// name, technical reference data, not translated UI copy -- per the "do
-// not create hundreds of hardcoded country-specific business rules"
-// instruction, this list carries no per-country business logic) AND widen
-// the matching CHECK constraint in a new migration (see
-// 20260919110000_fix_country_currency_validation_logic.sql for the
-// current SQL-side list) -- never let the two drift apart.
-export const COUNTRIES: ReadonlyArray<{ code: string; name: string }> = [
-  { code: "AD", name: "Andorra" },
-  { code: "AE", name: "United Arab Emirates" },
-  { code: "AF", name: "Afghanistan" },
-  { code: "AG", name: "Antigua and Barbuda" },
-  { code: "AL", name: "Albania" },
-  { code: "AM", name: "Armenia" },
-  { code: "AO", name: "Angola" },
-  { code: "AR", name: "Argentina" },
-  { code: "AT", name: "Austria" },
-  { code: "AU", name: "Australia" },
-  { code: "AZ", name: "Azerbaijan" },
-  { code: "BA", name: "Bosnia and Herzegovina" },
-  { code: "BB", name: "Barbados" },
-  { code: "BD", name: "Bangladesh" },
-  { code: "BE", name: "Belgium" },
-  { code: "BF", name: "Burkina Faso" },
-  { code: "BG", name: "Bulgaria" },
-  { code: "BH", name: "Bahrain" },
-  { code: "BI", name: "Burundi" },
-  { code: "BJ", name: "Benin" },
-  { code: "BN", name: "Brunei" },
-  { code: "BO", name: "Bolivia" },
-  { code: "BR", name: "Brazil" },
-  { code: "BS", name: "Bahamas" },
-  { code: "BT", name: "Bhutan" },
-  { code: "BW", name: "Botswana" },
-  { code: "BY", name: "Belarus" },
-  { code: "BZ", name: "Belize" },
-  { code: "CA", name: "Canada" },
-  { code: "CD", name: "Congo (DRC)" },
-  { code: "CF", name: "Central African Republic" },
-  { code: "CG", name: "Congo" },
-  { code: "CH", name: "Switzerland" },
-  { code: "CI", name: "Côte d'Ivoire" },
-  { code: "CL", name: "Chile" },
-  { code: "CM", name: "Cameroon" },
-  { code: "CN", name: "China" },
-  { code: "CO", name: "Colombia" },
-  { code: "CR", name: "Costa Rica" },
-  { code: "CU", name: "Cuba" },
-  { code: "CV", name: "Cabo Verde" },
-  { code: "CY", name: "Cyprus" },
-  { code: "CZ", name: "Czechia" },
-  { code: "DE", name: "Germany" },
-  { code: "DJ", name: "Djibouti" },
-  { code: "DK", name: "Denmark" },
-  { code: "DM", name: "Dominica" },
-  { code: "DO", name: "Dominican Republic" },
-  { code: "DZ", name: "Algeria" },
-  { code: "EC", name: "Ecuador" },
-  { code: "EE", name: "Estonia" },
-  { code: "EG", name: "Egypt" },
-  { code: "ER", name: "Eritrea" },
-  { code: "ES", name: "Spain" },
-  { code: "ET", name: "Ethiopia" },
-  { code: "FI", name: "Finland" },
-  { code: "FJ", name: "Fiji" },
-  { code: "FM", name: "Micronesia" },
-  { code: "FR", name: "France" },
-  { code: "GA", name: "Gabon" },
-  { code: "GB", name: "United Kingdom" },
-  { code: "GD", name: "Grenada" },
-  { code: "GE", name: "Georgia" },
-  { code: "GH", name: "Ghana" },
-  { code: "GM", name: "Gambia" },
-  { code: "GN", name: "Guinea" },
-  { code: "GQ", name: "Equatorial Guinea" },
-  { code: "GR", name: "Greece" },
-  { code: "GT", name: "Guatemala" },
-  { code: "GW", name: "Guinea-Bissau" },
-  { code: "GY", name: "Guyana" },
-  { code: "HK", name: "Hong Kong" },
-  { code: "HN", name: "Honduras" },
-  { code: "HR", name: "Croatia" },
-  { code: "HT", name: "Haiti" },
-  { code: "HU", name: "Hungary" },
-  { code: "ID", name: "Indonesia" },
-  { code: "IE", name: "Ireland" },
-  { code: "IL", name: "Israel" },
-  { code: "IN", name: "India" },
-  { code: "IQ", name: "Iraq" },
-  { code: "IR", name: "Iran" },
-  { code: "IS", name: "Iceland" },
-  { code: "IT", name: "Italy" },
-  { code: "JM", name: "Jamaica" },
-  { code: "JO", name: "Jordan" },
-  { code: "JP", name: "Japan" },
-  { code: "KE", name: "Kenya" },
-  { code: "KG", name: "Kyrgyzstan" },
-  { code: "KH", name: "Cambodia" },
-  { code: "KI", name: "Kiribati" },
-  { code: "KM", name: "Comoros" },
-  { code: "KN", name: "Saint Kitts and Nevis" },
-  { code: "KP", name: "North Korea" },
-  { code: "KR", name: "South Korea" },
-  { code: "KW", name: "Kuwait" },
-  { code: "KZ", name: "Kazakhstan" },
-  { code: "LA", name: "Laos" },
-  { code: "LB", name: "Lebanon" },
-  { code: "LC", name: "Saint Lucia" },
-  { code: "LI", name: "Liechtenstein" },
-  { code: "LK", name: "Sri Lanka" },
-  { code: "LR", name: "Liberia" },
-  { code: "LS", name: "Lesotho" },
-  { code: "LT", name: "Lithuania" },
-  { code: "LU", name: "Luxembourg" },
-  { code: "LV", name: "Latvia" },
-  { code: "LY", name: "Libya" },
-  { code: "MA", name: "Morocco" },
-  { code: "MC", name: "Monaco" },
-  { code: "MD", name: "Moldova" },
-  { code: "ME", name: "Montenegro" },
-  { code: "MG", name: "Madagascar" },
-  { code: "MH", name: "Marshall Islands" },
-  { code: "MK", name: "North Macedonia" },
-  { code: "ML", name: "Mali" },
-  { code: "MM", name: "Myanmar" },
-  { code: "MN", name: "Mongolia" },
-  { code: "MR", name: "Mauritania" },
-  { code: "MT", name: "Malta" },
-  { code: "MU", name: "Mauritius" },
-  { code: "MV", name: "Maldives" },
-  { code: "MW", name: "Malawi" },
-  { code: "MX", name: "Mexico" },
-  { code: "MY", name: "Malaysia" },
-  { code: "MZ", name: "Mozambique" },
-  { code: "NA", name: "Namibia" },
-  { code: "NE", name: "Niger" },
-  { code: "NG", name: "Nigeria" },
-  { code: "NI", name: "Nicaragua" },
-  { code: "NL", name: "Netherlands" },
-  { code: "NO", name: "Norway" },
-  { code: "NP", name: "Nepal" },
-  { code: "NR", name: "Nauru" },
-  { code: "NZ", name: "New Zealand" },
-  { code: "OM", name: "Oman" },
-  { code: "PA", name: "Panama" },
-  { code: "PE", name: "Peru" },
-  { code: "PG", name: "Papua New Guinea" },
-  { code: "PH", name: "Philippines" },
-  { code: "PK", name: "Pakistan" },
-  { code: "PL", name: "Poland" },
-  { code: "PT", name: "Portugal" },
-  { code: "PW", name: "Palau" },
-  { code: "PY", name: "Paraguay" },
-  { code: "QA", name: "Qatar" },
-  { code: "RO", name: "Romania" },
-  { code: "RS", name: "Serbia" },
-  { code: "RU", name: "Russia" },
-  { code: "RW", name: "Rwanda" },
-  { code: "SA", name: "Saudi Arabia" },
-  { code: "SB", name: "Solomon Islands" },
-  { code: "SC", name: "Seychelles" },
-  { code: "SD", name: "Sudan" },
-  { code: "SE", name: "Sweden" },
-  { code: "SG", name: "Singapore" },
-  { code: "SI", name: "Slovenia" },
-  { code: "SK", name: "Slovakia" },
-  { code: "SL", name: "Sierra Leone" },
-  { code: "SM", name: "San Marino" },
-  { code: "SN", name: "Senegal" },
-  { code: "SO", name: "Somalia" },
-  { code: "SR", name: "Suriname" },
-  { code: "SS", name: "South Sudan" },
-  { code: "ST", name: "São Tomé and Príncipe" },
-  { code: "SV", name: "El Salvador" },
-  { code: "SY", name: "Syria" },
-  { code: "SZ", name: "Eswatini" },
-  { code: "TD", name: "Chad" },
-  { code: "TG", name: "Togo" },
-  { code: "TH", name: "Thailand" },
-  { code: "TJ", name: "Tajikistan" },
-  { code: "TL", name: "Timor-Leste" },
-  { code: "TM", name: "Turkmenistan" },
-  { code: "TN", name: "Tunisia" },
-  { code: "TO", name: "Tonga" },
-  { code: "TR", name: "Turkey" },
-  { code: "TT", name: "Trinidad and Tobago" },
-  { code: "TV", name: "Tuvalu" },
-  { code: "TW", name: "Taiwan" },
-  { code: "TZ", name: "Tanzania" },
-  { code: "UA", name: "Ukraine" },
-  { code: "UG", name: "Uganda" },
-  { code: "US", name: "United States" },
-  { code: "UY", name: "Uruguay" },
-  { code: "UZ", name: "Uzbekistan" },
-  { code: "VA", name: "Vatican City" },
-  { code: "VC", name: "Saint Vincent and the Grenadines" },
-  { code: "VE", name: "Venezuela" },
-  { code: "VN", name: "Vietnam" },
-  { code: "VU", name: "Vanuatu" },
-  { code: "WS", name: "Samoa" },
-  { code: "XK", name: "Kosovo" },
-  { code: "YE", name: "Yemen" },
-  { code: "ZA", name: "South Africa" },
-  { code: "ZM", name: "Zambia" },
-  { code: "ZW", name: "Zimbabwe" },
+// Country codes are canonical reference data, not UI copy: this file
+// intentionally stores no country NAMES at all (see the previous
+// version's mistake of hardcoding English names as if they were
+// locale-agnostic). Display names are resolved at render time from the
+// viewer's own locale via Intl.DisplayNames -- see
+// src/lib/i18n/country-names.ts. Storing ~249 names per locale here
+// would both duplicate ICU's own data and require hand-translating them
+// for every future locale; Intl.DisplayNames solves both problems for
+// free and for every locale the platform ever adds.
+export const OFFICIAL_ISO_COUNTRY_CODES: readonly string[] = [
+  "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AQ", "AR", "AS", "AT", "AU", "AW", "AX", "AZ",
+  "BA", "BB", "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ", "BR", "BS", "BT", "BV", "BW", "BY", "BZ",
+  "CA", "CC", "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CU", "CV", "CW", "CX", "CY", "CZ",
+  "DE", "DJ", "DK", "DM", "DO", "DZ",
+  "EC", "EE", "EG", "EH", "ER", "ES", "ET",
+  "FI", "FJ", "FK", "FM", "FO", "FR",
+  "GA", "GB", "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GS", "GT", "GU", "GW", "GY",
+  "HK", "HM", "HN", "HR", "HT", "HU",
+  "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IR", "IS", "IT",
+  "JE", "JM", "JO", "JP",
+  "KE", "KG", "KH", "KI", "KM", "KN", "KP", "KR", "KW", "KY", "KZ",
+  "LA", "LB", "LC", "LI", "LK", "LR", "LS", "LT", "LU", "LV", "LY",
+  "MA", "MC", "MD", "ME", "MF", "MG", "MH", "MK", "ML", "MM", "MN", "MO", "MP", "MQ", "MR", "MS", "MT", "MU", "MV", "MW", "MX", "MY", "MZ",
+  "NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP", "NR", "NU", "NZ",
+  "OM",
+  "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PN", "PR", "PS", "PT", "PW", "PY",
+  "QA",
+  "RE", "RO", "RS", "RU", "RW",
+  "SA", "SB", "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST", "SV", "SX", "SY", "SZ",
+  "TC", "TD", "TF", "TG", "TH", "TJ", "TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ",
+  "UA", "UG", "UM", "US", "UY", "UZ",
+  "VA", "VC", "VE", "VG", "VI", "VN", "VU",
+  "WF", "WS",
+  "YE", "YT",
+  "ZA", "ZM", "ZW",
 ];
 
-const COUNTRY_CODE_SET = new Set(COUNTRIES.map((c) => c.code));
+// XK (Kosovo) is NOT an officially assigned ISO 3166-1 alpha-2 code --
+// ISO has never assigned Kosovo a code. This is a deliberate, documented
+// PRODUCT EXTENSION, not an ISO code: Kosovo is a real trading partner,
+// and XK is the same "exceptionally reserved" code already used for it
+// by the EU, Eurostat and SWIFT, kept here rather than omitting a real
+// country or inventing a different, non-standard code. Every consumer of
+// this module can distinguish the two sets (isOfficialIsoCountryCode vs
+// isProductExtensionCountryCode) instead of treating XK as if it were ISO.
+export const PRODUCT_EXTENSION_COUNTRY_CODES: readonly string[] = ["XK"];
 
-export function isSupportedCountry(value: string | null | undefined): boolean {
-  return !!value && COUNTRY_CODE_SET.has(value.toUpperCase());
+export const ALL_COUNTRY_CODES: readonly string[] = [
+  ...OFFICIAL_ISO_COUNTRY_CODES,
+  ...PRODUCT_EXTENSION_COUNTRY_CODES,
+].sort();
+
+const OFFICIAL_SET = new Set(OFFICIAL_ISO_COUNTRY_CODES);
+const EXTENSION_SET = new Set(PRODUCT_EXTENSION_COUNTRY_CODES);
+const ALL_SET = new Set(ALL_COUNTRY_CODES);
+
+export function isOfficialIsoCountryCode(value: string | null | undefined): boolean {
+  return !!value && OFFICIAL_SET.has(value.toUpperCase());
 }
 
-export function countryName(code: string | null | undefined): string {
-  if (!code) return "—";
-  return COUNTRIES.find((c) => c.code === code.toUpperCase())?.name ?? code;
+export function isProductExtensionCountryCode(value: string | null | undefined): boolean {
+  return !!value && EXTENSION_SET.has(value.toUpperCase());
+}
+
+export function isSupportedCountry(value: string | null | undefined): boolean {
+  return !!value && ALL_SET.has(value.toUpperCase());
 }

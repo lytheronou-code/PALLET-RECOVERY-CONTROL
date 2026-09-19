@@ -13,6 +13,14 @@ export function mapDatabaseError(error: { code?: string; message?: string } | nu
   }
 
   const message = (error.message ?? "").toLowerCase();
+
+  if (error.code === "23503") {
+    if (message.includes("country_code")) {
+      return t("common.validation.invalidCountry");
+    }
+    return t("common.errors.generic");
+  }
+
   if (message.includes("row-level security") || message.includes("permission denied")) {
     return t("common.errors.forbidden");
   }

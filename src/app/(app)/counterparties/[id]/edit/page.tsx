@@ -11,7 +11,7 @@ export default async function EditCounterpartyPage({
   params: Promise<{ id: string }>;
 }) {
   const membership = await requireMembership();
-  const { t } = await getPageContext(membership.organizationId);
+  const { t, locale } = await getPageContext(membership.organizationId);
   const { id } = await params;
   const counterparty = await getCounterparty(membership.organizationId, id);
 
@@ -28,6 +28,7 @@ export default async function EditCounterpartyPage({
         <CounterpartyForm
           action={updateCounterpartyAction.bind(null, id)}
           counterparty={counterparty}
+          locale={locale}
           labels={{
             legalName: t("counterparties.table.legalName"),
             tradingName: t("counterparties.fields.tradingName"),

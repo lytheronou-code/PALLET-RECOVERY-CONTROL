@@ -12,7 +12,7 @@ export default async function EditSitePage({
   params: Promise<{ id: string }>;
 }) {
   const membership = await requireMembership();
-  const { t } = await getPageContext(membership.organizationId);
+  const { t, locale } = await getPageContext(membership.organizationId);
   const { id } = await params;
   const [site, counterparties] = await Promise.all([
     getSite(membership.organizationId, id),
@@ -35,6 +35,7 @@ export default async function EditSitePage({
             action={updateSiteAction.bind(null, site.id)}
             site={site}
             counterparties={counterparties}
+            locale={locale}
             labels={{
               name: t("sites.fields.name"),
               code: t("sites.table.code"),

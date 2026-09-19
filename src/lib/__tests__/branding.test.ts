@@ -3,7 +3,7 @@ import { isValidHexColor, getReadableTextColor } from "@/lib/branding/color";
 import { validateLogoFile, matchesLogoFileSignature, isAllowedLogoMimeType, MAX_LOGO_SIZE_BYTES } from "@/lib/branding/logo";
 import { resolveWelcomeMessage } from "@/lib/branding/welcome-message";
 import { isSupportedCurrency, CURRENCY_CODES } from "@/lib/currencies";
-import { isSupportedCountry, countryName } from "@/lib/countries";
+import { isSupportedCountry } from "@/lib/countries";
 import { getDictionary } from "@/i18n/dictionaries";
 import { createTranslator } from "@/i18n/translator";
 
@@ -124,7 +124,7 @@ describe("isSupportedCurrency", () => {
   });
 });
 
-describe("isSupportedCountry / countryName", () => {
+describe("isSupportedCountry", () => {
   it("accepts real ISO 3166-1 alpha-2 codes", () => {
     expect(isSupportedCountry("IT")).toBe(true);
     expect(isSupportedCountry("GB")).toBe(true);
@@ -134,11 +134,6 @@ describe("isSupportedCountry / countryName", () => {
   it("rejects an unrecognized code", () => {
     expect(isSupportedCountry("ZZ")).toBe(false);
     expect(isSupportedCountry("USA")).toBe(false);
-  });
-
-  it("resolves a country name for a known code", () => {
-    expect(countryName("IT")).toBe("Italy");
-    expect(countryName(null)).toBe("—");
   });
 });
 

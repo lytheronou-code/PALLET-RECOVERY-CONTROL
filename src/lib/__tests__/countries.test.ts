@@ -1,140 +1,132 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { COUNTRIES, isSupportedCountry, countryName } from "@/lib/countries";
+import {
+  OFFICIAL_ISO_COUNTRY_CODES,
+  PRODUCT_EXTENSION_COUNTRY_CODES,
+  ALL_COUNTRY_CODES,
+  isOfficialIsoCountryCode,
+  isProductExtensionCountryCode,
+  isSupportedCountry,
+} from "@/lib/countries";
 
-// Independent-review finding: src/lib/countries.ts previously claimed to
-// be "ISO 3166-1 alpha-2 country codes" without qualification, which was
-// inaccurate -- it is a deliberately curated subset. These tests pin the
-// exact, documented coverage (all 193 UN member states + HK/TW/VA/XK) so
-// a future edit that silently drops a real country, or silently expands
-// scope into the full ~249-code ISO set without updating the SQL side,
-// fails immediately.
-const UN_MEMBER_STATES = `
-AF AL DZ AD AO AG AR AM AU AT AZ
-BS BH BD BB BY BE BZ BJ BT BO BA BW BR BN BG BF BI
-CV KH CM CA CF TD CL CN CO KM CG CD CR CI HR CU CY CZ
-DK DJ DM DO
-EC EG SV GQ ER EE SZ ET
-FJ FI FR
-GA GM GE DE GH GR GD GT GN GW GY
-HT HN HU
-IS IN ID IR IQ IE IL IT
-JM JP JO
-KZ KE KI KP KR KW KG
-LA LV LB LS LR LY LI LT LU
-MG MW MY MV ML MT MH MR MU MX FM MD MC MN ME MA MZ MM
-NA NR NP NL NZ NI NE NG MK NO
-OM
-PK PW PA PG PY PE PH PL PT
-QA
-RO RU RW
-KN LC VC WS SM ST
-SA SN RS SC SL SG SK SI SB SO ZA SS ES LK SD SR SE CH SY
-TJ TZ TH TL TG TO TT TN TR TM TV
-UG UA AE GB US UY UZ
-VU VE VN
-YE
-ZM ZW
-`
-  .split(/\s+/)
-  .filter(Boolean);
-
-const NON_UN_EXTRAS = ["HK", "TW", "VA", "XK"];
-
-describe("COUNTRIES coverage", () => {
-  it("has exactly 193 UN member states", () => {
-    expect(UN_MEMBER_STATES.length).toBe(193);
-  });
-
-  it("includes every UN member state", () => {
-    const codes = new Set(COUNTRIES.map((c) => c.code));
-    const missing = UN_MEMBER_STATES.filter((c) => !codes.has(c));
-    expect(missing).toEqual([]);
-  });
-
-  it("includes exactly the four documented non-UN-member extras, no more", () => {
-    const codes = new Set(COUNTRIES.map((c) => c.code));
-    const extras = COUNTRIES.map((c) => c.code).filter((c) => !UN_MEMBER_STATES.includes(c));
-    expect(extras.sort()).toEqual([...NON_UN_EXTRAS].sort());
-    for (const extra of NON_UN_EXTRAS) {
-      expect(codes.has(extra)).toBe(true);
-    }
-  });
-
-  it("has no duplicate codes", () => {
-    const codes = COUNTRIES.map((c) => c.code);
-    expect(new Set(codes).size).toBe(codes.length);
-  });
-
-  it("every code is a well-formed 2-letter uppercase code", () => {
-    for (const { code } of COUNTRIES) {
+// Independent-review correction: the previous version of this file
+// pinned a deliberately curated ~197-entry subset (all 193 UN member
+// states + 4 extras) that excluded real, officially assigned ISO 3166-1
+// codes for dependent territories/special areas (Puerto Rico, Macao,
+// Greenland, Gibraltar, the Faroe Islands, ...). These tests now pin the
+// opposite property: the FULL official ISO 3166-1 alpha-2 set (249
+// entries) is supported, with no exclusions, plus exactly one documented
+// non-ISO product extension (XK/Kosovo) kept clearly distinct from it.
+describe("OFFICIAL_ISO_COUNTRY_CODES", () => {
+  it("has exactly 249 entries, all unique, well-formed 2-letter uppercase codes", () => {
+    expect(OFFICIAL_ISO_COUNTRY_CODES.length).toBe(249);
+    expect(new Set(OFFICIAL_ISO_COUNTRY_CODES).size).toBe(249);
+    for (const code of OFFICIAL_ISO_COUNTRY_CODES) {
       expect(code).toMatch(/^[A-Z]{2}$/);
     }
   });
 
-  it("every entry has a non-empty name", () => {
-    for (const { name } of COUNTRIES) {
-      expect(name.trim().length).toBeGreaterThan(0);
-    }
+  it("does not include XK -- it is a product extension, never described as ISO", () => {
+    expect(OFFICIAL_ISO_COUNTRY_CODES.includes("XK")).toBe(false);
+  });
+
+  it("resolves to a real, non-echoed localized name in both en and it via ICU -- a cheap sanity check that catches typos", () => {
+    const en = new Intl.DisplayNames(["en"], { type: "region" });
+    const it = new Intl.DisplayNames(["it"], { type: "region" });
+    const unresolved = OFFICIAL_ISO_COUNTRY_CODES.filter(
+      (code) => en.of(code) === code && it.of(code) === code,
+    );
+    expect(unresolved).toEqual([]);
   });
 });
 
-describe("isSupportedCountry / countryName (extended)", () => {
-  it("accepts a sovereign state code", () => {
-    expect(isSupportedCountry("DE")).toBe(true);
-    expect(countryName("DE")).toBe("Germany");
+describe("PRODUCT_EXTENSION_COUNTRY_CODES", () => {
+  it("is exactly [XK]", () => {
+    expect(PRODUCT_EXTENSION_COUNTRY_CODES).toEqual(["XK"]);
+  });
+});
+
+describe("isOfficialIsoCountryCode / isProductExtensionCountryCode", () => {
+  it("classifies a real ISO code as official, not a product extension", () => {
+    expect(isOfficialIsoCountryCode("DE")).toBe(true);
+    expect(isProductExtensionCountryCode("DE")).toBe(false);
   });
 
-  it("accepts the deliberate non-UN territory/entity extras", () => {
-    expect(isSupportedCountry("HK")).toBe(true);
-    expect(isSupportedCountry("TW")).toBe(true);
-    expect(isSupportedCountry("VA")).toBe(true);
+  it("classifies XK as a product extension, never as official ISO", () => {
+    expect(isOfficialIsoCountryCode("XK")).toBe(false);
+    expect(isProductExtensionCountryCode("XK")).toBe(true);
+  });
+
+  it("classifies an unrecognized code as neither", () => {
+    expect(isOfficialIsoCountryCode("ZZ")).toBe(false);
+    expect(isProductExtensionCountryCode("ZZ")).toBe(false);
+  });
+});
+
+describe("isSupportedCountry", () => {
+  it("accepts every one of the specifically required codes, including dependent territories/special areas the previous curated list excluded", () => {
+    const required = ["IT", "GB", "US", "BR", "JP", "HK", "TW", "PR", "MO", "GL", "GI", "FO"];
+    for (const code of required) {
+      expect(isSupportedCountry(code)).toBe(true);
+    }
+  });
+
+  it("accepts XK as the documented product extension", () => {
     expect(isSupportedCountry("XK")).toBe(true);
-    expect(countryName("XK")).toBe("Kosovo");
   });
 
-  it("rejects a real ISO 3166-1 code this product deliberately does not support (a dependent territory, not a country)", () => {
-    // Greenland (GL) is an officially assigned ISO 3166-1 code but is
-    // deliberately outside this product's curated set -- confirms the
-    // list is a real subset, not silently the full standard.
-    expect(isSupportedCountry("GL")).toBe(false);
+  it("is case-insensitive", () => {
+    expect(isSupportedCountry("de")).toBe(true);
+    expect(isSupportedCountry("Gb")).toBe(true);
   });
 
   it("rejects invalid/malformed input without throwing", () => {
     expect(isSupportedCountry("ZZ")).toBe(false);
-    expect(isSupportedCountry("USA")).toBe(false);
+    expect(isSupportedCountry("XX")).toBe(false);
+    expect(isSupportedCountry("ABC")).toBe(false);
     expect(isSupportedCountry("")).toBe(false);
     expect(isSupportedCountry(null)).toBe(false);
     expect(isSupportedCountry(undefined)).toBe(false);
   });
+});
 
-  it("falls back to the raw code for an unknown code, and an em dash for null", () => {
-    expect(countryName("ZZ")).toBe("ZZ");
-    expect(countryName(null)).toBe("—");
-    expect(countryName(undefined)).toBe("—");
+describe("ALL_COUNTRY_CODES", () => {
+  it("is exactly the official set plus XK -- 250 entries, no duplicates", () => {
+    expect(ALL_COUNTRY_CODES.length).toBe(250);
+    expect(new Set(ALL_COUNTRY_CODES).size).toBe(250);
+    expect(new Set(ALL_COUNTRY_CODES)).toEqual(
+      new Set([...OFFICIAL_ISO_COUNTRY_CODES, ...PRODUCT_EXTENSION_COUNTRY_CODES]),
+    );
   });
 });
 
 describe("TS/SQL country list synchronization", () => {
-  it("matches exactly the CHECK constraint list in the country-validation migration", () => {
+  it("OFFICIAL_ISO_COUNTRY_CODES matches exactly the country_codes reference-table migration's ISO rows", () => {
     const migrationPath = path.resolve(
       import.meta.dirname,
-      "../../../supabase/migrations/20260919110000_fix_country_currency_validation_logic.sql",
+      "../../../supabase/migrations/20260919130000_country_codes_reference_table.sql",
     );
     const sql = readFileSync(migrationPath, "utf8");
-    const start = sql.indexOf("v_country_code <> all (array[");
-    const end = sql.indexOf("]) then", start);
+
+    const start = sql.indexOf("select code, true from unnest(array[");
     expect(start).toBeGreaterThan(-1);
+    const end = sql.indexOf("]) as code;", start);
     const chunk = sql.slice(start, end);
-    const sqlCodes = new Set([...chunk.matchAll(/'([A-Z]{2})'/g)].map((m) => m[1]));
+    const sqlIsoCodes = new Set([...chunk.matchAll(/'([A-Z]{2})'/g)].map((m) => m[1]));
 
-    const tsCodes = new Set(COUNTRIES.map((c) => c.code));
+    const tsIsoCodes = new Set(OFFICIAL_ISO_COUNTRY_CODES);
 
-    const onlyInTs = [...tsCodes].filter((c) => !sqlCodes.has(c));
-    const onlyInSql = [...sqlCodes].filter((c) => !tsCodes.has(c));
+    const onlyInTs = [...tsIsoCodes].filter((c) => !sqlIsoCodes.has(c));
+    const onlyInSql = [...sqlIsoCodes].filter((c) => !tsIsoCodes.has(c));
     expect(onlyInTs).toEqual([]);
     expect(onlyInSql).toEqual([]);
-    expect(sqlCodes.size).toBe(tsCodes.size);
+    expect(sqlIsoCodes.size).toBe(tsIsoCodes.size);
+
+    // XK is inserted separately with is_iso = false -- confirm the
+    // migration keeps it out of the ISO array and documents it as an
+    // extension the same way the TS side does.
+    expect(chunk.includes("'XK'")).toBe(false);
+    expect(sql.includes("insert into public.country_codes (code, is_iso) values ('XK', false);")).toBe(true);
   });
 });

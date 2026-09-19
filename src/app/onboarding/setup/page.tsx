@@ -36,7 +36,7 @@ export default async function OnboardingSetupPage({
     redirect("/dashboard");
   }
 
-  const { t } = await getPageContext(membership.organizationId);
+  const { t, locale } = await getPageContext(membership.organizationId);
   const supabase = await createClient();
 
   const [{ data: organization }, branding, welcomeMessageLocalizations, { count: palletTypeCount }] = await Promise.all([
@@ -112,6 +112,7 @@ export default async function OnboardingSetupPage({
           {step === "company" ? (
             <OrganizationCompanyForm
               organization={org}
+              locale={locale}
               labels={{
                 legalName: t("settings.company.legalName"),
                 tradingName: t("settings.company.tradingName"),
@@ -194,6 +195,7 @@ export default async function OnboardingSetupPage({
             <>
               <p className="muted" style={{ fontSize: 12, marginBottom: 12 }}>{t("onboarding.steps.firstCustomer.description")}</p>
               <OnboardingFirstCustomerForm
+                locale={locale}
                 labels={{
                   customerName: t("onboarding.steps.firstCustomer.customerName"),
                   countryCode: t("onboarding.steps.firstCustomer.countryCode"),

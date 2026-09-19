@@ -5,6 +5,7 @@ import { emptyFormState, type FormState } from "@/lib/actions/form-state";
 import type { Site } from "@/lib/data/sites";
 import type { Counterparty } from "@/lib/data/counterparties";
 import { CountrySelect } from "@/components/country-select";
+import type { Locale } from "@/i18n/locale";
 
 export type SiteFormLabels = {
   name: string;
@@ -28,12 +29,14 @@ export function SiteForm({
   counterparties,
   defaultCounterpartyId,
   labels,
+  locale,
 }: {
   action: (prevState: FormState, formData: FormData) => Promise<FormState>;
   site?: Site;
   counterparties: Counterparty[];
   defaultCounterpartyId?: string;
   labels: SiteFormLabels;
+  locale: Locale;
 }) {
   const [state, formAction, pending] = useActionState(action, emptyFormState);
 
@@ -96,7 +99,7 @@ export function SiteForm({
 
       <div className="field" style={{ maxWidth: 260 }}>
         <label htmlFor="countryCode">{labels.countryCode}</label>
-        <CountrySelect id="countryCode" name="countryCode" defaultValue={site?.country_code} />
+        <CountrySelect id="countryCode" name="countryCode" defaultValue={site?.country_code} locale={locale} />
       </div>
 
       <button type="submit" className="btn btn-primary" disabled={pending}>

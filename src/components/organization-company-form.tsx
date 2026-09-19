@@ -5,6 +5,7 @@ import { updateOrganizationCompanyAction } from "@/lib/actions/organization-sett
 import { emptyFormState } from "@/lib/actions/form-state";
 import { CountrySelect } from "@/components/country-select";
 import type { Tables } from "@/lib/supabase/database.types";
+import type { Locale } from "@/i18n/locale";
 
 export type OrganizationCompanyLabels = {
   legalName: string;
@@ -28,9 +29,11 @@ export type OrganizationCompanyLabels = {
 export function OrganizationCompanyForm({
   organization,
   labels,
+  locale,
 }: {
   organization: Tables<"organizations">;
   labels: OrganizationCompanyLabels;
+  locale: Locale;
 }) {
   const [state, formAction, pending] = useActionState(updateOrganizationCompanyAction, emptyFormState);
 
@@ -96,7 +99,7 @@ export function OrganizationCompanyForm({
         </div>
         <div className="field">
           <label htmlFor="countryCode">{labels.countryCode}</label>
-          <CountrySelect id="countryCode" name="countryCode" defaultValue={organization.country_code ?? undefined} />
+          <CountrySelect id="countryCode" name="countryCode" defaultValue={organization.country_code ?? undefined} locale={locale} />
         </div>
       </div>
 

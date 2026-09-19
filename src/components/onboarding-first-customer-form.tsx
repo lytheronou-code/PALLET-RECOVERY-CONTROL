@@ -4,11 +4,14 @@ import { useActionState } from "react";
 import { createFirstCustomerAction } from "@/lib/actions/onboarding-setup";
 import { emptyFormState } from "@/lib/actions/form-state";
 import { CountrySelect } from "@/components/country-select";
+import type { Locale } from "@/i18n/locale";
 
 export function OnboardingFirstCustomerForm({
   labels,
+  locale,
 }: {
   labels: { customerName: string; countryCode: string; save: string; saving: string };
+  locale: Locale;
 }) {
   const [state, formAction, pending] = useActionState(createFirstCustomerAction, emptyFormState);
 
@@ -23,7 +26,7 @@ export function OnboardingFirstCustomerForm({
         </div>
         <div className="field">
           <label htmlFor="countryCode">{labels.countryCode}</label>
-          <CountrySelect id="countryCode" name="countryCode" />
+          <CountrySelect id="countryCode" name="countryCode" locale={locale} />
         </div>
       </div>
       <button type="submit" className="btn btn-primary btn-sm" disabled={pending} style={{ width: "auto" }}>
