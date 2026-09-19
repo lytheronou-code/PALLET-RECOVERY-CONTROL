@@ -8,7 +8,7 @@ import { CountrySelect } from "@/components/country-select";
 export function OnboardingFirstCustomerForm({
   labels,
 }: {
-  labels: { customerName: string; save: string; saving: string };
+  labels: { customerName: string; countryCode: string; save: string; saving: string };
 }) {
   const [state, formAction, pending] = useActionState(createFirstCustomerAction, emptyFormState);
 
@@ -22,7 +22,7 @@ export function OnboardingFirstCustomerForm({
           <input id="legalName" name="legalName" type="text" required />
         </div>
         <div className="field">
-          <label htmlFor="countryCode">Paese</label>
+          <label htmlFor="countryCode">{labels.countryCode}</label>
           <CountrySelect id="countryCode" name="countryCode" />
         </div>
       </div>

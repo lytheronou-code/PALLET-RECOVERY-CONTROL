@@ -33,7 +33,8 @@
       "clear": "Azzera",
       "signOut": "Esci",
       "open": "Apri",
-      "apply": "Applica"
+      "apply": "Applica",
+      "saveChanges": "Salva modifiche"
     },
     "pagination": {
       "page": "Pagina",
@@ -206,13 +207,16 @@
         "title": "Tipi di pallet",
         "description": "Opzionale — parti da un preset o aggiungili in seguito.",
         "usePreset": "Parti da un preset",
-        "skipPresets": "Configurerò i tipi di pallet in seguito"
+        "skipPresets": "Configurerò i tipi di pallet in seguito",
+        "configuredSingular": "{count} tipo pallet configurato.",
+        "configuredPlural": "{count} tipi pallet configurati."
       },
       "firstCustomer": {
         "label": "Primo cliente",
         "title": "Aggiungi il tuo primo cliente",
         "description": "Opzionale — puoi aggiungere clienti in qualsiasi momento.",
-        "customerName": "Nome cliente"
+        "customerName": "Nome cliente",
+        "countryCode": "Paese"
       },
       "ready": {
         "label": "Pronto",
@@ -302,8 +306,11 @@
   "counterparties": {
     "title": "Controparti",
     "new": "Nuova controparte",
+    "editTitle": "Modifica controparte",
     "fields": {
       "name": "Nome",
+      "tradingName": "Nome commerciale",
+      "registrationNumber": "Numero di registrazione",
       "countryCode": "Paese",
       "taxId": "Codice fiscale",
       "vatId": "Partita IVA",
@@ -341,6 +348,46 @@
       "carrier": "Trasportatore",
       "supplier": "Fornitore",
       "other": "Altro"
+    },
+    "detail": {
+      "subtitle": "Portfolio operativo, esposizione e storico pallet della controparte.",
+      "openExposureFoot": "valore ancora da recuperare",
+      "openCases": "Pratiche operative",
+      "openCasesFoot": "aperte o in lavorazione",
+      "activeVouchers": "Buoni attivi",
+      "activeVouchersFoot": "aperti, parziali o contestati",
+      "recoveredPalletsFoot": "storico delle pratiche",
+      "recentCases": {
+        "title": "Pratiche recenti",
+        "subtitle": "Ultime attività di recovery collegate alla controparte.",
+        "empty": "Nessuna pratica registrata.",
+        "table": {
+          "pallet": "Pallet",
+          "outstanding": "Residuo",
+          "value": "Valore"
+        }
+      },
+      "profile": {
+        "title": "Anagrafica",
+        "noInternalCode": "Nessun codice interno"
+      },
+      "sites": {
+        "title": "Siti",
+        "subtitle": "Depositi e punti di consegna di questa controparte.",
+        "empty": "Nessun sito registrato per questa controparte."
+      },
+      "vouchers": {
+        "title": "Buoni recenti",
+        "subtitle": "Crediti pallet e scadenze.",
+        "openLink": "Apri buoni",
+        "empty": "Nessun buono registrato."
+      },
+      "movements": {
+        "title": "Movimenti recenti",
+        "subtitle": "Ultimi flussi pallet registrati.",
+        "empty": "Nessun movimento registrato."
+      },
+      "documentsTitle": "Documenti e prove della controparte"
     }
   },
   "sites": {
@@ -348,6 +395,8 @@
     "new": "Nuovo sito",
     "fields": {
       "name": "Nome",
+      "linkedCounterparty": "Controparte collegata",
+      "noCounterpartyOption": "Nessuna (sito/deposito interno)",
       "countryCode": "Paese",
       "addressLine1": "Indirizzo",
       "addressLine2": "Indirizzo (riga 2)",
@@ -376,6 +425,7 @@
   "palletTypes": {
     "title": "Tipi pallet",
     "new": "Nuovo tipo pallet",
+    "editTitle": "Modifica tipo pallet",
     "showInactiveOnly": "Mostra solo attivi",
     "showAllIncludingInactive": "Mostra anche non attivi",
     "empty": "Nessun tipo pallet registrato. Aggiungi ad esempio EPAL EUR1, EPAL EUR2, CP.",
@@ -384,6 +434,10 @@
       "description": "Descrizione",
       "unitValue": "Valore unitario",
       "status": "Stato"
+    },
+    "fields": {
+      "unitValue": "Valore unitario ({currency})",
+      "unitValueEditNote": "Le pratiche di recupero già aperte mantengono il valore unitario storico (snapshot): questa modifica vale solo per le nuove pratiche."
     },
     "active": "Attivo",
     "inactive": "Non attivo",
@@ -502,6 +556,27 @@
   },
   "settings": {
     "title": "Impostazioni",
+    "eyebrow": "Workspace",
+    "subtitle": "Identità organizzazione, account e modello di accesso corrente.",
+    "overview": {
+      "organization": {
+        "title": "Organizzazione",
+        "subtitle": "Workspace che isola dati e operazioni.",
+        "name": "Nome",
+        "slug": "Slug",
+        "createdAt": "Creata il"
+      },
+      "account": {
+        "title": "Il tuo account",
+        "subtitle": "Sessione e ruolo nel workspace.",
+        "email": "Email",
+        "security": "Sicurezza",
+        "rlsActive": "RLS attiva"
+      }
+    },
+    "clientPortalTab": {
+      "description": "Gestisci l'accesso al portale clienti dalla scheda di ogni singola controparte."
+    },
     "tabs": {
       "company": "Azienda",
       "localization": "Localizzazione",
@@ -551,7 +626,12 @@
     },
     "team": {
       "members": "Membri",
-      "role": "Ruolo"
+      "role": "Ruolo",
+      "roles": {
+        "admin": "Admin",
+        "operator": "Operatore",
+        "viewer": "Osservatore"
+      }
     }
   },
   "clientPortal": {

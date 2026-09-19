@@ -4,19 +4,22 @@ import { Building2, Mail, MapPin, Pencil, Phone, Plus } from "lucide-react";
 import { requireMembership } from "@/lib/data/organization";
 import { getCounterpartyOverview } from "@/lib/data/counterparties";
 import { getPageContext } from "@/i18n/server";
+import type { TranslationKey } from "@/i18n/translator";
 import { PriorityBadge, StatusBadge, VoucherStatusBadge } from "@/components/status-badge";
 import { DocumentsPanel } from "@/components/documents-panel";
 import { ClientPortalAccessPanel } from "@/components/client-portal-access-panel";
 import { listClientPortalMemberships } from "@/lib/data/client-portal-admin";
 
-const TYPE_LABELS: Record<string, string> = {
-  customer: "Cliente",
-  debtor: "Debitore",
-  retailer: "Punto vendita",
-  carrier: "Trasportatore",
-  supplier: "Fornitore",
-  other: "Altro",
-};
+// DB enum -> translation-key dictionary (never an if/else per locale); see
+// counterparties/page.tsx for the same pattern on the list page.
+const TYPE_LABEL_KEYS = {
+  customer: "counterparties.types.customer",
+  debtor: "counterparties.types.debtor",
+  retailer: "counterparties.types.retailer",
+  carrier: "counterparties.types.carrier",
+  supplier: "counterparties.types.supplier",
+  other: "counterparties.types.other",
+} as const satisfies Record<string, TranslationKey>;
 
 export default async function CounterpartyDetailPage({
   params,
@@ -24,7 +27,7 @@ export default async function CounterpartyDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const membership = await requireMembership();
-  const { locale, currency, timeZone, formatCurrency, formatDate, formatNumber } = await getPageContext(
+  const { t, locale, currency, timeZone, formatCurrency, formatDate, formatNumber } = await getPageContext(
     membership.organizationId,
   );
   const { id } = await params;
@@ -36,51 +39,52 @@ export default async function CounterpartyDetailPage({
 
   const cp = overview.counterparty;
   const address = [cp.address_line, cp.postal_code, cp.city, cp.province].filter(Boolean).join(", ");
+  const typeKey = TYPE_LABEL_KEYS[cp.counterparty_type as keyof typeof TYPE_LABEL_KEYS];
 
   return (
     <div className="shell">
       <div className="header">
         <div className="page-heading">
-          <div className="eyebrow">{TYPE_LABELS[cp.counterparty_type] ?? cp.counterparty_type}</div>
+          <div className="eyebrow">{typeKey ? t(typeKey) : cp.counterparty_type}</div>
           <h1 className="page-title">{cp.legal_name}</h1>
           <div className="page-subtitle">
-            Portfolio operativo, esposizione e storico pallet della controparte.
+            {t("counterparties.detail.subtitle")}
           </div>
         </div>
         <div className="header-actions">
           <Link href={"/counterparties/" + cp.id + "/edit"} className="btn btn-secondary">
             <Pencil size={14} />
-            Modifica
+            {t("common.actions.edit")}
           </Link>
           <Link
             href={"/recovery-cases/new?counterpartyId=" + cp.id}
             className="btn btn-primary"
           >
-            Nuova pratica
+            {t("dashboard.newCase")}
           </Link>
         </div>
       </div>
 
       <div className="grid premium-kpis">
         <div className="metric-card">
-          <div className="metric-top"><span className="metric-caption">Esposizione aperta</span></div>
+          <div className="metric-top"><span className="metric-caption">{t("dashboard.openExposureLabel")}</span></div>
           <div className="metric-value">{formatCurrency(overview.openExposure)}</div>
-          <div className="metric-foot">valore ancora da recuperare</div>
+          <div className="metric-foot">{t("counterparties.detail.openExposureFoot")}</div>
         </div>
         <div className="metric-card">
-          <div className="metric-top"><span className="metric-caption">Pratiche operative</span></div>
+          <div className="metric-top"><span className="metric-caption">{t("counterparties.detail.openCases")}</span></div>
           <div className="metric-value">{formatNumber(overview.openCases)}</div>
-          <div className="metric-foot">aperte o in lavorazione</div>
+          <div className="metric-foot">{t("counterparties.detail.openCasesFoot")}</div>
         </div>
         <div className="metric-card">
-          <div className="metric-top"><span className="metric-caption">Buoni attivi</span></div>
+          <div className="metric-top"><span className="metric-caption">{t("counterparties.detail.activeVouchers")}</span></div>
           <div className="metric-value">{formatNumber(overview.openVouchers)}</div>
-          <div className="metric-foot">aperti, parziali o contestati</div>
+          <div className="metric-foot">{t("counterparties.detail.activeVouchersFoot")}</div>
         </div>
         <div className="metric-card">
-          <div className="metric-top"><span className="metric-caption">Pallet recuperati</span></div>
+          <div className="metric-top"><span className="metric-caption">{t("dashboard.kpis.recoveredPallets")}</span></div>
           <div className="metric-value">{formatNumber(overview.recoveredPallets)}</div>
-          <div className="metric-foot">storico delle pratiche</div>
+          <div className="metric-foot">{t("counterparties.detail.recoveredPalletsFoot")}</div>
         </div>
       </div>
 
@@ -88,24 +92,24 @@ export default async function CounterpartyDetailPage({
         <section className="panel">
           <div className="panel-header">
             <div>
-              <h2 className="panel-title">Pratiche recenti</h2>
-              <div className="panel-subtitle">Ultime attività di recovery collegate alla controparte.</div>
+              <h2 className="panel-title">{t("counterparties.detail.recentCases.title")}</h2>
+              <div className="panel-subtitle">{t("counterparties.detail.recentCases.subtitle")}</div>
             </div>
           </div>
           {overview.cases.length === 0 ? (
-            <div className="empty-state">Nessuna pratica registrata.</div>
+            <div className="empty-state">{t("counterparties.detail.recentCases.empty")}</div>
           ) : (
             <div className="table-wrap">
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>Pratica</th>
-                    <th>Pallet</th>
-                    <th>Residuo</th>
-                    <th>Valore</th>
-                    <th>Scadenza</th>
-                    <th>Priorità</th>
-                    <th>Stato</th>
+                    <th>{t("dashboard.actionCenter.table.case")}</th>
+                    <th>{t("counterparties.detail.recentCases.table.pallet")}</th>
+                    <th>{t("counterparties.detail.recentCases.table.outstanding")}</th>
+                    <th>{t("counterparties.detail.recentCases.table.value")}</th>
+                    <th>{t("dashboard.actionCenter.table.dueDate")}</th>
+                    <th>{t("dashboard.actionCenter.table.priority")}</th>
+                    <th>{t("dashboard.actionCenter.table.status")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -129,15 +133,15 @@ export default async function CounterpartyDetailPage({
         <aside className="panel">
           <div className="panel-header">
             <div>
-              <h2 className="panel-title">Anagrafica</h2>
-              <div className="panel-subtitle">{cp.code ?? "Nessun codice interno"}</div>
+              <h2 className="panel-title">{t("counterparties.detail.profile.title")}</h2>
+              <div className="panel-subtitle">{cp.code ?? t("counterparties.detail.profile.noInternalCode")}</div>
             </div>
             <Building2 size={16} color="var(--muted)" />
           </div>
           <div className="panel-body">
             <dl className="definition-list">
-              <dt>P. IVA</dt><dd>{cp.vat_number ?? "—"}</dd>
-              <dt>Stato</dt><dd>{cp.active ? "Attiva" : "Non attiva"}</dd>
+              <dt>{t("counterparties.fields.vatId")}</dt><dd>{cp.vat_number ?? "—"}</dd>
+              <dt>{t("counterparties.table.status")}</dt><dd>{cp.active ? t("counterparties.active") : t("counterparties.inactive")}</dd>
               <dt><MapPin size={13} /></dt><dd>{address || "—"}</dd>
               <dt><Mail size={13} /></dt><dd>{cp.email ?? "—"}</dd>
               <dt><Phone size={13} /></dt><dd>{cp.phone ?? "—"}</dd>
@@ -150,21 +154,21 @@ export default async function CounterpartyDetailPage({
         <section className="panel">
           <div className="panel-header">
             <div>
-              <h2 className="panel-title">Siti</h2>
-              <div className="panel-subtitle">Depositi e punti di consegna di questa controparte.</div>
+              <h2 className="panel-title">{t("counterparties.detail.sites.title")}</h2>
+              <div className="panel-subtitle">{t("counterparties.detail.sites.subtitle")}</div>
             </div>
             <Link href={"/sites/new?counterpartyId=" + cp.id} className="btn btn-secondary btn-sm">
               <Plus size={14} />
-              Nuovo sito
+              {t("sites.new")}
             </Link>
           </div>
           {overview.sites.length === 0 ? (
-            <div className="empty-state">Nessun sito registrato per questa controparte.</div>
+            <div className="empty-state">{t("counterparties.detail.sites.empty")}</div>
           ) : (
             <div className="table-wrap">
               <table className="data-table">
                 <thead>
-                  <tr><th>Nome</th><th>Città</th><th>Stato</th></tr>
+                  <tr><th>{t("sites.table.name")}</th><th>{t("counterparties.fields.city")}</th><th>{t("sites.table.status")}</th></tr>
                 </thead>
                 <tbody>
                   {overview.sites.map((site) => (
@@ -173,7 +177,7 @@ export default async function CounterpartyDetailPage({
                       <td>{site.city ?? "—"}</td>
                       <td>
                         <span className={"badge " + (site.active ? "badge-closed" : "badge-neutral")}>
-                          {site.active ? "Attivo" : "Non attivo"}
+                          {site.active ? t("sites.active") : t("sites.inactive")}
                         </span>
                       </td>
                     </tr>
@@ -189,18 +193,24 @@ export default async function CounterpartyDetailPage({
         <section className="panel">
           <div className="panel-header">
             <div>
-              <h2 className="panel-title">Buoni recenti</h2>
-              <div className="panel-subtitle">Crediti pallet e scadenze.</div>
+              <h2 className="panel-title">{t("counterparties.detail.vouchers.title")}</h2>
+              <div className="panel-subtitle">{t("counterparties.detail.vouchers.subtitle")}</div>
             </div>
-            <Link href="/vouchers" className="panel-link">Apri buoni</Link>
+            <Link href="/vouchers" className="panel-link">{t("counterparties.detail.vouchers.openLink")}</Link>
           </div>
           {overview.vouchers.length === 0 ? (
-            <div className="empty-state">Nessun buono registrato.</div>
+            <div className="empty-state">{t("counterparties.detail.vouchers.empty")}</div>
           ) : (
             <div className="table-wrap">
               <table className="data-table">
                 <thead>
-                  <tr><th>Buono</th><th>Pallet</th><th>Residuo</th><th>Scadenza</th><th>Stato</th></tr>
+                  <tr>
+                    <th>{t("movements.table.voucher")}</th>
+                    <th>{t("counterparties.detail.recentCases.table.pallet")}</th>
+                    <th>{t("counterparties.detail.recentCases.table.outstanding")}</th>
+                    <th>{t("dashboard.actionCenter.table.dueDate")}</th>
+                    <th>{t("counterparties.table.status")}</th>
+                  </tr>
                 </thead>
                 <tbody>
                   {overview.vouchers.map((item) => (
@@ -221,17 +231,23 @@ export default async function CounterpartyDetailPage({
         <section className="panel">
           <div className="panel-header">
             <div>
-              <h2 className="panel-title">Movimenti recenti</h2>
-              <div className="panel-subtitle">Ultimi flussi pallet registrati.</div>
+              <h2 className="panel-title">{t("counterparties.detail.movements.title")}</h2>
+              <div className="panel-subtitle">{t("counterparties.detail.movements.subtitle")}</div>
             </div>
           </div>
           {overview.movements.length === 0 ? (
-            <div className="empty-state">Nessun movimento registrato.</div>
+            <div className="empty-state">{t("counterparties.detail.movements.empty")}</div>
           ) : (
             <div className="table-wrap">
               <table className="data-table">
                 <thead>
-                  <tr><th>Data</th><th>Flusso</th><th>Pallet</th><th>Quantità</th><th>Documento</th></tr>
+                  <tr>
+                    <th>{t("movements.table.date")}</th>
+                    <th>{t("movements.table.flow")}</th>
+                    <th>{t("counterparties.detail.recentCases.table.pallet")}</th>
+                    <th>{t("movements.table.quantity")}</th>
+                    <th>{t("movements.table.document")}</th>
+                  </tr>
                 </thead>
                 <tbody>
                   {overview.movements.map((item) => (
@@ -257,7 +273,7 @@ export default async function CounterpartyDetailPage({
             entity: "counterparty",
             entityId: cp.id,
           }}
-          title="Documenti e prove della controparte"
+          title={t("counterparties.detail.documentsTitle")}
         />
       </div>
 

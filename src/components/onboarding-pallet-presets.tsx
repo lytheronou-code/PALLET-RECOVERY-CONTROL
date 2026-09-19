@@ -8,7 +8,7 @@ export function OnboardingPalletPresets({
   labels,
 }: {
   existingCount: number;
-  labels: { usePreset: string; skip: string };
+  labels: { usePreset: string; skip: string; configuredSingular: string; configuredPlural: string };
 }) {
   const [applied, setApplied] = useState<string[]>([]);
   const [pending, startTransition] = useTransition();
@@ -22,11 +22,13 @@ export function OnboardingPalletPresets({
     });
   }
 
+  const configuredTemplate = existingCount === 1 ? labels.configuredSingular : labels.configuredPlural;
+
   return (
     <div>
       {existingCount > 0 ? (
         <p className="muted" style={{ fontSize: 12, marginBottom: 12 }}>
-          {existingCount} {existingCount === 1 ? "tipo pallet configurato" : "tipi pallet configurati"}.
+          {configuredTemplate.replace("{count}", String(existingCount))}
         </p>
       ) : null}
       <div className="quick-start">
