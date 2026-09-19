@@ -4,7 +4,6 @@ import { useActionState, useMemo, useState } from "react";
 import { parseCsv } from "@/lib/csv/parse";
 import {
   VOUCHER_FIELDS,
-  VOUCHER_FIELD_LABELS,
   REQUIRED_VOUCHER_FIELDS,
   missingRequiredVoucherMappings,
   validateVoucherRows,
@@ -18,6 +17,31 @@ import { commitVoucherImportAction } from "@/lib/actions/import";
 import type { ImportActionState } from "@/lib/actions/import";
 
 type LookupOption = { id: string; code: string | null; legalName?: string };
+
+export type VoucherImportWizardLabels = {
+  invalidFile: string;
+  prerequisiteNotice: string;
+  csvFileLabel: string;
+  expectedColumnsNote: string;
+  fieldLabels: Record<VoucherField, string>;
+  columnMappingTitle: string;
+  unmapped: string;
+  previewTitle: string;
+  missingRequiredTemplate: string;
+  totalRows: string;
+  validRows: string;
+  invalidRows: string;
+  invalidRowsTitle: string;
+  row: string;
+  reason: string;
+  back: string;
+  confirmImportTemplate: string;
+  importing: string;
+};
+
+function interpolate(template: string, vars: Record<string, string>): string {
+  return template.replace(/\{(\w+)\}/g, (match, name: string) => (name in vars ? vars[name] : match));
+}
 
 const AUTO_MAP_HINTS: Record<VoucherField, string[]> = {
   voucherNumber: ["numero buono", "voucher number", "buono", "voucher"],
@@ -47,11 +71,13 @@ export function VoucherImportWizard({
   palletTypes,
   sites,
   existingVoucherNumbers,
+  labels,
 }: {
   counterparties: LookupOption[];
   palletTypes: LookupOption[];
   sites: SiteRecord[];
   existingVoucherNumbers: string[];
+  labels: VoucherImportWizardLabels;
 }) {
   const [step, setStep] = useState<"upload" | "review">("upload");
   const [filename, setFilename] = useState("");
@@ -98,7 +124,7 @@ export function VoucherImportWizard({
     const text = await file.text();
     const parsed = parseCsv(text);
     if (parsed.headers.length === 0 || parsed.rows.length === 0) {
-      setParseError("Il file non contiene righe di dati valide.");
+      setParseError(labels.invalidFile);
       return;
     }
     setFilename(file.name);
@@ -115,12 +141,11 @@ export function VoucherImportWizard({
           {parseError ? <div className="form-error">{parseError}</div> : null}
           {counterparties.length === 0 || palletTypes.length === 0 ? (
             <div className="form-message">
-              Crea almeno una controparte e un tipo pallet prima di importare buoni: servono per riconoscere le
-              righe del file.
+              {labels.prerequisiteNotice}
             </div>
           ) : null}
           <div className="field">
-            <label htmlFor="csvFile">File CSV buoni</label>
+            <label htmlFor="csvFile">{labels.csvFileLabel}</label>
             <input
               id="csvFile"
               type="file"
@@ -132,8 +157,7 @@ export function VoucherImportWizard({
             />
           </div>
           <p className="muted" style={{ fontSize: 13 }}>
-            Colonne attese: numero buono, controparte, tipo pallet, data emissione, quantità, e opzionalmente
-            scadenza recupero e note.
+            {labels.expectedColumnsNote}
           </p>
         </div>
       </div>
@@ -147,7 +171,7 @@ export function VoucherImportWizard({
       <div className="panel" style={{ marginBottom: 16 }}>
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">1. Mappatura colonne</h2>
+            <h2 className="panel-title">{labels.columnMappingTitle}</h2>
             <div className="panel-subtitle">{filename}</div>
           </div>
         </div>
@@ -156,7 +180,7 @@ export function VoucherImportWizard({
             {VOUCHER_FIELDS.map((field) => (
               <div className="field" key={field}>
                 <label htmlFor={`map-${field}`}>
-                  {VOUCHER_FIELD_LABELS[field]}
+                  {labels.fieldLabels[field]}
                   {REQUIRED_VOUCHER_FIELDS.includes(field) ? " *" : ""}
                 </label>
                 <select
@@ -166,7 +190,7 @@ export function VoucherImportWizard({
                     setMapping((prev) => ({ ...prev, [field]: e.target.value || undefined }))
                   }
                 >
-                  <option value="">— non mappata —</option>
+                  <option value="">{labels.unmapped}</option>
                   {headers.map((h) => (
                     <option key={h} value={h}>
                       {h}
@@ -182,26 +206,28 @@ export function VoucherImportWizard({
       <div className="panel" style={{ marginBottom: 16 }}>
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">2. Anteprima e validazione</h2>
+            <h2 className="panel-title">{labels.previewTitle}</h2>
           </div>
         </div>
         <div className="panel-body">
           {missing.length > 0 ? (
             <div className="form-error">
-              Campi obbligatori non mappati: {missing.map((f) => VOUCHER_FIELD_LABELS[f]).join(", ")}
+              {interpolate(labels.missingRequiredTemplate, {
+                fields: missing.map((f) => labels.fieldLabels[f]).join(", "),
+              })}
             </div>
           ) : (
             <div className="grid premium-kpis three" style={{ marginBottom: 16 }}>
               <div className="metric-card">
-                <div className="metric-top"><span className="metric-caption">Righe totali</span></div>
+                <div className="metric-top"><span className="metric-caption">{labels.totalRows}</span></div>
                 <div className="metric-value">{results.length}</div>
               </div>
               <div className="metric-card">
-                <div className="metric-top"><span className="metric-caption">Valide</span></div>
+                <div className="metric-top"><span className="metric-caption">{labels.validRows}</span></div>
                 <div className="metric-value">{validCount}</div>
               </div>
               <div className="metric-card">
-                <div className="metric-top"><span className="metric-caption">Non valide</span></div>
+                <div className="metric-top"><span className="metric-caption">{labels.invalidRows}</span></div>
                 <div className="metric-value">{invalidResults.length}</div>
               </div>
             </div>
@@ -209,13 +235,13 @@ export function VoucherImportWizard({
 
           {invalidResults.length > 0 ? (
             <>
-              <h3 style={{ fontSize: 14 }}>Righe non valide (prime 50)</h3>
+              <h3 style={{ fontSize: 14 }}>{labels.invalidRowsTitle}</h3>
               <div className="table-wrap">
                 <table className="data-table">
                   <thead>
                     <tr>
-                      <th>Riga</th>
-                      <th>Motivo</th>
+                      <th>{labels.row}</th>
+                      <th>{labels.reason}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -241,14 +267,14 @@ export function VoucherImportWizard({
             className="btn btn-secondary"
             onClick={() => setStep("upload")}
           >
-            Indietro
+            {labels.back}
           </button>
           <button
             type="submit"
             className="btn btn-primary"
             disabled={pending || missing.length > 0 || validCount === 0}
           >
-            {pending ? "Import in corso…" : `Conferma import (${validCount} righe valide)`}
+            {pending ? labels.importing : interpolate(labels.confirmImportTemplate, { count: String(validCount) })}
           </button>
         </div>
       </form>

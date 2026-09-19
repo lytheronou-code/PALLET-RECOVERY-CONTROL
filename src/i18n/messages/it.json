@@ -458,14 +458,167 @@
   },
   "vouchers": {
     "title": "Buoni",
-    "new": "Nuovo buono"
+    "new": "Nuovo buono",
+    "openRecovery": "Apri recovery",
+    "list": {
+      "eyebrow": "Crediti pallet",
+      "subtitle": "Scadenze, residui e collegamento diretto alle pratiche di recupero.",
+      "searchPlaceholder": "Cerca per numero buono…",
+      "kpis": {
+        "inView": "Buoni in vista",
+        "inViewFoot": "filtrati per stato selezionato",
+        "outstandingPallets": "Pallet residui",
+        "outstandingPalletsFoot": "ancora da recuperare",
+        "overdue": "Scaduti",
+        "overdueFoot": "richiedono attenzione"
+      },
+      "filters": {
+        "active": "Attivi",
+        "open": "Aperti",
+        "partial": "Parziali",
+        "disputed": "Contestati",
+        "closed": "Chiusi",
+        "all": "Tutti"
+      },
+      "overdueLabel": "Scaduto",
+      "empty": "Nessun buono in questa vista. Registra un buono per alimentare scadenziario e riconciliazione.",
+      "table": {
+        "voucher": "Buono",
+        "counterparty": "Controparte",
+        "pallet": "Pallet",
+        "issueDate": "Emissione",
+        "dueDate": "Scadenza",
+        "quantity": "Quantità",
+        "recovered": "Recuperato",
+        "outstanding": "Residuo",
+        "status": "Stato"
+      }
+    },
+    "detail": {
+      "eyebrow": "Credito pallet",
+      "kpis": {
+        "initialQuantity": "Quantità iniziale",
+        "recovered": "Recuperato",
+        "recoveredFoot": "registrato dalle pratiche collegate",
+        "outstanding": "Residuo",
+        "outstandingFoot": "ancora da recuperare",
+        "estimatedResidualValue": "Valore residuo stimato",
+        "estimatedResidualValueFoot": "al valore unitario corrente del pallet"
+      },
+      "linkedCases": {
+        "title": "Pratiche collegate",
+        "subtitle": "Recovery che aggiornano automaticamente questo buono.",
+        "empty": "Nessuna pratica collegata.",
+        "table": {
+          "case": "Pratica",
+          "recovery": "Recuperato / richiesto",
+          "dueDate": "Scadenza",
+          "priority": "Priorità",
+          "status": "Stato"
+        }
+      },
+      "details": {
+        "title": "Dettagli buono",
+        "counterparty": "Controparte",
+        "issueDate": "Emissione",
+        "dueDate": "Scadenza",
+        "palletValue": "Valore pallet",
+        "notes": "Note",
+        "notesEmpty": "—"
+      },
+      "cancelBlockedNotice": "L'annullamento è bloccato se esistono pratiche collegate o recuperi già registrati."
+    },
+    "form": {
+      "pageSubtitle": "Il buono alimenta riconciliazione, scadenzario e pratica di recupero.",
+      "prerequisiteError": "Prima di creare un buono servono almeno una controparte attiva e un tipo pallet attivo.",
+      "counterparty": "Controparte",
+      "palletType": "Tipo pallet",
+      "selectPlaceholder": "Seleziona…",
+      "site": "Sito",
+      "siteNone": "Nessuno",
+      "siteEmptyNotice": "Nessun sito registrato per questa controparte.",
+      "voucherNumber": "Numero buono / riferimento",
+      "voucherNumberPlaceholder": "es. BV-2026-001847",
+      "issueDate": "Data emissione",
+      "dueDate": "Scadenza recupero",
+      "quantity": "Quantità",
+      "notes": "Note",
+      "notesPlaceholder": "Riferimenti DDT, condizioni, informazioni utili al recupero…",
+      "submit": "Crea buono"
+    },
+    "editForm": {
+      "pageEyebrow": "Correzione controllata",
+      "pageTitle": "Modifica {voucherNumber}",
+      "pageSubtitle": "Correggi riferimento, date, quantità e note senza rompere la storia di recovery.",
+      "lockedNotice": "{palletTypeCode} · controparte e tipo pallet restano bloccati per preservare la coerenza delle pratiche collegate.",
+      "voucherNumber": "Numero buono / riferimento",
+      "issueDate": "Data emissione",
+      "dueDate": "Scadenza recupero",
+      "quantity": "Quantità",
+      "notes": "Note",
+      "save": "Salva modifiche"
+    },
+    "cancelForm": {
+      "confirmMessage": "Annullare questo buono? L'operazione è consentita solo se non esistono recuperi o pratiche collegate.",
+      "cancelButton": "Annulla buono",
+      "cancelling": "Annullamento…"
+    }
   },
   "bulkImport": {
     "title": "Importazioni",
     "uploadFile": "Carica file",
     "mapColumns": "Mappa colonne",
     "preview": "Anteprima",
-    "confirmImport": "Conferma importazione"
+    "confirmImport": "Conferma importazione",
+    "vouchers": {
+      "eyebrow": "Crediti pallet",
+      "title": "Import buoni",
+      "subtitle": "Carica un file CSV, mappa le colonne e verifica l'anteprima prima di confermare: nessuna riga viene importata silenziosamente.",
+      "backToVouchers": "Torna ai buoni",
+      "previousImports": "Import precedenti",
+      "noImports": "Nessun import di buoni eseguito finora.",
+      "statusLabels": {
+        "processing": "In corso",
+        "completed": "Completato",
+        "failed": "Fallito"
+      },
+      "table": {
+        "file": "File",
+        "date": "Data",
+        "status": "Stato",
+        "totals": "Totali",
+        "valid": "Valide",
+        "invalid": "Non valide"
+      },
+      "wizard": {
+        "invalidFile": "Il file non contiene righe di dati valide.",
+        "prerequisiteNotice": "Crea almeno una controparte e un tipo pallet prima di importare buoni: servono per riconoscere le righe del file.",
+        "csvFileLabel": "File CSV buoni",
+        "expectedColumnsNote": "Colonne attese: numero buono, controparte, tipo pallet, data emissione, quantità, e opzionalmente scadenza recupero e note.",
+        "fieldLabels": {
+          "voucherNumber": "Numero buono",
+          "counterparty": "Controparte",
+          "palletType": "Tipo pallet",
+          "site": "Sito (opzionale)",
+          "issueDate": "Data emissione",
+          "recoveryDueDate": "Scadenza recupero",
+          "quantity": "Quantità",
+          "notes": "Note"
+        },
+        "columnMappingTitle": "1. Mappatura colonne",
+        "unmapped": "— non mappata —",
+        "previewTitle": "2. Anteprima e validazione",
+        "missingRequired": "Campi obbligatori non mappati: {fields}",
+        "totalRows": "Righe totali",
+        "validRows": "Valide",
+        "invalidRows": "Non valide",
+        "invalidRowsTitle": "Righe non valide (prime 50)",
+        "row": "Riga",
+        "reason": "Motivo",
+        "confirmImport": "Conferma import ({count} righe valide)",
+        "importing": "Import in corso…"
+      }
+    }
   },
   "reconciliation": {
     "title": "Riconciliazione"

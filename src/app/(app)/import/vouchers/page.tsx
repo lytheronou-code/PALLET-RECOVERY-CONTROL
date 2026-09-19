@@ -7,16 +7,20 @@ import { listVoucherNumbers } from "@/lib/data/vouchers";
 import { listSitesForImportLookup } from "@/lib/data/sites";
 import { VoucherImportWizard } from "@/components/voucher-import-wizard";
 import { getPageContext } from "@/i18n/server";
+import type { Translator } from "@/i18n/translator";
 
-const STATUS_LABELS: Record<string, string> = {
-  processing: "In corso",
-  completed: "Completato",
-  failed: "Fallito",
-};
+function statusLabels(t: Translator): Record<string, string> {
+  return {
+    processing: t("bulkImport.vouchers.statusLabels.processing"),
+    completed: t("bulkImport.vouchers.statusLabels.completed"),
+    failed: t("bulkImport.vouchers.statusLabels.failed"),
+  };
+}
 
 export default async function VoucherImportPage() {
   const membership = await requireMembership();
-  const { formatDate, formatNumber } = await getPageContext(membership.organizationId);
+  const { t, formatDate, formatNumber } = await getPageContext(membership.organizationId);
+  const STATUS_LABELS = statusLabels(t);
   const [counterparties, palletTypes, sites, existingVoucherNumbers, batches] = await Promise.all([
     listCounterparties(membership.organizationId, { includeInactive: true }),
     listPalletTypes(membership.organizationId, { includeInactive: true }),
@@ -31,14 +35,13 @@ export default async function VoucherImportPage() {
     <div className="shell">
       <div className="header">
         <div className="page-heading">
-          <div className="eyebrow">Pallet credits</div>
-          <h1 className="page-title">Import buoni</h1>
+          <div className="eyebrow">{t("bulkImport.vouchers.eyebrow")}</div>
+          <h1 className="page-title">{t("bulkImport.vouchers.title")}</h1>
           <div className="page-subtitle">
-            Carica un file CSV, mappa le colonne e verifica l&apos;anteprima prima di confermare: nessuna riga viene
-            importata silenziosamente.
+            {t("bulkImport.vouchers.subtitle")}
           </div>
         </div>
-        <Link href="/vouchers" className="btn btn-secondary">Torna ai buoni</Link>
+        <Link href="/vouchers" className="btn btn-secondary">{t("bulkImport.vouchers.backToVouchers")}</Link>
       </div>
 
       <VoucherImportWizard
@@ -46,23 +49,52 @@ export default async function VoucherImportPage() {
         palletTypes={palletTypes.map((p) => ({ id: p.id, code: p.code }))}
         sites={sites}
         existingVoucherNumbers={existingVoucherNumbers}
+        labels={{
+          invalidFile: t("bulkImport.vouchers.wizard.invalidFile"),
+          prerequisiteNotice: t("bulkImport.vouchers.wizard.prerequisiteNotice"),
+          csvFileLabel: t("bulkImport.vouchers.wizard.csvFileLabel"),
+          expectedColumnsNote: t("bulkImport.vouchers.wizard.expectedColumnsNote"),
+          fieldLabels: {
+            voucherNumber: t("bulkImport.vouchers.wizard.fieldLabels.voucherNumber"),
+            counterparty: t("bulkImport.vouchers.wizard.fieldLabels.counterparty"),
+            palletType: t("bulkImport.vouchers.wizard.fieldLabels.palletType"),
+            site: t("bulkImport.vouchers.wizard.fieldLabels.site"),
+            issueDate: t("bulkImport.vouchers.wizard.fieldLabels.issueDate"),
+            recoveryDueDate: t("bulkImport.vouchers.wizard.fieldLabels.recoveryDueDate"),
+            quantity: t("bulkImport.vouchers.wizard.fieldLabels.quantity"),
+            notes: t("bulkImport.vouchers.wizard.fieldLabels.notes"),
+          },
+          columnMappingTitle: t("bulkImport.vouchers.wizard.columnMappingTitle"),
+          unmapped: t("bulkImport.vouchers.wizard.unmapped"),
+          previewTitle: t("bulkImport.vouchers.wizard.previewTitle"),
+          missingRequiredTemplate: t("bulkImport.vouchers.wizard.missingRequired"),
+          totalRows: t("bulkImport.vouchers.wizard.totalRows"),
+          validRows: t("bulkImport.vouchers.wizard.validRows"),
+          invalidRows: t("bulkImport.vouchers.wizard.invalidRows"),
+          invalidRowsTitle: t("bulkImport.vouchers.wizard.invalidRowsTitle"),
+          row: t("bulkImport.vouchers.wizard.row"),
+          reason: t("bulkImport.vouchers.wizard.reason"),
+          back: t("common.actions.back"),
+          confirmImportTemplate: t("bulkImport.vouchers.wizard.confirmImport"),
+          importing: t("bulkImport.vouchers.wizard.importing"),
+        }}
       />
 
-      <h2 style={{ fontSize: 16, marginTop: 32, marginBottom: 12 }}>Import precedenti</h2>
+      <h2 style={{ fontSize: 16, marginTop: 32, marginBottom: 12 }}>{t("bulkImport.vouchers.previousImports")}</h2>
       <div className="panel">
         {voucherBatches.length === 0 ? (
-          <div className="empty-state">Nessun import di buoni eseguito finora.</div>
+          <div className="empty-state">{t("bulkImport.vouchers.noImports")}</div>
         ) : (
           <div className="table-wrap">
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>File</th>
-                  <th>Data</th>
-                  <th>Stato</th>
-                  <th>Totali</th>
-                  <th>Valide</th>
-                  <th>Non valide</th>
+                  <th>{t("bulkImport.vouchers.table.file")}</th>
+                  <th>{t("bulkImport.vouchers.table.date")}</th>
+                  <th>{t("bulkImport.vouchers.table.status")}</th>
+                  <th>{t("bulkImport.vouchers.table.totals")}</th>
+                  <th>{t("bulkImport.vouchers.table.valid")}</th>
+                  <th>{t("bulkImport.vouchers.table.invalid")}</th>
                 </tr>
               </thead>
               <tbody>

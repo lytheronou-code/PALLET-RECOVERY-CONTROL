@@ -15,7 +15,7 @@ export default async function VoucherDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const membership = await requireMembership();
-  const { formatCurrency, formatDate, formatNumber } = await getPageContext(membership.organizationId);
+  const { t, formatCurrency, formatDate, formatNumber } = await getPageContext(membership.organizationId);
   const { id } = await params;
   const voucher = await getVoucherDetail(membership.organizationId, id);
 
@@ -36,7 +36,7 @@ export default async function VoucherDetailPage({
     <div className="shell">
       <div className="header">
         <div className="page-heading">
-          <div className="eyebrow">Pallet credit</div>
+          <div className="eyebrow">{t("vouchers.detail.eyebrow")}</div>
           <h1 className="page-title">{voucher.voucherNumber}</h1>
           <div className="page-subtitle">{voucher.counterpartyName} · {voucher.palletTypeCode}</div>
         </div>
@@ -45,12 +45,12 @@ export default async function VoucherDetailPage({
           {canEdit ? (
             <Link href={"/vouchers/" + voucher.id + "/edit"} className="btn btn-secondary">
               <Pencil size={14} />
-              Modifica
+              {t("common.actions.edit")}
             </Link>
           ) : null}
           {canRecover ? (
             <Link href={"/recovery-cases/new?" + createParams.toString()} className="btn btn-primary">
-              Apri recovery
+              {t("vouchers.openRecovery")}
               <ArrowUpRight size={14} />
             </Link>
           ) : null}
@@ -59,24 +59,24 @@ export default async function VoucherDetailPage({
 
       <div className="grid premium-kpis">
         <div className="metric-card">
-          <div className="metric-top"><span className="metric-caption">Quantità iniziale</span><span className="metric-icon"><Ticket size={17} /></span></div>
+          <div className="metric-top"><span className="metric-caption">{t("vouchers.detail.kpis.initialQuantity")}</span><span className="metric-icon"><Ticket size={17} /></span></div>
           <div className="metric-value">{formatNumber(voucher.quantity)}</div>
           <div className="metric-foot">{voucher.palletTypeCode}</div>
         </div>
         <div className="metric-card">
-          <div className="metric-top"><span className="metric-caption">Recuperato</span></div>
+          <div className="metric-top"><span className="metric-caption">{t("vouchers.detail.kpis.recovered")}</span></div>
           <div className="metric-value">{formatNumber(voucher.recoveredQuantity)}</div>
-          <div className="metric-foot">registrato dalle pratiche collegate</div>
+          <div className="metric-foot">{t("vouchers.detail.kpis.recoveredFoot")}</div>
         </div>
         <div className="metric-card">
-          <div className="metric-top"><span className="metric-caption">Residuo</span></div>
+          <div className="metric-top"><span className="metric-caption">{t("vouchers.detail.kpis.outstanding")}</span></div>
           <div className="metric-value">{formatNumber(voucher.outstandingQuantity)}</div>
-          <div className="metric-foot">ancora da recuperare</div>
+          <div className="metric-foot">{t("vouchers.detail.kpis.outstandingFoot")}</div>
         </div>
         <div className="metric-card">
-          <div className="metric-top"><span className="metric-caption">Valore residuo stimato</span></div>
+          <div className="metric-top"><span className="metric-caption">{t("vouchers.detail.kpis.estimatedResidualValue")}</span></div>
           <div className="metric-value">{formatCurrency(estimatedResidualValue)}</div>
-          <div className="metric-foot">al valore unitario corrente del pallet</div>
+          <div className="metric-foot">{t("vouchers.detail.kpis.estimatedResidualValueFoot")}</div>
         </div>
       </div>
 
@@ -84,17 +84,23 @@ export default async function VoucherDetailPage({
         <section className="panel">
           <div className="panel-header">
             <div>
-              <h2 className="panel-title">Pratiche collegate</h2>
-              <div className="panel-subtitle">Recovery che aggiornano automaticamente questo buono.</div>
+              <h2 className="panel-title">{t("vouchers.detail.linkedCases.title")}</h2>
+              <div className="panel-subtitle">{t("vouchers.detail.linkedCases.subtitle")}</div>
             </div>
           </div>
           {voucher.recoveryCases.length === 0 ? (
-            <div className="empty-state">Nessuna pratica collegata.</div>
+            <div className="empty-state">{t("vouchers.detail.linkedCases.empty")}</div>
           ) : (
             <div className="table-wrap">
               <table className="data-table">
                 <thead>
-                  <tr><th>Pratica</th><th>Recupero</th><th>Scadenza</th><th>Priorità</th><th>Stato</th></tr>
+                  <tr>
+                    <th>{t("vouchers.detail.linkedCases.table.case")}</th>
+                    <th>{t("vouchers.detail.linkedCases.table.recovery")}</th>
+                    <th>{t("vouchers.detail.linkedCases.table.dueDate")}</th>
+                    <th>{t("vouchers.detail.linkedCases.table.priority")}</th>
+                    <th>{t("vouchers.detail.linkedCases.table.status")}</th>
+                  </tr>
                 </thead>
                 <tbody>
                   {voucher.recoveryCases.map((item) => (
@@ -115,28 +121,33 @@ export default async function VoucherDetailPage({
         <aside className="panel">
           <div className="panel-header">
             <div>
-              <h2 className="panel-title">Dettagli buono</h2>
+              <h2 className="panel-title">{t("vouchers.detail.details.title")}</h2>
               <div className="panel-subtitle">{voucher.palletTypeDescription}</div>
             </div>
             <CalendarDays size={16} color="var(--muted)" />
           </div>
           <div className="panel-body">
             <dl className="definition-list">
-              <dt>Controparte</dt><dd><Link href={"/counterparties/" + voucher.counterpartyId}>{voucher.counterpartyName}</Link></dd>
-              <dt>Emissione</dt><dd>{formatDate(voucher.issueDate)}</dd>
-              <dt>Scadenza</dt><dd>{formatDate(voucher.recoveryDueDate)}</dd>
-              <dt>Valore pallet</dt><dd>{formatCurrency(voucher.unitValue)}</dd>
-              <dt>Note</dt><dd style={{ whiteSpace: "pre-wrap" }}>{voucher.notes ?? "—"}</dd>
+              <dt>{t("vouchers.detail.details.counterparty")}</dt><dd><Link href={"/counterparties/" + voucher.counterpartyId}>{voucher.counterpartyName}</Link></dd>
+              <dt>{t("vouchers.detail.details.issueDate")}</dt><dd>{formatDate(voucher.issueDate)}</dd>
+              <dt>{t("vouchers.detail.details.dueDate")}</dt><dd>{formatDate(voucher.recoveryDueDate)}</dd>
+              <dt>{t("vouchers.detail.details.palletValue")}</dt><dd>{formatCurrency(voucher.unitValue)}</dd>
+              <dt>{t("vouchers.detail.details.notes")}</dt><dd style={{ whiteSpace: "pre-wrap" }}>{voucher.notes ?? t("vouchers.detail.details.notesEmpty")}</dd>
             </dl>
 
             <div style={{ marginTop: 18, paddingTop: 16, borderTop: "1px solid var(--border)" }}>
               <VoucherCancelForm
                 action={cancelVoucherAction.bind(null, voucher.id)}
                 disabled={!canCancel}
+                labels={{
+                  confirmMessage: t("vouchers.cancelForm.confirmMessage"),
+                  cancelButton: t("vouchers.cancelForm.cancelButton"),
+                  cancelling: t("vouchers.cancelForm.cancelling"),
+                }}
               />
               {!canCancel && voucher.status !== "cancelled" ? (
                 <p className="muted" style={{ fontSize: 10, marginBottom: 0 }}>
-                  L&apos;annullamento è bloccato se esistono pratiche collegate o recuperi già registrati.
+                  {t("vouchers.detail.cancelBlockedNotice")}
                 </p>
               ) : null}
             </div>
