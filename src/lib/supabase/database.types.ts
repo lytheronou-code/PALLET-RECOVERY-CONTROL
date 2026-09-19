@@ -368,6 +368,62 @@ export type Database = {
           },
         ]
       }
+      organization_branding: {
+        Row: {
+          compact_logo_path: string | null
+          created_at: string
+          logo_path: string | null
+          organization_id: string
+          portal_name: string | null
+          primary_color: string | null
+          secondary_color: string | null
+          support_email: string | null
+          support_phone: string | null
+          updated_at: string
+          website: string | null
+          welcome_message_en: string | null
+          welcome_message_it: string | null
+        }
+        Insert: {
+          compact_logo_path?: string | null
+          created_at?: string
+          logo_path?: string | null
+          organization_id: string
+          portal_name?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          support_email?: string | null
+          support_phone?: string | null
+          updated_at?: string
+          website?: string | null
+          welcome_message_en?: string | null
+          welcome_message_it?: string | null
+        }
+        Update: {
+          compact_logo_path?: string | null
+          created_at?: string
+          logo_path?: string | null
+          organization_id?: string
+          portal_name?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          support_email?: string | null
+          support_phone?: string | null
+          updated_at?: string
+          website?: string | null
+          welcome_message_en?: string | null
+          welcome_message_it?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_branding_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           created_at: string
@@ -1021,6 +1077,13 @@ export type Database = {
             referencedRelation: "pallet_types"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "vouchers_source_batch_id_fkey"
+            columns: ["source_batch_id"]
+            isOneToOne: false
+            referencedRelation: "import_batches"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
@@ -1036,6 +1099,127 @@ export type Database = {
           id: string
           user_id: string
         }[]
+      }
+      admin_update_organization_branding: {
+        Args: {
+          p_compact_logo_path?: string
+          p_logo_path?: string
+          p_organization_id: string
+          p_portal_name?: string
+          p_primary_color?: string
+          p_secondary_color?: string
+          p_support_email?: string
+          p_support_phone?: string
+          p_website?: string
+          p_welcome_message_en?: string
+          p_welcome_message_it?: string
+        }
+        Returns: {
+          compact_logo_path: string | null
+          created_at: string
+          logo_path: string | null
+          organization_id: string
+          portal_name: string | null
+          primary_color: string | null
+          secondary_color: string | null
+          support_email: string | null
+          support_phone: string | null
+          updated_at: string
+          website: string | null
+          welcome_message_en: string | null
+          welcome_message_it: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "organization_branding"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_update_organization_company: {
+        Args: {
+          p_address_line_1?: string
+          p_address_line_2?: string
+          p_city?: string
+          p_country_code?: string
+          p_legal_name?: string
+          p_organization_id: string
+          p_postal_code?: string
+          p_region?: string
+          p_registration_number?: string
+          p_support_email?: string
+          p_support_phone?: string
+          p_tax_id?: string
+          p_trading_name?: string
+          p_vat_id?: string
+          p_website?: string
+        }
+        Returns: {
+          address_line_1: string | null
+          address_line_2: string | null
+          city: string | null
+          country_code: string | null
+          created_at: string
+          default_currency: string
+          default_locale: string
+          id: string
+          legal_name: string | null
+          name: string
+          postal_code: string | null
+          region: string | null
+          registration_number: string | null
+          slug: string
+          support_email: string | null
+          support_phone: string | null
+          tax_id: string | null
+          timezone: string
+          trading_name: string | null
+          vat_id: string | null
+          website: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "organizations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_update_organization_localization: {
+        Args: {
+          p_default_currency?: string
+          p_default_locale?: string
+          p_organization_id: string
+          p_timezone?: string
+        }
+        Returns: {
+          address_line_1: string | null
+          address_line_2: string | null
+          city: string | null
+          country_code: string | null
+          created_at: string
+          default_currency: string
+          default_locale: string
+          id: string
+          legal_name: string | null
+          name: string
+          postal_code: string | null
+          region: string | null
+          registration_number: string | null
+          slug: string
+          support_email: string | null
+          support_phone: string | null
+          tax_id: string | null
+          timezone: string
+          trading_name: string | null
+          vat_id: string | null
+          website: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "organizations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       bootstrap_organization: {
         Args: { p_name: string }

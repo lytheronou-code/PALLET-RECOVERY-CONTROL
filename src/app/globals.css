@@ -441,6 +441,15 @@ button { color: inherit; }
 .btn:hover:not(:disabled) { transform: translateY(-1px); }
 .btn:disabled { opacity: .55; cursor: not-allowed; }
 .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 6px 16px rgba(15,118,110,.15); }
+/* Client Portal white-label: --accent/--portal-text-on-accent are overridden
+   inline, scoped to .portal-shell only, from the organization's validated
+   primary_color -- the internal app's own :root values are never touched,
+   so operators always see the product's own branding regardless of any
+   tenant's portal configuration. */
+.portal-shell .btn-primary { color: var(--portal-text-on-accent, #fff); }
+.portal-shell .language-option.active { color: var(--portal-text-on-accent, #fff); }
+.portal-brand-logo { height: 32px; display: block; }
+.portal-powered-by { font-size: 10px; color: var(--muted-2); text-align: center; margin-top: 8px; }
 .btn-primary:hover:not(:disabled) { background: var(--accent-strong); }
 .btn-secondary { background: #fff; color: var(--text-soft); border-color: var(--border); box-shadow: var(--shadow-xs); }
 .btn-secondary:hover:not(:disabled) { border-color: var(--border-strong); background: var(--surface-soft); }

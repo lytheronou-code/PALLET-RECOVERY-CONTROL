@@ -322,7 +322,9 @@
       "defaultLanguage": "Lingua predefinita",
       "defaultCurrency": "Valuta di base",
       "timezone": "Fuso orario",
-      "adminOnly": "Solo gli amministratori dell'organizzazione possono modificare queste impostazioni."
+      "adminOnly": "Solo gli amministratori dell'organizzazione possono modificare queste impostazioni.",
+      "languageEn": "Inglese",
+      "languageIt": "Italiano"
     },
     "branding": {
       "portalName": "Nome del portale",

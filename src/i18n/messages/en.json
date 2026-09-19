@@ -322,7 +322,9 @@
       "defaultLanguage": "Default language",
       "defaultCurrency": "Base currency",
       "timezone": "Timezone",
-      "adminOnly": "Only organization admins can change these settings."
+      "adminOnly": "Only organization admins can change these settings.",
+      "languageEn": "English",
+      "languageIt": "Italian"
     },
     "branding": {
       "portalName": "Portal name",
