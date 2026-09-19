@@ -24,7 +24,7 @@ export default async function CounterpartyDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const membership = await requireMembership();
-  const { locale, currency, timeZone, formatCurrency, formatDate, formatNumber } = await getPageContext(
+  const { t, locale, currency, timeZone, formatCurrency, formatDate, formatNumber } = await getPageContext(
     membership.organizationId,
   );
   const { id } = await params;
@@ -269,6 +269,25 @@ export default async function CounterpartyDetailPage({
           locale={locale}
           currency={currency}
           timeZone={timeZone}
+          labels={{
+            title: t("clientPortalAccess.title"),
+            subtitle: t("clientPortalAccess.subtitle"),
+            emailLabel: t("clientPortalAccess.grantForm.emailLabel"),
+            emailPlaceholder: t("clientPortalAccess.grantForm.emailPlaceholder"),
+            granting: t("clientPortalAccess.grantForm.granting"),
+            grantButton: t("clientPortalAccess.grantForm.grantButton"),
+            adminHint: t("clientPortalAccess.grantForm.adminHint"),
+            readOnlyHint: t("clientPortalAccess.readOnlyHint"),
+            empty: t("clientPortalAccess.empty"),
+            tableEmail: t("clientPortalAccess.table.email"),
+            tableName: t("clientPortalAccess.table.name"),
+            tableGrantedOn: t("clientPortalAccess.table.grantedOn"),
+            tableStatus: t("clientPortalAccess.table.status"),
+            statusActive: t("clientPortalAccess.status.active"),
+            statusDisabled: t("clientPortalAccess.status.disabled"),
+            deactivate: t("clientPortalAccess.actions.deactivate"),
+            reactivate: t("clientPortalAccess.actions.reactivate"),
+          }}
         />
       </div>
     </div>

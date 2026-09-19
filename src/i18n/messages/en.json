@@ -564,7 +564,103 @@
     },
     "welcome": "Client portal",
     "defaultWelcomeMessage": "Welcome to your client portal.",
-    "readOnlyNotice": "Read-only area. Contact your account representative for corrections or disputes."
+    "readOnlyNotice": "Read-only area. Contact your account representative for corrections or disputes.",
+    "overview": {
+      "kpis": {
+        "outstandingPallets": { "label": "Outstanding pallets", "foot": "still to be returned or recovered" },
+        "estimatedExposure": { "label": "Estimated exposure", "foot": "estimated residual value" },
+        "openVouchers": { "label": "Open vouchers", "foot": "active pallet credits" },
+        "activeRecoveryCases": { "label": "Active recovery cases", "foot": "cases in progress" },
+        "recoveredPallets": { "label": "Recovered pallets", "foot": "all-time total" },
+        "recoveredValue": { "label": "Recovered value", "foot": "all-time total" }
+      },
+      "nextDue": {
+        "title": "Next due date",
+        "subtitle": "The most urgent recovery case still open.",
+        "empty": "No upcoming due dates.",
+        "detailsPrefix": "See",
+        "detailsLinkText": "the recovery cases",
+        "detailsSuffix": "for full details."
+      }
+    },
+    "documents": {
+      "title": "Documents & proof",
+      "subtitle": "Documents shared by the recovery team.",
+      "empty": "No documents shared yet."
+    },
+    "movements": {
+      "title": "Pallet movements",
+      "subtitle": "Inbound and outbound flows recorded for your company.",
+      "empty": "No movements recorded.",
+      "table": {
+        "date": "Date",
+        "flow": "Flow",
+        "pallet": "Pallet",
+        "quantity": "Quantity",
+        "site": "Site",
+        "document": "Document"
+      },
+      "direction": {
+        "outbound": "OUT",
+        "inbound": "IN"
+      }
+    },
+    "recoveryCases": {
+      "title": "Recovery cases",
+      "subtitle": "Progress of pallet recovery cases in motion.",
+      "empty": "No recovery cases recorded.",
+      "table": {
+        "case": "Case",
+        "pallet": "Pallet",
+        "recovered": "Recovered",
+        "outstanding": "Outstanding",
+        "outstandingValue": "Outstanding value",
+        "dueDate": "Due date",
+        "status": "Status"
+      }
+    },
+    "vouchers": {
+      "title": "Pallet vouchers",
+      "subtitle": "Issued pallet credits and their recovery status.",
+      "empty": "No vouchers recorded.",
+      "table": {
+        "voucher": "Voucher",
+        "pallet": "Pallet",
+        "issued": "Issued",
+        "dueDate": "Due date",
+        "quantity": "Quantity",
+        "recovered": "Recovered",
+        "outstanding": "Outstanding",
+        "status": "Status"
+      }
+    }
+  },
+  "clientPortalAccess": {
+    "title": "Client portal",
+    "subtitle": "Users authorized to view this counterparty's data in read-only mode.",
+    "grantForm": {
+      "emailLabel": "Client email",
+      "emailPlaceholder": "client@company.com",
+      "granting": "Granting…",
+      "grantButton": "Grant access",
+      "adminHint": "The client must already have an account (signed up at /signup) with this email. An account can have active access to only one counterparty at a time."
+    },
+    "readOnlyHint": "Only an administrator can grant or revoke client portal access. Below is the current status, read-only.",
+    "empty": "No portal users for this counterparty yet.",
+    "table": {
+      "email": "Email",
+      "name": "Name",
+      "grantedOn": "Granted on",
+      "status": "Status"
+    },
+    "status": {
+      "active": "Active",
+      "disabled": "Disabled"
+    },
+    "actions": {
+      "deactivate": "Deactivate",
+      "reactivate": "Reactivate"
+    }
   },
   "workspaceSelector": {
     "title": "Choose a workspace",

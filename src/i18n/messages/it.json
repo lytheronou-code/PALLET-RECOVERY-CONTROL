@@ -564,7 +564,103 @@
     },
     "welcome": "Portale clienti",
     "defaultWelcomeMessage": "Benvenuto nel tuo portale clienti.",
-    "readOnlyNotice": "Area riservata a sola lettura. Per correzioni o contestazioni contatta il tuo referente."
+    "readOnlyNotice": "Area riservata a sola lettura. Per correzioni o contestazioni contatta il tuo referente.",
+    "overview": {
+      "kpis": {
+        "outstandingPallets": { "label": "Pallet in sospeso", "foot": "ancora da restituire o recuperare" },
+        "estimatedExposure": { "label": "Esposizione stimata", "foot": "valore residuo stimato" },
+        "openVouchers": { "label": "Buoni aperti", "foot": "crediti pallet attivi" },
+        "activeRecoveryCases": { "label": "Recuperi attivi", "foot": "pratiche in lavorazione" },
+        "recoveredPallets": { "label": "Pallet recuperati", "foot": "totale storico" },
+        "recoveredValue": { "label": "Valore recuperato", "foot": "totale storico" }
+      },
+      "nextDue": {
+        "title": "Prossima scadenza",
+        "subtitle": "La pratica di recupero più urgente ancora aperta.",
+        "empty": "Nessuna scadenza imminente.",
+        "detailsPrefix": "Consulta",
+        "detailsLinkText": "le pratiche di recupero",
+        "detailsSuffix": "per i dettagli completi."
+      }
+    },
+    "documents": {
+      "title": "Documenti e prove",
+      "subtitle": "Documenti condivisi dal team di recupero.",
+      "empty": "Nessun documento condiviso al momento."
+    },
+    "movements": {
+      "title": "Movimenti pallet",
+      "subtitle": "Flussi in ingresso e uscita registrati per la tua azienda.",
+      "empty": "Nessun movimento registrato.",
+      "table": {
+        "date": "Data",
+        "flow": "Flusso",
+        "pallet": "Pallet",
+        "quantity": "Quantità",
+        "site": "Sito",
+        "document": "Documento"
+      },
+      "direction": {
+        "outbound": "USCITA",
+        "inbound": "ENTRATA"
+      }
+    },
+    "recoveryCases": {
+      "title": "Pratiche di recupero",
+      "subtitle": "Stato di avanzamento dei recuperi pallet in corso.",
+      "empty": "Nessuna pratica registrata.",
+      "table": {
+        "case": "Pratica",
+        "pallet": "Pallet",
+        "recovered": "Recuperato",
+        "outstanding": "Residuo",
+        "outstandingValue": "Valore residuo",
+        "dueDate": "Scadenza",
+        "status": "Stato"
+      }
+    },
+    "vouchers": {
+      "title": "Buoni pallet",
+      "subtitle": "Crediti pallet emessi e relativo stato di recupero.",
+      "empty": "Nessun buono registrato.",
+      "table": {
+        "voucher": "Buono",
+        "pallet": "Pallet",
+        "issued": "Emissione",
+        "dueDate": "Scadenza",
+        "quantity": "Quantità",
+        "recovered": "Recuperato",
+        "outstanding": "Residuo",
+        "status": "Stato"
+      }
+    }
+  },
+  "clientPortalAccess": {
+    "title": "Portale clienti",
+    "subtitle": "Utenti autorizzati a vedere i dati di questa controparte in sola lettura.",
+    "grantForm": {
+      "emailLabel": "Email cliente",
+      "emailPlaceholder": "cliente@azienda.it",
+      "granting": "Concessione…",
+      "grantButton": "Concedi accesso",
+      "adminHint": "Il cliente deve avere già un account (registrato su /signup) con questa email. Un account può avere accesso attivo a una sola controparte alla volta."
+    },
+    "readOnlyHint": "Solo un amministratore può concedere o revocare l'accesso al portale clienti. Di seguito lo stato attuale, in sola lettura.",
+    "empty": "Nessun utente portale per questa controparte.",
+    "table": {
+      "email": "Email",
+      "name": "Nome",
+      "grantedOn": "Concesso il",
+      "status": "Stato"
+    },
+    "status": {
+      "active": "Attivo",
+      "disabled": "Disattivato"
+    },
+    "actions": {
+      "deactivate": "Disattiva",
+      "reactivate": "Riattiva"
+    }
   },
   "workspaceSelector": {
     "title": "Scegli un workspace",

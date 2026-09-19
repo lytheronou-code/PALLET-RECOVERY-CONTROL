@@ -12,18 +12,18 @@ export default async function PortalDocumentsPage({
   const { page: pageParam } = await searchParams;
   const page = parsePage(pageParam);
   const [context, result] = await Promise.all([getPortalContext(), listPortalDocuments(page)]);
-  const { locale, currency, timeZone } = await getPageContext(context?.organizationId);
+  const { t, locale, currency, timeZone } = await getPageContext(context?.organizationId);
 
   return (
     <section className="panel">
       <div className="panel-header">
         <div>
-          <h2 className="panel-title">Documenti e prove</h2>
-          <div className="panel-subtitle">Documenti condivisi dal team di recupero.</div>
+          <h2 className="panel-title">{t("clientPortal.documents.title")}</h2>
+          <div className="panel-subtitle">{t("clientPortal.documents.subtitle")}</div>
         </div>
       </div>
       {result.items.length === 0 ? (
-        <div className="empty-state">Nessun documento condiviso al momento.</div>
+        <div className="empty-state">{t("clientPortal.documents.empty")}</div>
       ) : (
         <PortalDocumentsTable items={result.items} locale={locale} currency={currency} timeZone={timeZone} />
       )}
