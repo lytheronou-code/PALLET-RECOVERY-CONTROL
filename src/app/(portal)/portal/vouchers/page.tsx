@@ -12,31 +12,31 @@ export default async function PortalVouchersPage({
   const { page: pageParam } = await searchParams;
   const page = parsePage(pageParam);
   const [context, result] = await Promise.all([getPortalContext(), listPortalVouchers(page)]);
-  const { formatDate, formatNumber } = await getPageContext(context?.organizationId);
+  const { t, formatDate, formatNumber } = await getPageContext(context?.organizationId);
 
   return (
     <section className="panel">
       <div className="panel-header">
         <div>
-          <h2 className="panel-title">Buoni pallet</h2>
-          <div className="panel-subtitle">Crediti pallet emessi e relativo stato di recupero.</div>
+          <h2 className="panel-title">{t("clientPortal.vouchers.title")}</h2>
+          <div className="panel-subtitle">{t("clientPortal.vouchers.subtitle")}</div>
         </div>
       </div>
       {result.items.length === 0 ? (
-        <div className="empty-state">Nessun buono registrato.</div>
+        <div className="empty-state">{t("clientPortal.vouchers.empty")}</div>
       ) : (
         <div className="table-wrap">
           <table className="data-table">
             <thead>
               <tr>
-                <th>Buono</th>
-                <th>Pallet</th>
-                <th>Emissione</th>
-                <th>Scadenza</th>
-                <th>Quantità</th>
-                <th>Recuperato</th>
-                <th>Residuo</th>
-                <th>Stato</th>
+                <th>{t("clientPortal.vouchers.table.voucher")}</th>
+                <th>{t("clientPortal.vouchers.table.pallet")}</th>
+                <th>{t("clientPortal.vouchers.table.issued")}</th>
+                <th>{t("clientPortal.vouchers.table.dueDate")}</th>
+                <th>{t("clientPortal.vouchers.table.quantity")}</th>
+                <th>{t("clientPortal.vouchers.table.recovered")}</th>
+                <th>{t("clientPortal.vouchers.table.outstanding")}</th>
+                <th>{t("clientPortal.vouchers.table.status")}</th>
               </tr>
             </thead>
             <tbody>

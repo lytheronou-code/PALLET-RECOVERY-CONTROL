@@ -12,30 +12,30 @@ export default async function PortalRecoveryCasesPage({
   const { page: pageParam } = await searchParams;
   const page = parsePage(pageParam);
   const [context, result] = await Promise.all([getPortalContext(), listPortalRecoveryCases(page)]);
-  const { formatCurrency, formatDate, formatNumber } = await getPageContext(context?.organizationId);
+  const { t, formatCurrency, formatDate, formatNumber } = await getPageContext(context?.organizationId);
 
   return (
     <section className="panel">
       <div className="panel-header">
         <div>
-          <h2 className="panel-title">Pratiche di recupero</h2>
-          <div className="panel-subtitle">Stato di avanzamento dei recuperi pallet in corso.</div>
+          <h2 className="panel-title">{t("clientPortal.recoveryCases.title")}</h2>
+          <div className="panel-subtitle">{t("clientPortal.recoveryCases.subtitle")}</div>
         </div>
       </div>
       {result.items.length === 0 ? (
-        <div className="empty-state">Nessuna pratica registrata.</div>
+        <div className="empty-state">{t("clientPortal.recoveryCases.empty")}</div>
       ) : (
         <div className="table-wrap">
           <table className="data-table">
             <thead>
               <tr>
-                <th>Pratica</th>
-                <th>Pallet</th>
-                <th>Recuperato</th>
-                <th>Residuo</th>
-                <th>Valore residuo</th>
-                <th>Scadenza</th>
-                <th>Stato</th>
+                <th>{t("clientPortal.recoveryCases.table.case")}</th>
+                <th>{t("clientPortal.recoveryCases.table.pallet")}</th>
+                <th>{t("clientPortal.recoveryCases.table.recovered")}</th>
+                <th>{t("clientPortal.recoveryCases.table.outstanding")}</th>
+                <th>{t("clientPortal.recoveryCases.table.outstandingValue")}</th>
+                <th>{t("clientPortal.recoveryCases.table.dueDate")}</th>
+                <th>{t("clientPortal.recoveryCases.table.status")}</th>
               </tr>
             </thead>
             <tbody>
