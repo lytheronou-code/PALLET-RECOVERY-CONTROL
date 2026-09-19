@@ -6,18 +6,26 @@ import {
   setClientPortalMembershipActiveAction,
 } from "@/lib/actions/client-portal-admin";
 import { emptyFormState } from "@/lib/actions/form-state";
-import { formatDate } from "@/lib/format";
+import { createFormatters } from "@/lib/format";
 import type { ClientPortalMembershipRow } from "@/lib/data/client-portal-admin";
+import type { Locale } from "@/i18n/locale";
 
 export function ClientPortalAccessPanel({
   counterpartyId,
   members,
   isAdmin,
+  locale,
+  currency,
+  timeZone,
 }: {
   counterpartyId: string;
   members: ClientPortalMembershipRow[];
   isAdmin: boolean;
+  locale: Locale;
+  currency: string;
+  timeZone: string;
 }) {
+  const { formatDate } = createFormatters(locale, currency, timeZone);
   const [state, formAction, pending] = useActionState(
     grantClientPortalAccessAction.bind(null, counterpartyId),
     emptyFormState,

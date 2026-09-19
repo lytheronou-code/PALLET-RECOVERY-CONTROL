@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowDownLeft, ArrowUpRight, Upload } from "lucide-react";
 import { requireMembership } from "@/lib/data/organization";
 import { listMovementsPage } from "@/lib/data/movements";
-import { formatDate, formatNumber } from "@/lib/format";
+import { getPageContext } from "@/i18n/server";
 import { parsePage } from "@/lib/pagination";
 import { Pagination } from "@/components/pagination";
 
@@ -18,6 +18,7 @@ export default async function MovementsPage({
   searchParams: Promise<{ direction?: string; q?: string; page?: string }>;
 }) {
   const membership = await requireMembership();
+  const { formatDate, formatNumber } = await getPageContext(membership.organizationId);
   const { direction, q, page: pageParam } = await searchParams;
   const active = FILTERS.find((item) => item.key === direction) ?? FILTERS[0];
   const page = parsePage(pageParam);

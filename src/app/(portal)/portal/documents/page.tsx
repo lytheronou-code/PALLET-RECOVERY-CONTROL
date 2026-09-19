@@ -1,7 +1,8 @@
-import { listPortalDocuments } from "@/lib/data/portal";
+import { getPortalContext, listPortalDocuments } from "@/lib/data/portal";
 import { parsePage } from "@/lib/pagination";
 import { Pagination } from "@/components/pagination";
 import { PortalDocumentsTable } from "@/components/portal-documents-table";
+import { getPageContext } from "@/i18n/server";
 
 export default async function PortalDocumentsPage({
   searchParams,
@@ -10,7 +11,8 @@ export default async function PortalDocumentsPage({
 }) {
   const { page: pageParam } = await searchParams;
   const page = parsePage(pageParam);
-  const result = await listPortalDocuments(page);
+  const [context, result] = await Promise.all([getPortalContext(), listPortalDocuments(page)]);
+  const { locale, currency, timeZone } = await getPageContext(context?.organizationId);
 
   return (
     <section className="panel">
@@ -23,7 +25,7 @@ export default async function PortalDocumentsPage({
       {result.items.length === 0 ? (
         <div className="empty-state">Nessun documento condiviso al momento.</div>
       ) : (
-        <PortalDocumentsTable items={result.items} />
+        <PortalDocumentsTable items={result.items} locale={locale} currency={currency} timeZone={timeZone} />
       )}
       <Pagination basePath="/portal/documents" params={{}} page={result.page} pageCount={result.pageCount} total={result.total} />
     </section>

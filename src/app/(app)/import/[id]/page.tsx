@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireMembership } from "@/lib/data/organization";
 import { getImportBatch } from "@/lib/data/import-batches";
-import { formatDate, formatNumber } from "@/lib/format";
+import { getPageContext } from "@/i18n/server";
 
 const STATUS_LABELS: Record<string, string> = {
   processing: "In corso",
@@ -16,6 +16,7 @@ export default async function ImportBatchPage({
   params: Promise<{ id: string }>;
 }) {
   const membership = await requireMembership();
+  const { formatDate, formatNumber } = await getPageContext(membership.organizationId);
   const { id } = await params;
   const batch = await getImportBatch(membership.organizationId, id);
 

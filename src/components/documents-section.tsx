@@ -10,8 +10,9 @@ import {
 } from "@/lib/actions/documents";
 import { emptyFormState } from "@/lib/actions/form-state";
 import { DOCUMENT_TYPES, DOCUMENT_TYPE_LABELS } from "@/lib/validation/document";
-import { formatDate, formatFileSize } from "@/lib/format";
+import { createFormatters } from "@/lib/format";
 import type { DocumentListItem } from "@/lib/data/documents";
+import type { Locale } from "@/i18n/locale";
 
 type RevalidateLink = Pick<DocumentLinkContext, "counterpartyId" | "recoveryCaseId" | "voucherId" | "movementId">;
 
@@ -20,12 +21,19 @@ export function DocumentsSection({
   link,
   items,
   total,
+  locale,
+  currency,
+  timeZone,
 }: {
   title: string;
   link: DocumentLinkContext;
   items: DocumentListItem[];
   total: number;
+  locale: Locale;
+  currency: string;
+  timeZone: string;
 }) {
+  const { formatDate, formatFileSize } = createFormatters(locale, currency, timeZone);
   const [state, formAction, pending] = useActionState(uploadDocumentAction.bind(null, link), emptyFormState);
   const [rowError, setRowError] = useState<string | null>(null);
   const revalidateLink: RevalidateLink = link;

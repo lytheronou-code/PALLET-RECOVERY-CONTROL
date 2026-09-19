@@ -5,7 +5,7 @@ import { listPalletTypes } from "@/lib/data/pallet-types";
 import { listSitesForImportLookup } from "@/lib/data/sites";
 import { listImportBatches } from "@/lib/data/import-batches";
 import { ImportWizard } from "@/components/import-wizard";
-import { formatDate } from "@/lib/format";
+import { getPageContext } from "@/i18n/server";
 
 const STATUS_LABELS: Record<string, string> = {
   processing: "In corso",
@@ -15,6 +15,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 export default async function ImportPage() {
   const membership = await requireMembership();
+  const { formatDate } = await getPageContext(membership.organizationId);
   const [counterparties, palletTypes, sites, batches] = await Promise.all([
     listCounterparties(membership.organizationId, { includeInactive: true }),
     listPalletTypes(membership.organizationId, { includeInactive: true }),

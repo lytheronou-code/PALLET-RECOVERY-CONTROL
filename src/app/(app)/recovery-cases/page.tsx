@@ -2,7 +2,7 @@ import Link from "next/link";
 import { CircleDollarSign, ClipboardList, Plus, TriangleAlert } from "lucide-react";
 import { listOrganizationMembers, requireMembership } from "@/lib/data/organization";
 import { listRecoveryCasesPage } from "@/lib/data/recovery-cases";
-import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
+import { getPageContext } from "@/i18n/server";
 import { PriorityBadge, StatusBadge } from "@/components/status-badge";
 import { AssigneePicker } from "@/components/assignee-picker";
 import { parsePage } from "@/lib/pagination";
@@ -28,6 +28,7 @@ export default async function RecoveryCasesPage({
   searchParams: Promise<{ filter?: string; q?: string; page?: string; mine?: string }>;
 }) {
   const membership = await requireMembership();
+  const { formatCurrency, formatDate, formatNumber } = await getPageContext(membership.organizationId);
   const { filter, q, page: pageParam, mine } = await searchParams;
   const activeFilter = FILTERS.find((item) => item.key === filter) ?? FILTERS[0];
   const page = parsePage(pageParam);

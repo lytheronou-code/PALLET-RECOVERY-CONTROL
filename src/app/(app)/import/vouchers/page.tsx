@@ -6,7 +6,7 @@ import { listImportBatches } from "@/lib/data/import-batches";
 import { listVoucherNumbers } from "@/lib/data/vouchers";
 import { listSitesForImportLookup } from "@/lib/data/sites";
 import { VoucherImportWizard } from "@/components/voucher-import-wizard";
-import { formatDate, formatNumber } from "@/lib/format";
+import { getPageContext } from "@/i18n/server";
 
 const STATUS_LABELS: Record<string, string> = {
   processing: "In corso",
@@ -16,6 +16,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 export default async function VoucherImportPage() {
   const membership = await requireMembership();
+  const { formatDate, formatNumber } = await getPageContext(membership.organizationId);
   const [counterparties, palletTypes, sites, existingVoucherNumbers, batches] = await Promise.all([
     listCounterparties(membership.organizationId, { includeInactive: true }),
     listPalletTypes(membership.organizationId, { includeInactive: true }),

@@ -1,7 +1,7 @@
 import { Building2, ShieldCheck, UserRound } from "lucide-react";
 import { requireMembership } from "@/lib/data/organization";
 import { createClient } from "@/lib/supabase/server";
-import { formatDate } from "@/lib/format";
+import { getPageContext } from "@/i18n/server";
 
 const ROLE_LABELS: Record<string, string> = {
   admin: "Admin",
@@ -11,6 +11,7 @@ const ROLE_LABELS: Record<string, string> = {
 
 export default async function SettingsPage() {
   const membership = await requireMembership();
+  const { formatDate } = await getPageContext(membership.organizationId);
   const supabase = await createClient();
 
   const [{ data: organization }, { data: userData }, { count: memberCount }] = await Promise.all([

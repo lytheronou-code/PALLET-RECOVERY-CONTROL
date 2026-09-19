@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { CalendarDays, CircleDollarSign, PackageCheck, Ticket } from "lucide-react";
-import { getPortalSummary } from "@/lib/data/portal";
-import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
+import { getPortalContext, getPortalSummary } from "@/lib/data/portal";
+import { getPageContext } from "@/i18n/server";
 
 export default async function PortalOverviewPage() {
-  const summary = await getPortalSummary();
+  const [context, summary] = await Promise.all([getPortalContext(), getPortalSummary()]);
+  const { formatCurrency, formatDate, formatNumber } = await getPageContext(context?.organizationId);
 
   return (
     <div>

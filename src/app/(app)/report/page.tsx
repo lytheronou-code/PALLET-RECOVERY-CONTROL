@@ -1,7 +1,7 @@
 import { Download } from "lucide-react";
 import { requireMembership } from "@/lib/data/organization";
 import { getExposureReport } from "@/lib/data/report";
-import { formatCurrency, formatNumber } from "@/lib/format";
+import { getPageContext } from "@/i18n/server";
 import type { AgeingBucket } from "@/lib/reporting/exposure-report";
 
 function toIsoDate(date: Date): string {
@@ -28,6 +28,7 @@ export default async function ReportPage({
   searchParams: Promise<{ from?: string; to?: string }>;
 }) {
   const membership = await requireMembership();
+  const { formatCurrency, formatNumber } = await getPageContext(membership.organizationId);
   const params = await searchParams;
   const defaults = defaultRange();
   const from = params.from || defaults.from;

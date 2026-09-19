@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Building2, Mail, MapPin, Pencil, Phone, Plus } from "lucide-react";
 import { requireMembership } from "@/lib/data/organization";
 import { getCounterpartyOverview } from "@/lib/data/counterparties";
-import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
+import { getPageContext } from "@/i18n/server";
 import { PriorityBadge, StatusBadge, VoucherStatusBadge } from "@/components/status-badge";
 import { DocumentsPanel } from "@/components/documents-panel";
 import { ClientPortalAccessPanel } from "@/components/client-portal-access-panel";
@@ -24,6 +24,9 @@ export default async function CounterpartyDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const membership = await requireMembership();
+  const { locale, currency, timeZone, formatCurrency, formatDate, formatNumber } = await getPageContext(
+    membership.organizationId,
+  );
   const { id } = await params;
   const overview = await getCounterpartyOverview(membership.organizationId, id);
 
@@ -259,7 +262,14 @@ export default async function CounterpartyDetailPage({
       </div>
 
       <div style={{ marginTop: 16 }}>
-        <ClientPortalAccessPanel counterpartyId={cp.id} members={portalMembers} isAdmin={membership.role === "admin"} />
+        <ClientPortalAccessPanel
+          counterpartyId={cp.id}
+          members={portalMembers}
+          isAdmin={membership.role === "admin"}
+          locale={locale}
+          currency={currency}
+          timeZone={timeZone}
+        />
       </div>
     </div>
   );

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Plus, Ticket, Upload } from "lucide-react";
 import { requireMembership } from "@/lib/data/organization";
 import { listVouchersPage } from "@/lib/data/vouchers";
-import { formatDate, formatNumber } from "@/lib/format";
+import { getPageContext } from "@/i18n/server";
 import { VoucherStatusBadge } from "@/components/status-badge";
 import { parsePage } from "@/lib/pagination";
 import { Pagination } from "@/components/pagination";
@@ -29,6 +29,7 @@ export default async function VouchersPage({
   searchParams: Promise<{ filter?: string; q?: string; page?: string }>;
 }) {
   const membership = await requireMembership();
+  const { formatDate, formatNumber } = await getPageContext(membership.organizationId);
   const { filter, q, page: pageParam } = await searchParams;
   const activeFilter = FILTERS.find((item) => item.key === filter) ?? FILTERS[0];
   const page = parsePage(pageParam);

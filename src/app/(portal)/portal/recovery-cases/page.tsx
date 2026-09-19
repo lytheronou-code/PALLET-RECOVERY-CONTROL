@@ -1,5 +1,5 @@
-import { listPortalRecoveryCases } from "@/lib/data/portal";
-import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
+import { getPortalContext, listPortalRecoveryCases } from "@/lib/data/portal";
+import { getPageContext } from "@/i18n/server";
 import { StatusBadge } from "@/components/status-badge";
 import { parsePage } from "@/lib/pagination";
 import { Pagination } from "@/components/pagination";
@@ -11,7 +11,8 @@ export default async function PortalRecoveryCasesPage({
 }) {
   const { page: pageParam } = await searchParams;
   const page = parsePage(pageParam);
-  const result = await listPortalRecoveryCases(page);
+  const [context, result] = await Promise.all([getPortalContext(), listPortalRecoveryCases(page)]);
+  const { formatCurrency, formatDate, formatNumber } = await getPageContext(context?.organizationId);
 
   return (
     <section className="panel">

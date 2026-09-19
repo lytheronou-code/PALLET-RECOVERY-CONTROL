@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireMembership } from "@/lib/data/organization";
 import { getMovement } from "@/lib/data/movements";
-import { formatDate, formatNumber } from "@/lib/format";
+import { getPageContext } from "@/i18n/server";
 import { CorrectMovementForm } from "@/components/correct-movement-form";
 import { DocumentsPanel } from "@/components/documents-panel";
 
@@ -11,6 +11,7 @@ export default async function CorrectMovementPage({
   params: Promise<{ id: string }>;
 }) {
   const membership = await requireMembership();
+  const { formatDate, formatNumber } = await getPageContext(membership.organizationId);
   const { id } = await params;
   const movement = await getMovement(membership.organizationId, id);
 

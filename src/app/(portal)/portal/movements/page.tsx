@@ -1,5 +1,5 @@
-import { listPortalMovements } from "@/lib/data/portal";
-import { formatDate, formatNumber } from "@/lib/format";
+import { getPortalContext, listPortalMovements } from "@/lib/data/portal";
+import { getPageContext } from "@/i18n/server";
 import { parsePage } from "@/lib/pagination";
 import { Pagination } from "@/components/pagination";
 
@@ -10,7 +10,8 @@ export default async function PortalMovementsPage({
 }) {
   const { page: pageParam } = await searchParams;
   const page = parsePage(pageParam);
-  const result = await listPortalMovements(page);
+  const [context, result] = await Promise.all([getPortalContext(), listPortalMovements(page)]);
+  const { formatDate, formatNumber } = await getPageContext(context?.organizationId);
 
   return (
     <section className="panel">

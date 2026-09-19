@@ -15,7 +15,7 @@ import {
   getDashboardKpis,
   getTopExposureCounterparties,
 } from "@/lib/data/dashboard";
-import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
+import { getPageContext } from "@/i18n/server";
 import { PriorityBadge, StatusBadge } from "@/components/status-badge";
 
 export default async function DashboardPage() {
@@ -23,6 +23,8 @@ export default async function DashboardPage() {
   if (!membership) {
     redirect("/onboarding");
   }
+
+  const { formatCurrency, formatDate, formatNumber } = await getPageContext(membership.organizationId);
 
   const [kpis, insights, topCounterparties, actionableCases] = await Promise.all([
     getDashboardKpis(membership.organizationId),

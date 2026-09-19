@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireMembership } from "@/lib/data/organization";
 import { listPalletTypes } from "@/lib/data/pallet-types";
 import { setPalletTypeActiveAction } from "@/lib/actions/pallet-types";
-import { formatCurrency } from "@/lib/format";
+import { getPageContext } from "@/i18n/server";
 
 export default async function PalletTypesPage({
   searchParams,
@@ -10,6 +10,7 @@ export default async function PalletTypesPage({
   searchParams: Promise<{ inactive?: string }>;
 }) {
   const membership = await requireMembership();
+  const { formatCurrency } = await getPageContext(membership.organizationId);
   const { inactive } = await searchParams;
   const showInactive = inactive === "1";
   const palletTypes = await listPalletTypes(membership.organizationId, { includeInactive: showInactive });

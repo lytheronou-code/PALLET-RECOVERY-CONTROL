@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { CalendarDays, CircleDollarSign, PackageCheck } from "lucide-react";
 import { listOrganizationMembers, requireMembership } from "@/lib/data/organization";
 import { getRecoveryCase, listRecoveryEvents } from "@/lib/data/recovery-cases";
-import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
+import { getPageContext } from "@/i18n/server";
 import { PriorityBadge, StatusBadge } from "@/components/status-badge";
 import { RecoveryEventForm } from "@/components/recovery-event-form";
 import { AssigneePicker } from "@/components/assignee-picker";
@@ -16,6 +16,7 @@ export default async function RecoveryCaseDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const membership = await requireMembership();
+  const { formatCurrency, formatDate, formatNumber } = await getPageContext(membership.organizationId);
   const { id } = await params;
   const [recoveryCase, events, members] = await Promise.all([
     getRecoveryCase(membership.organizationId, id),

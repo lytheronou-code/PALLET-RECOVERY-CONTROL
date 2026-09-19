@@ -398,24 +398,30 @@ export type Database = {
       organizations: {
         Row: {
           created_at: string
+          default_currency: string
           default_locale: string
           id: string
           name: string
           slug: string
+          timezone: string
         }
         Insert: {
           created_at?: string
+          default_currency?: string
           default_locale?: string
           id?: string
           name: string
           slug: string
+          timezone?: string
         }
         Update: {
           created_at?: string
+          default_currency?: string
           default_locale?: string
           id?: string
           name?: string
           slug?: string
+          timezone?: string
         }
         Relationships: []
       }

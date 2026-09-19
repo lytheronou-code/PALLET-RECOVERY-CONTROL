@@ -20,6 +20,18 @@ async function cookieOrHeaderLocale(): Promise<Locale> {
   return parseAcceptLanguage(headerStore.get("accept-language"));
 }
 
+export type OrgLocaleSettings = {
+  defaultLocale: Locale;
+  defaultCurrency: string;
+  timezone: string;
+};
+
+const FALLBACK_ORG_SETTINGS: OrgLocaleSettings = {
+  defaultLocale: DEFAULT_LOCALE,
+  defaultCurrency: "EUR",
+  timezone: "UTC",
+};
+
 /**
  * Resolution hierarchy: signed-in user's own preferred_locale -> the
  * organization's default_locale (internal operator or client portal user,
@@ -65,4 +77,66 @@ export async function resolveLocale(organizationId?: string | null): Promise<Loc
   }
 
   return cookieOrHeaderLocale();
+}
+
+/**
+ * Same hierarchy as resolveLocale(), but also returns the organization's
+ * currency and timezone in the same round trip, for pages that need both
+ * translated text and locale-aware number/date/money formatting (which is
+ * effectively every operational page). currency/timezone have no per-user
+ * override in the spec -- they are organization-level only -- so they are
+ * simply read alongside default_locale rather than resolved through a
+ * hierarchy of their own.
+ */
+export async function resolveLocaleAndOrgSettings(
+  organizationId?: string | null,
+): Promise<{ locale: Locale; org: OrgLocaleSettings }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const orgSettingsPromise = organizationId
+    ? supabase
+        .from("organizations")
+        .select("default_locale, default_currency, timezone")
+        .eq("id", organizationId)
+        .maybeSingle()
+    : Promise.resolve({ data: null } as const);
+
+  if (!user) {
+    const { data: org } = await orgSettingsPromise;
+    const locale = await cookieOrHeaderLocale();
+    return {
+      locale,
+      org: org
+        ? {
+            defaultLocale: coerceLocale(org.default_locale),
+            defaultCurrency: org.default_currency,
+            timezone: org.timezone,
+          }
+        : FALLBACK_ORG_SETTINGS,
+    };
+  }
+
+  const [{ data: profile }, { data: org }] = await Promise.all([
+    supabase.from("profiles").select("preferred_locale").eq("id", user.id).maybeSingle(),
+    orgSettingsPromise,
+  ]);
+
+  const orgSettings: OrgLocaleSettings = org
+    ? {
+        defaultLocale: coerceLocale(org.default_locale),
+        defaultCurrency: org.default_currency,
+        timezone: org.timezone,
+      }
+    : FALLBACK_ORG_SETTINGS;
+
+  const locale = isLocale(profile?.preferred_locale)
+    ? profile.preferred_locale
+    : org
+      ? orgSettings.defaultLocale
+      : await cookieOrHeaderLocale();
+
+  return { locale, org: orgSettings };
 }

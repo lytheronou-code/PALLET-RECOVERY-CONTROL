@@ -2,7 +2,7 @@ import Link from "next/link";
 import { AlertTriangle, GitCompareArrows, Plus } from "lucide-react";
 import { requireMembership } from "@/lib/data/organization";
 import { getReconciliation } from "@/lib/data/reconciliation";
-import { formatCurrency, formatNumber } from "@/lib/format";
+import { getPageContext } from "@/i18n/server";
 import type { Finding } from "@/lib/reconciliation/engine";
 
 function createCaseHref(finding: Finding): string | null {
@@ -35,7 +35,11 @@ const FINDING_LABELS: Record<Finding["type"], string> = {
   voucher_overdue: "Buoni scaduti",
 };
 
-function describeFinding(finding: Finding, names: Map<string, { counterpartyName: string; palletTypeCode: string }>): string {
+function describeFinding(
+  finding: Finding,
+  names: Map<string, { counterpartyName: string; palletTypeCode: string }>,
+  formatNumber: (value: number) => string,
+): string {
   switch (finding.type) {
     case "unbalanced_movements": {
       const label = names.get(finding.counterpartyId + "::" + finding.palletTypeId);
@@ -62,6 +66,7 @@ function describeFinding(finding: Finding, names: Map<string, { counterpartyName
 
 export default async function ReconciliationPage() {
   const membership = await requireMembership();
+  const { formatCurrency, formatNumber } = await getPageContext(membership.organizationId);
   const { balances, findings } = await getReconciliation(membership.organizationId);
 
   const names = new Map(
@@ -171,7 +176,7 @@ export default async function ReconciliationPage() {
                   const href = createCaseHref(finding);
                   return (
                     <div className="search-result" key={index}>
-                      <div className="search-result-title">{describeFinding(finding, names)}</div>
+                      <div className="search-result-title">{describeFinding(finding, names, formatNumber)}</div>
                       {href ? <div style={{ marginTop: 8 }}><Link href={href} className="btn btn-secondary btn-sm">Crea pratica</Link></div> : null}
                     </div>
                   );

@@ -1,5 +1,5 @@
-import { listPortalVouchers } from "@/lib/data/portal";
-import { formatDate, formatNumber } from "@/lib/format";
+import { getPortalContext, listPortalVouchers } from "@/lib/data/portal";
+import { getPageContext } from "@/i18n/server";
 import { VoucherStatusBadge } from "@/components/status-badge";
 import { parsePage } from "@/lib/pagination";
 import { Pagination } from "@/components/pagination";
@@ -11,7 +11,8 @@ export default async function PortalVouchersPage({
 }) {
   const { page: pageParam } = await searchParams;
   const page = parsePage(pageParam);
-  const result = await listPortalVouchers(page);
+  const [context, result] = await Promise.all([getPortalContext(), listPortalVouchers(page)]);
+  const { formatDate, formatNumber } = await getPageContext(context?.organizationId);
 
   return (
     <section className="panel">

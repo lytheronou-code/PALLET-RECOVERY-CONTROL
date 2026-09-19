@@ -4,7 +4,7 @@ import { ArrowUpRight, CalendarDays, Pencil, Ticket } from "lucide-react";
 import { requireMembership } from "@/lib/data/organization";
 import { getVoucherDetail } from "@/lib/data/vouchers";
 import { cancelVoucherAction } from "@/lib/actions/vouchers";
-import { formatCurrency, formatDate, formatNumber } from "@/lib/format";
+import { getPageContext } from "@/i18n/server";
 import { PriorityBadge, StatusBadge, VoucherStatusBadge } from "@/components/status-badge";
 import { VoucherCancelForm } from "@/components/voucher-cancel-form";
 import { DocumentsPanel } from "@/components/documents-panel";
@@ -15,6 +15,7 @@ export default async function VoucherDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const membership = await requireMembership();
+  const { formatCurrency, formatDate, formatNumber } = await getPageContext(membership.organizationId);
   const { id } = await params;
   const voucher = await getVoucherDetail(membership.organizationId, id);
 

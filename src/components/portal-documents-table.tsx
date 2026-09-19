@@ -3,11 +3,23 @@
 import { useState } from "react";
 import { getPortalSignedDocumentUrlAction } from "@/lib/actions/portal";
 import { DOCUMENT_TYPE_LABELS } from "@/lib/validation/document";
-import { formatDate } from "@/lib/format";
+import { createFormatters } from "@/lib/format";
 import type { PortalDocument } from "@/lib/data/portal";
+import type { Locale } from "@/i18n/locale";
 
-export function PortalDocumentsTable({ items }: { items: PortalDocument[] }) {
+export function PortalDocumentsTable({
+  items,
+  locale,
+  currency,
+  timeZone,
+}: {
+  items: PortalDocument[];
+  locale: Locale;
+  currency: string;
+  timeZone: string;
+}) {
   const [error, setError] = useState<string | null>(null);
+  const { formatDate } = createFormatters(locale, currency, timeZone);
 
   async function handleOpen(documentId: string) {
     setError(null);
