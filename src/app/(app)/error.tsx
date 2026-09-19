@@ -22,7 +22,11 @@ export default function AppRouteError({
       <div className="route-error">
         <h2>{t("errorPages.generic.title")}</h2>
         <p>{t("errorPages.generic.description")}</p>
-        {error.digest ? <p style={{ color: "var(--muted-2)", fontSize: 11 }}>Ref: {error.digest}</p> : null}
+        {error.digest ? (
+          <p style={{ color: "var(--muted-2)", fontSize: 11 }}>
+            {t("errorPages.generic.ref")} {error.digest}
+          </p>
+        ) : null}
         <button type="button" className="btn btn-primary btn-sm" onClick={reset}>
           <RefreshCw size={14} />
           {t("errorPages.generic.retry")}

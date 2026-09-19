@@ -29,7 +29,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <div className="brand-mark">PR</div>
           <div className="sidebar-brand-text">
             <strong>Recovery Control</strong>
-            <span>Operations desk</span>
+            <span>{t("nav.operationsDesk")}</span>
           </div>
         </div>
 
@@ -81,6 +81,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           labels={{
             searchPlaceholder: t("topbar.searchPlaceholder"),
             searchAriaLabel: t("topbar.searchAriaLabel"),
+            searchHint: t("topbar.searchHint"),
             urgentActions: t("topbar.urgentActions"),
             newCase: t("topbar.newCase"),
             language: t("common.language"),

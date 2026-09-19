@@ -8,6 +8,7 @@ import type { Locale } from "@/i18n/locale";
 export type AppTopbarLabels = {
   searchPlaceholder: string;
   searchAriaLabel: string;
+  searchHint: string;
   urgentActions: string;
   newCase: string;
   language: string;
@@ -33,7 +34,7 @@ export function AppTopbar({
           placeholder={labels.searchPlaceholder}
           autoComplete="off"
         />
-        <span className="search-hint">SEARCH</span>
+        <span className="search-hint">{labels.searchHint}</span>
       </form>
 
       <div className="topbar-spacer" />

@@ -128,13 +128,15 @@
       "report": "Report",
       "settings": "Impostazioni"
     },
-    "ariaLabel": "Navigazione principale"
+    "ariaLabel": "Navigazione principale",
+    "operationsDesk": "Postazione operativa"
   },
   "topbar": {
     "searchPlaceholder": "Cerca pratica, controparte o buono…",
     "searchAriaLabel": "Ricerca globale",
     "urgentActions": "Azioni urgenti",
-    "newCase": "Nuova pratica"
+    "newCase": "Nuova pratica",
+    "searchHint": "CERCA"
   },
   "auth": {
     "login": {
@@ -1305,7 +1307,8 @@
     "generic": {
       "title": "Qualcosa è andato storto",
       "description": "Si è verificato un errore imprevisto. Riprova.",
-      "retry": "Riprova"
+      "retry": "Riprova",
+      "ref": "Rif.:"
     }
   },
   "clientPortalAccess": {
@@ -1340,6 +1343,13 @@
     "actions": {
       "deactivate": "Disattiva",
       "reactivate": "Riattiva"
+    }
+  },
+  "import": {
+    "batch": {
+      "startedOn": "Avviato il {date}",
+      "completedOn": "completato il {date}",
+      "backToImports": "← Torna agli import"
     }
   }
 }

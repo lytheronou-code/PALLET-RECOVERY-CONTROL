@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "i18n:check": "vitest run src/lib/__tests__/i18n-completeness.test.ts"
+    "i18n:check": "vitest run src/lib/__tests__/i18n-completeness.test.ts src/lib/__tests__/i18n-coverage.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",

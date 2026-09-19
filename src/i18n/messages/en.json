@@ -128,13 +128,15 @@
       "report": "Reports",
       "settings": "Settings"
     },
-    "ariaLabel": "Main navigation"
+    "ariaLabel": "Main navigation",
+    "operationsDesk": "Operations desk"
   },
   "topbar": {
     "searchPlaceholder": "Search a case, counterparty or voucher…",
     "searchAriaLabel": "Global search",
     "urgentActions": "Urgent actions",
-    "newCase": "New case"
+    "newCase": "New case",
+    "searchHint": "SEARCH"
   },
   "auth": {
     "login": {
@@ -1305,7 +1307,8 @@
     "generic": {
       "title": "Something went wrong",
       "description": "An unexpected error occurred. Please try again.",
-      "retry": "Try again"
+      "retry": "Try again",
+      "ref": "Ref:"
     }
   },
   "clientPortalAccess": {
@@ -1340,6 +1343,13 @@
     "actions": {
       "deactivate": "Deactivate",
       "reactivate": "Reactivate"
+    }
+  },
+  "import": {
+    "batch": {
+      "startedOn": "Started on {date}",
+      "completedOn": "completed on {date}",
+      "backToImports": "← Back to imports"
     }
   }
 }
