@@ -504,6 +504,110 @@
       "cannotCancelLinkedToCase": "You cannot cancel a voucher linked to a recovery case.",
       "cancelFailed": "The voucher could not be cancelled.",
       "cancelled": "Voucher cancelled."
+    },
+    "openRecovery": "Open recovery",
+    "list": {
+      "eyebrow": "Pallet credits",
+      "subtitle": "Due dates, residuals and a direct link to recovery cases.",
+      "searchPlaceholder": "Search by voucher number…",
+      "kpis": {
+        "inView": "Vouchers in view",
+        "inViewFoot": "filtered by selected status",
+        "outstandingPallets": "Outstanding pallets",
+        "outstandingPalletsFoot": "still to be recovered",
+        "overdue": "Overdue",
+        "overdueFoot": "require attention"
+      },
+      "filters": {
+        "active": "Active",
+        "open": "Open",
+        "partial": "Partial",
+        "disputed": "Disputed",
+        "closed": "Closed",
+        "all": "All"
+      },
+      "overdueLabel": "Overdue",
+      "empty": "No vouchers in this view. Register a voucher to feed the due-date schedule and reconciliation.",
+      "table": {
+        "voucher": "Voucher",
+        "counterparty": "Counterparty",
+        "pallet": "Pallet",
+        "issueDate": "Issued",
+        "dueDate": "Due date",
+        "quantity": "Quantity",
+        "recovered": "Recovered",
+        "outstanding": "Outstanding",
+        "status": "Status"
+      }
+    },
+    "detail": {
+      "eyebrow": "Pallet credit",
+      "kpis": {
+        "initialQuantity": "Initial quantity",
+        "recovered": "Recovered",
+        "recoveredFoot": "recorded from linked cases",
+        "outstanding": "Outstanding",
+        "outstandingFoot": "still to be recovered",
+        "estimatedResidualValue": "Estimated residual value",
+        "estimatedResidualValueFoot": "at current pallet unit value"
+      },
+      "linkedCases": {
+        "title": "Linked cases",
+        "subtitle": "Recovery cases that automatically update this voucher.",
+        "empty": "No linked cases.",
+        "table": {
+          "case": "Case",
+          "recovery": "Recovered / claimed",
+          "dueDate": "Due date",
+          "priority": "Priority",
+          "status": "Status"
+        }
+      },
+      "details": {
+        "title": "Voucher details",
+        "counterparty": "Counterparty",
+        "issueDate": "Issued",
+        "dueDate": "Due date",
+        "palletValue": "Pallet value",
+        "notes": "Notes",
+        "notesEmpty": "—"
+      },
+      "cancelBlockedNotice": "Cancellation is blocked while linked cases or recorded recoveries exist."
+    },
+    "form": {
+      "pageSubtitle": "The voucher feeds reconciliation, the due-date schedule and the recovery case.",
+      "prerequisiteError": "You need at least one active counterparty and one active pallet type before creating a voucher.",
+      "counterparty": "Counterparty",
+      "palletType": "Pallet type",
+      "selectPlaceholder": "Select…",
+      "site": "Site",
+      "siteNone": "None",
+      "siteEmptyNotice": "No sites registered for this counterparty.",
+      "voucherNumber": "Voucher number / reference",
+      "voucherNumberPlaceholder": "e.g. BV-2026-001847",
+      "issueDate": "Issue date",
+      "dueDate": "Recovery due date",
+      "quantity": "Quantity",
+      "notes": "Notes",
+      "notesPlaceholder": "DDT references, conditions, useful recovery information…",
+      "submit": "Create voucher"
+    },
+    "editForm": {
+      "pageEyebrow": "Controlled correction",
+      "pageTitle": "Edit {voucherNumber}",
+      "pageSubtitle": "Correct the reference, dates, quantity and notes without breaking the recovery history.",
+      "lockedNotice": "{palletTypeCode} · counterparty and pallet type stay locked to preserve consistency for linked cases.",
+      "voucherNumber": "Voucher number / reference",
+      "issueDate": "Issue date",
+      "dueDate": "Recovery due date",
+      "quantity": "Quantity",
+      "notes": "Notes",
+      "save": "Save changes"
+    },
+    "cancelForm": {
+      "confirmMessage": "Cancel this voucher? This is only allowed if no recoveries or linked cases exist.",
+      "cancelButton": "Cancel voucher",
+      "cancelling": "Cancelling…"
     }
   },
   "bulkImport": {
@@ -521,6 +625,55 @@
       "noRows": "The file contains no rows to import.",
       "batchCreateFailed": "The import batch could not be created.",
       "interrupted": "Import stopped after saving {count} rows. Check batch #{batchId} before re-importing the rest."
+    },
+    "vouchers": {
+      "eyebrow": "Pallet credits",
+      "title": "Import vouchers",
+      "subtitle": "Upload a CSV file, map the columns and check the preview before confirming: no row is imported silently.",
+      "backToVouchers": "Back to vouchers",
+      "previousImports": "Previous imports",
+      "noImports": "No voucher imports yet.",
+      "statusLabels": {
+        "processing": "Processing",
+        "completed": "Completed",
+        "failed": "Failed"
+      },
+      "table": {
+        "file": "File",
+        "date": "Date",
+        "status": "Status",
+        "totals": "Totals",
+        "valid": "Valid",
+        "invalid": "Invalid"
+      },
+      "wizard": {
+        "invalidFile": "The file contains no valid data rows.",
+        "prerequisiteNotice": "Create at least one counterparty and one pallet type before importing vouchers: they're needed to recognize the rows in the file.",
+        "csvFileLabel": "Voucher CSV file",
+        "expectedColumnsNote": "Expected columns: voucher number, counterparty, pallet type, issue date, quantity, and optionally recovery due date and notes.",
+        "fieldLabels": {
+          "voucherNumber": "Voucher number",
+          "counterparty": "Counterparty",
+          "palletType": "Pallet type",
+          "site": "Site (optional)",
+          "issueDate": "Issue date",
+          "recoveryDueDate": "Recovery due date",
+          "quantity": "Quantity",
+          "notes": "Notes"
+        },
+        "columnMappingTitle": "1. Column mapping",
+        "unmapped": "— unmapped —",
+        "previewTitle": "2. Preview and validation",
+        "missingRequired": "Required fields not mapped: {fields}",
+        "totalRows": "Total rows",
+        "validRows": "Valid",
+        "invalidRows": "Invalid",
+        "invalidRowsTitle": "Invalid rows (first 50)",
+        "row": "Row",
+        "reason": "Reason",
+        "confirmImport": "Confirm import ({count} valid rows)",
+        "importing": "Import in progress…"
+      }
     }
   },
   "reconciliation": {
