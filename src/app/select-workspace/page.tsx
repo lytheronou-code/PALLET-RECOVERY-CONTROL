@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { LayoutDashboard, Users } from "lucide-react";
 import { resolveWorkspace } from "@/lib/data/workspace";
+import { getT } from "@/i18n/server";
 
 // Only reached by a user who holds BOTH an internal organization
 // membership and an active client-portal membership -- resolveWorkspace()
@@ -15,19 +16,21 @@ export default async function SelectWorkspacePage() {
   if (resolution.kind === "portal") redirect("/portal");
   if (resolution.kind === "none") redirect("/onboarding");
 
+  const { t } = await getT();
+
   return (
     <div className="auth-shell">
       <div className="auth-card card">
-        <h1>Scegli area di lavoro</h1>
-        <p className="subtitle">Il tuo account ha accesso sia alla piattaforma operativa che al portale clienti.</p>
+        <h1>{t("workspaceSelector.title")}</h1>
+        <p className="subtitle">{t("workspaceSelector.description")}</p>
         <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 8 }}>
           <Link href="/dashboard" className="btn btn-primary" style={{ justifyContent: "center" }}>
             <LayoutDashboard size={16} />
-            Piattaforma operativa
+            {t("workspaceSelector.internal")}
           </Link>
           <Link href="/portal" className="btn btn-secondary" style={{ justifyContent: "center" }}>
             <Users size={16} />
-            Portale clienti
+            {t("workspaceSelector.portal")}
           </Link>
         </div>
       </div>

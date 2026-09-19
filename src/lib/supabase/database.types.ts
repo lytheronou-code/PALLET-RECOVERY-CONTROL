@@ -398,18 +398,21 @@ export type Database = {
       organizations: {
         Row: {
           created_at: string
+          default_locale: string
           id: string
           name: string
           slug: string
         }
         Insert: {
           created_at?: string
+          default_locale?: string
           id?: string
           name: string
           slug: string
         }
         Update: {
           created_at?: string
+          default_locale?: string
           id?: string
           name?: string
           slug?: string
@@ -587,6 +590,7 @@ export type Database = {
           display_name: string | null
           email: string
           id: string
+          preferred_locale: string | null
           updated_at: string
         }
         Insert: {
@@ -594,6 +598,7 @@ export type Database = {
           display_name?: string | null
           email: string
           id: string
+          preferred_locale?: string | null
           updated_at?: string
         }
         Update: {
@@ -601,6 +606,7 @@ export type Database = {
           display_name?: string | null
           email?: string
           id?: string
+          preferred_locale?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -950,13 +956,6 @@ export type Database = {
             columns: ["pallet_type_id"]
             isOneToOne: false
             referencedRelation: "pallet_types"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "vouchers_source_batch_id_fkey"
-            columns: ["source_batch_id"]
-            isOneToOne: false
-            referencedRelation: "import_batches"
             referencedColumns: ["id"]
           },
         ]

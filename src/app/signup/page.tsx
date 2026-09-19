@@ -1,15 +1,30 @@
 import Link from "next/link";
 import { SignupForm } from "@/components/signup-form";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { getT } from "@/i18n/server";
 
-export default function SignupPage() {
+export default async function SignupPage() {
+  const { locale, t } = await getT();
+
   return (
     <div className="auth-shell">
       <div className="auth-card card">
-        <h1>Crea il tuo account</h1>
-        <p className="subtitle">Inizia a gestire il recupero pallet</p>
-        <SignupForm />
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+          <LanguageSwitcher locale={locale} ariaLabel={t("common.language")} />
+        </div>
+        <h1>{t("auth.signup.title")}</h1>
+        <p className="subtitle">{t("auth.signup.subtitle")}</p>
+        <SignupForm
+          labels={{
+            email: t("auth.signup.email"),
+            password: t("auth.signup.password"),
+            passwordHint: t("auth.signup.passwordHint"),
+            submit: t("auth.signup.submit"),
+            submitting: t("auth.signup.submitting"),
+          }}
+        />
         <p className="auth-footer">
-          Hai già un account? <Link href="/login">Accedi</Link>
+          {t("auth.signup.hasAccount")} <Link href="/login">{t("auth.signup.signInLink")}</Link>
         </p>
       </div>
     </div>

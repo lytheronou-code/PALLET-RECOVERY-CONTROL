@@ -1,0 +1,373 @@
+{
+  "common": {
+    "appName": "Pallet Recovery Control",
+    "actions": {
+      "save": "Salva",
+      "saving": "Salvataggio…",
+      "cancel": "Annulla",
+      "delete": "Elimina",
+      "deleting": "Eliminazione…",
+      "edit": "Modifica",
+      "create": "Crea",
+      "creating": "Creazione…",
+      "back": "Indietro",
+      "next": "Avanti",
+      "previous": "Precedente",
+      "confirm": "Conferma",
+      "close": "Chiudi",
+      "search": "Cerca",
+      "filter": "Filtra",
+      "export": "Esporta",
+      "import": "Importa",
+      "download": "Scarica",
+      "upload": "Carica",
+      "uploading": "Caricamento…",
+      "view": "Visualizza",
+      "retry": "Riprova",
+      "continue": "Continua",
+      "skip": "Salta per ora",
+      "finish": "Fine",
+      "add": "Aggiungi",
+      "remove": "Rimuovi",
+      "select": "Seleziona",
+      "clear": "Azzera",
+      "signOut": "Esci"
+    },
+    "pagination": {
+      "page": "Pagina",
+      "of": "di",
+      "previous": "Precedente",
+      "next": "Successiva",
+      "showingResults": "Visualizzati {from}–{to} di {total}",
+      "perPage": "Per pagina"
+    },
+    "emptyState": {
+      "title": "Ancora nessun elemento",
+      "description": "Nessun record corrisponde alla vista corrente.",
+      "noResults": "Nessun risultato trovato"
+    },
+    "loading": {
+      "generic": "Caricamento…"
+    },
+    "errors": {
+      "generic": "Qualcosa è andato storto. Riprova.",
+      "notFound": "L'elemento richiesto non è stato trovato.",
+      "forbidden": "Non hai i permessi per eseguire questa azione.",
+      "unexpected": "Si è verificato un errore imprevisto.",
+      "network": "Errore di rete. Controlla la connessione e riprova.",
+      "duplicate": "Esiste già un record con questi dati.",
+      "sessionExpired": "La sessione è scaduta. Accedi di nuovo."
+    },
+    "validation": {
+      "required": "Questo campo è obbligatorio.",
+      "invalidEmail": "Inserisci un indirizzo email valido.",
+      "invalidFormat": "Formato non valido.",
+      "tooLong": "Questo valore è troppo lungo.",
+      "tooShort": "Questo valore è troppo corto.",
+      "mustBePositive": "Questo valore deve essere maggiore di zero.",
+      "invalidHexColor": "Inserisci un colore valido nel formato #RRGGBB.",
+      "invalidCountry": "Seleziona un paese valido.",
+      "invalidCurrency": "Seleziona una valuta valida.",
+      "invalidTimezone": "Seleziona un fuso orario valido.",
+      "invalidLocale": "Seleziona una lingua supportata."
+    },
+    "confirmDelete": {
+      "title": "Conferma eliminazione",
+      "description": "Questa azione non può essere annullata.",
+      "confirm": "Sì, elimina"
+    },
+    "language": "Lingua",
+    "poweredBy": "Offerto da {product}"
+  },
+  "nav": {
+    "groups": {
+      "control": "Controllo",
+      "data": "Dati",
+      "system": "Sistema"
+    },
+    "items": {
+      "dashboard": "Centro di controllo",
+      "recoveryCases": "Recupero",
+      "reconciliation": "Riconciliazione",
+      "vouchers": "Buoni",
+      "movements": "Movimenti",
+      "import": "Importazioni",
+      "counterparties": "Controparti",
+      "sites": "Siti",
+      "palletTypes": "Tipi pallet",
+      "report": "Report",
+      "settings": "Impostazioni"
+    },
+    "ariaLabel": "Navigazione principale"
+  },
+  "topbar": {
+    "searchPlaceholder": "Cerca pratica, controparte o buono…",
+    "searchAriaLabel": "Ricerca globale",
+    "urgentActions": "Azioni urgenti",
+    "newCase": "Nuova pratica"
+  },
+  "auth": {
+    "login": {
+      "title": "Accedi",
+      "subtitle": "Accedi al tuo workspace Pallet Recovery Control.",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Accedi",
+      "submitting": "Accesso in corso…",
+      "noAccount": "Non hai un account?",
+      "signUpLink": "Creane uno"
+    },
+    "signup": {
+      "title": "Crea il tuo account",
+      "subtitle": "Configura il workspace della tua organizzazione.",
+      "email": "Email",
+      "password": "Password",
+      "passwordHint": "Almeno 8 caratteri.",
+      "submit": "Crea account",
+      "submitting": "Creazione account…",
+      "hasAccount": "Hai già un account?",
+      "signInLink": "Accedi",
+      "confirmationSent": "Controlla la tua casella email per confermare l'indirizzo prima di accedere."
+    },
+    "error": {
+      "title": "Link non valido",
+      "description": "Il link di conferma è scaduto o non è più valido. Prova ad accedere di nuovo o registrati un'altra volta.",
+      "backToLogin": "Torna al login"
+    },
+    "validation": {
+      "emailRequired": "L'email è obbligatoria.",
+      "passwordRequired": "La password è obbligatoria.",
+      "passwordTooShort": "La password deve avere almeno {min} caratteri."
+    },
+    "errors": {
+      "userAlreadyRegistered": "Esiste già un account con questa email.",
+      "rateLimited": "Il servizio email di registrazione è temporaneamente limitato. Riprova più tardi.",
+      "emailNotAuthorized": "Registrazione temporaneamente non disponibile per questo indirizzo.",
+      "invalidEmail": "Inserisci un indirizzo email valido.",
+      "signupFailed": "Impossibile creare l'account. Riprova.",
+      "invalidCredentials": "Email o password non valide."
+    }
+  },
+  "onboarding": {
+    "title": "Configura la tua organizzazione",
+    "steps": {
+      "company": {
+        "label": "Azienda",
+        "title": "Informazioni aziendali",
+        "organizationName": "Nome organizzazione",
+        "legalName": "Ragione sociale",
+        "countryCode": "Paese"
+      },
+      "localization": {
+        "label": "Localizzazione",
+        "title": "Localizzazione",
+        "defaultLanguage": "Lingua predefinita",
+        "defaultCurrency": "Valuta di base",
+        "timezone": "Fuso orario"
+      },
+      "branding": {
+        "label": "Branding",
+        "title": "Branding del Client Portal",
+        "description": "Opzionale — puoi configurarlo in seguito dalle Impostazioni.",
+        "portalName": "Nome del portale",
+        "primaryColor": "Colore primario",
+        "logo": "Logo"
+      },
+      "operational": {
+        "label": "Configurazione operativa",
+        "title": "Tipi di pallet",
+        "description": "Opzionale — parti da un preset o aggiungili in seguito.",
+        "usePreset": "Parti da un preset",
+        "skipPresets": "Configurerò i tipi di pallet in seguito"
+      },
+      "firstCustomer": {
+        "label": "Primo cliente",
+        "title": "Aggiungi il tuo primo cliente",
+        "description": "Opzionale — puoi aggiungere clienti in qualsiasi momento.",
+        "customerName": "Nome cliente"
+      },
+      "ready": {
+        "label": "Pronto",
+        "title": "Tutto pronto",
+        "description": "Il tuo workspace è pronto all'uso.",
+        "goToDashboard": "Vai alla dashboard"
+      }
+    },
+    "returnLater": "Potrai modificare tutto questo in seguito dalle Impostazioni.",
+    "subtitle": "Ogni pallet, buono e pratica di recupero appartiene alla tua organizzazione.",
+    "validation": {
+      "organizationNameTooShort": "Il nome deve avere almeno {min} caratteri.",
+      "organizationNameTooLong": "Il nome è troppo lungo."
+    },
+    "errors": {
+      "createFailed": "Impossibile creare l'organizzazione. Riprova."
+    }
+  },
+  "dashboard": {
+    "title": "Centro di controllo",
+    "kpis": {
+      "openPallets": "Pallet aperti",
+      "openExposure": "Esposizione economica aperta",
+      "recoveredPallets": "Pallet recuperati",
+      "recoveredValue": "Valore recuperato",
+      "casesDueSoon": "Pratiche in scadenza",
+      "overdueCases": "Pratiche scadute"
+    },
+    "topExposure": {
+      "title": "Controparti con maggiore esposizione"
+    },
+    "actionCenter": {
+      "title": "Pratiche che richiedono azione"
+    }
+  },
+  "counterparties": {
+    "title": "Controparti",
+    "new": "Nuova controparte",
+    "fields": {
+      "name": "Nome",
+      "countryCode": "Paese",
+      "taxId": "Codice fiscale",
+      "vatId": "Partita IVA",
+      "addressLine1": "Indirizzo",
+      "addressLine2": "Indirizzo (riga 2)",
+      "city": "Città",
+      "region": "Provincia / regione",
+      "postalCode": "CAP",
+      "email": "Email",
+      "phone": "Telefono"
+    }
+  },
+  "sites": {
+    "title": "Siti",
+    "new": "Nuovo sito",
+    "fields": {
+      "name": "Nome",
+      "countryCode": "Paese",
+      "addressLine1": "Indirizzo",
+      "addressLine2": "Indirizzo (riga 2)",
+      "city": "Città",
+      "region": "Provincia / regione",
+      "postalCode": "CAP"
+    }
+  },
+  "palletTypes": {
+    "title": "Tipi pallet",
+    "new": "Nuovo tipo pallet"
+  },
+  "movements": {
+    "title": "Movimenti",
+    "correct": "Correggi movimento"
+  },
+  "vouchers": {
+    "title": "Buoni",
+    "new": "Nuovo buono"
+  },
+  "bulkImport": {
+    "title": "Importazioni",
+    "uploadFile": "Carica file",
+    "mapColumns": "Mappa colonne",
+    "preview": "Anteprima",
+    "confirmImport": "Conferma importazione"
+  },
+  "reconciliation": {
+    "title": "Riconciliazione"
+  },
+  "recoveryCases": {
+    "title": "Pratiche di recupero",
+    "new": "Nuova pratica"
+  },
+  "recoveryEvents": {
+    "title": "Eventi"
+  },
+  "documents": {
+    "title": "Documenti",
+    "upload": "Carica documento",
+    "noDocuments": "Ancora nessun documento."
+  },
+  "reports": {
+    "title": "Report",
+    "exportCsv": "Esporta CSV"
+  },
+  "search": {
+    "title": "Ricerca",
+    "placeholder": "Cerca…",
+    "noResults": "Nessun risultato trovato."
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "tabs": {
+      "company": "Azienda",
+      "localization": "Localizzazione",
+      "branding": "Branding",
+      "clientPortal": "Client Portal",
+      "team": "Team"
+    },
+    "company": {
+      "legalName": "Ragione sociale",
+      "tradingName": "Nome commerciale",
+      "countryCode": "Paese",
+      "taxId": "Codice fiscale",
+      "vatId": "Partita IVA",
+      "registrationNumber": "Numero di registrazione",
+      "addressLine1": "Indirizzo",
+      "addressLine2": "Indirizzo (riga 2)",
+      "city": "Città",
+      "region": "Provincia / regione",
+      "postalCode": "CAP",
+      "website": "Sito web",
+      "supportEmail": "Email di supporto",
+      "supportPhone": "Telefono di supporto"
+    },
+    "localization": {
+      "defaultLanguage": "Lingua predefinita",
+      "defaultCurrency": "Valuta di base",
+      "timezone": "Fuso orario",
+      "adminOnly": "Solo gli amministratori dell'organizzazione possono modificare queste impostazioni."
+    },
+    "branding": {
+      "portalName": "Nome del portale",
+      "logo": "Logo",
+      "compactLogo": "Logo compatto",
+      "primaryColor": "Colore primario",
+      "secondaryColor": "Colore secondario",
+      "supportEmail": "Email di supporto",
+      "supportPhone": "Telefono di supporto",
+      "website": "Sito web",
+      "welcomeMessageEn": "Messaggio di benvenuto (inglese)",
+      "welcomeMessageIt": "Messaggio di benvenuto (italiano)",
+      "uploadLogo": "Carica logo"
+    },
+    "team": {
+      "members": "Membri",
+      "role": "Ruolo"
+    }
+  },
+  "clientPortal": {
+    "nav": {
+      "overview": "Panoramica",
+      "vouchers": "Buoni",
+      "movements": "Movimenti",
+      "recoveryCases": "Pratiche di recupero",
+      "documents": "Documenti"
+    },
+    "welcome": "Portale clienti",
+    "readOnlyNotice": "Area riservata a sola lettura. Per correzioni o contestazioni contatta il tuo referente."
+  },
+  "workspaceSelector": {
+    "title": "Scegli un workspace",
+    "description": "Il tuo account ha accesso a più di un workspace.",
+    "internal": "Operazioni interne",
+    "portal": "Client portal"
+  },
+  "errorPages": {
+    "notFound": {
+      "title": "Pagina non trovata",
+      "description": "La pagina che cerchi non esiste."
+    },
+    "generic": {
+      "title": "Qualcosa è andato storto",
+      "description": "Si è verificato un errore imprevisto. Riprova.",
+      "retry": "Riprova"
+    }
+  }
+}

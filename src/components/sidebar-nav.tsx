@@ -16,39 +16,60 @@ import {
   ArrowLeftRight,
 } from "lucide-react";
 
-const NAV_GROUPS = [
-  {
-    label: "Control",
-    items: [
-      { href: "/dashboard", label: "Command center", icon: LayoutDashboard },
-      { href: "/recovery-cases", label: "Recovery", icon: ClipboardList },
-      { href: "/reconciliation", label: "Riconciliazione", icon: GitCompareArrows },
-      { href: "/vouchers", label: "Buoni", icon: Ticket },
-    ],
-  },
-  {
-    label: "Dati",
-    items: [
-      { href: "/movements", label: "Movimenti", icon: ArrowLeftRight },
-      { href: "/import", label: "Importazioni", icon: Upload },
-      { href: "/counterparties", label: "Controparti", icon: Building2 },
-      { href: "/sites", label: "Siti", icon: MapPin },
-      { href: "/pallet-types", label: "Tipi pallet", icon: Package },
-      { href: "/report", label: "Report", icon: FileBarChart },
-    ],
-  },
-  {
-    label: "Sistema",
-    items: [{ href: "/settings", label: "Impostazioni", icon: Settings }],
-  },
-];
+export type SidebarNavLabels = {
+  ariaLabel: string;
+  groups: { control: string; data: string; system: string };
+  items: {
+    dashboard: string;
+    recoveryCases: string;
+    reconciliation: string;
+    vouchers: string;
+    movements: string;
+    import: string;
+    counterparties: string;
+    sites: string;
+    palletTypes: string;
+    report: string;
+    settings: string;
+  };
+};
 
-export function SidebarNav() {
+function buildNavGroups(labels: SidebarNavLabels) {
+  return [
+    {
+      label: labels.groups.control,
+      items: [
+        { href: "/dashboard", label: labels.items.dashboard, icon: LayoutDashboard },
+        { href: "/recovery-cases", label: labels.items.recoveryCases, icon: ClipboardList },
+        { href: "/reconciliation", label: labels.items.reconciliation, icon: GitCompareArrows },
+        { href: "/vouchers", label: labels.items.vouchers, icon: Ticket },
+      ],
+    },
+    {
+      label: labels.groups.data,
+      items: [
+        { href: "/movements", label: labels.items.movements, icon: ArrowLeftRight },
+        { href: "/import", label: labels.items.import, icon: Upload },
+        { href: "/counterparties", label: labels.items.counterparties, icon: Building2 },
+        { href: "/sites", label: labels.items.sites, icon: MapPin },
+        { href: "/pallet-types", label: labels.items.palletTypes, icon: Package },
+        { href: "/report", label: labels.items.report, icon: FileBarChart },
+      ],
+    },
+    {
+      label: labels.groups.system,
+      items: [{ href: "/settings", label: labels.items.settings, icon: Settings }],
+    },
+  ];
+}
+
+export function SidebarNav({ labels }: { labels: SidebarNavLabels }) {
   const pathname = usePathname();
+  const navGroups = buildNavGroups(labels);
 
   return (
-    <nav className="sidebar-nav" aria-label="Navigazione principale">
-      {NAV_GROUPS.map((group) => (
+    <nav className="sidebar-nav" aria-label={labels.ariaLabel}>
+      {navGroups.map((group) => (
         <div className="nav-group" key={group.label}>
           <div className="nav-group-label">{group.label}</div>
           {group.items.map(({ href, label, icon: Icon }) => {
