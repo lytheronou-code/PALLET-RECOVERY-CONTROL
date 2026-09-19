@@ -21,7 +21,7 @@ function statusLabel(status: string, t: Translator): string {
 
 export default async function ImportPage() {
   const membership = await requireMembership();
-  const { t, formatDate } = await getPageContext(membership.organizationId);
+  const { t, locale, formatDate } = await getPageContext(membership.organizationId);
   const [counterparties, palletTypes, sites, batches] = await Promise.all([
     listCounterparties(membership.organizationId, { includeInactive: true }),
     listPalletTypes(membership.organizationId, { includeInactive: true }),
@@ -72,6 +72,7 @@ export default async function ImportPage() {
         palletTypes={palletTypes.map((p) => ({ id: p.id, code: p.code }))}
         sites={sites}
         labels={labels}
+        locale={locale}
       />
 
       <h2 style={{ fontSize: 16, marginTop: 32 }}>{t("bulkImport.movements.previousImports")}</h2>

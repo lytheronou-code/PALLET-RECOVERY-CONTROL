@@ -7,6 +7,15 @@ import {
   type VoucherColumnMapping,
   type VoucherLookups,
 } from "@/lib/csv/voucher-import";
+import { getDictionary } from "@/i18n/dictionaries";
+import { createTranslator } from "@/i18n/translator";
+
+// Italian test translator: preserves this file's existing assertions
+// (written against the product's original hardcoded-Italian error text)
+// unchanged, now resolved through the dictionary instead of being
+// hardcoded in the validator itself.
+const t = createTranslator(getDictionary("it"));
+const tEn = createTranslator(getDictionary("en"));
 
 const headers = ["Buono", "Cliente", "Pallet", "Sito", "Emissione", "Scadenza", "Qta", "Note"];
 
@@ -36,7 +45,7 @@ const lookups: VoucherLookups = {
 describe("validateVoucherRows", () => {
   it("accepts a fully valid row and resolves ids", () => {
     const rows = [["BV-1", "Acme Srl", "EPAL EUR1", "", "05/03/2026", "05/04/2026", "10", "ok"]];
-    const results = validateVoucherRows(headers, rows, mapping, lookups);
+    const results = validateVoucherRows(headers, rows, mapping, lookups, t);
     expect(results[0].valid).toBe(true);
     if (results[0].valid) {
       expect(results[0].voucher).toEqual({
@@ -54,21 +63,21 @@ describe("validateVoucherRows", () => {
 
   it("resolves a site by code, scoped to the row's counterparty", () => {
     const rows = [["BV-SITE", "Acme Srl", "EPAL EUR1", "MIL", "05/03/2026", "", "10", ""]];
-    const results = validateVoucherRows(headers, rows, mapping, lookups);
+    const results = validateVoucherRows(headers, rows, mapping, lookups, t);
     expect(results[0].valid).toBe(true);
     if (results[0].valid) expect(results[0].voucher.site_id).toBe("site-1");
   });
 
   it("rejects a site that belongs to a different counterparty", () => {
     const rows = [["BV-WRONG-SITE", "Acme Srl", "EPAL EUR1", "Roma Deposito", "05/03/2026", "", "10", ""]];
-    const results = validateVoucherRows(headers, rows, mapping, lookups);
+    const results = validateVoucherRows(headers, rows, mapping, lookups, t);
     expect(results[0].valid).toBe(false);
     if (!results[0].valid) expect(results[0].errors.join(" ")).toMatch(/non appartiene alla controparte/);
   });
 
   it("rejects a voucher number that already exists in the organization", () => {
     const rows = [["BV-EXISTING", "Acme Srl", "EPAL EUR1", "", "05/03/2026", "", "10", ""]];
-    const results = validateVoucherRows(headers, rows, mapping, lookups);
+    const results = validateVoucherRows(headers, rows, mapping, lookups, t);
     expect(results[0].valid).toBe(false);
     if (!results[0].valid) {
       expect(results[0].errors.join(" ")).toMatch(/già esistente/);
@@ -80,7 +89,7 @@ describe("validateVoucherRows", () => {
       ["BV-DUP", "Acme Srl", "EPAL EUR1", "", "05/03/2026", "", "10", ""],
       ["BV-DUP", "Acme Srl", "EPAL EUR1", "", "06/03/2026", "", "5", ""],
     ];
-    const results = validateVoucherRows(headers, rows, mapping, lookups);
+    const results = validateVoucherRows(headers, rows, mapping, lookups, t);
     expect(results[0].valid).toBe(true);
     expect(results[1].valid).toBe(false);
     if (!results[1].valid) {
@@ -90,7 +99,7 @@ describe("validateVoucherRows", () => {
 
   it("rejects a recovery due date before the issue date", () => {
     const rows = [["BV-2", "Acme Srl", "EPAL EUR1", "", "05/03/2026", "01/03/2026", "10", ""]];
-    const results = validateVoucherRows(headers, rows, mapping, lookups);
+    const results = validateVoucherRows(headers, rows, mapping, lookups, t);
     expect(results[0].valid).toBe(false);
     if (!results[0].valid) {
       expect(results[0].errors.join(" ")).toMatch(/non può precedere/);
@@ -99,7 +108,7 @@ describe("validateVoucherRows", () => {
 
   it("rejects an unknown counterparty or pallet type", () => {
     const rows = [["BV-3", "Unknown Co", "Unknown Pallet", "", "05/03/2026", "", "10", ""]];
-    const results = validateVoucherRows(headers, rows, mapping, lookups);
+    const results = validateVoucherRows(headers, rows, mapping, lookups, t);
     expect(results[0].valid).toBe(false);
     if (!results[0].valid) {
       expect(results[0].errors.join(" ")).toMatch(/Controparte non trovata/);
@@ -109,7 +118,7 @@ describe("validateVoucherRows", () => {
 
   it("rejects a zero or non-integer quantity", () => {
     const rows = [["BV-4", "Acme Srl", "EPAL EUR1", "", "05/03/2026", "", "0", ""]];
-    const results = validateVoucherRows(headers, rows, mapping, lookups);
+    const results = validateVoucherRows(headers, rows, mapping, lookups, t);
     expect(results[0].valid).toBe(false);
   });
 
@@ -118,11 +127,26 @@ describe("validateVoucherRows", () => {
       ["BV-5", "Acme Srl", "EPAL EUR1", "", "05/03/2026", "", "10", ""],
       ["", "Acme Srl", "EPAL EUR1", "", "05/03/2026", "", "10", ""],
     ];
-    const results = validateVoucherRows(headers, rows, mapping, lookups);
+    const results = validateVoucherRows(headers, rows, mapping, lookups, t);
     expect(results[0].rowNumber).toBe(1);
     expect(results[0].valid).toBe(true);
     expect(results[1].rowNumber).toBe(2);
     expect(results[1].valid).toBe(false);
+  });
+
+  // Independent-review finding: per-row CSV validation errors were
+  // hardcoded Italian regardless of the viewer's locale. Pins that the
+  // same row now resolves to genuinely different, locale-correct text.
+  it("resolves the same validation error in the viewer's own locale", () => {
+    const rows = [["BV-EXISTING", "Acme Srl", "EPAL EUR1", "", "05/03/2026", "", "10", ""]];
+    const resultsIt = validateVoucherRows(headers, rows, mapping, lookups, t);
+    const resultsEn = validateVoucherRows(headers, rows, mapping, lookups, tEn);
+    expect(resultsIt[0].valid).toBe(false);
+    expect(resultsEn[0].valid).toBe(false);
+    if (!resultsIt[0].valid && !resultsEn[0].valid) {
+      expect(resultsIt[0].errors.join(" ")).toMatch(/già esistente/);
+      expect(resultsEn[0].errors.join(" ")).toMatch(/already exists/);
+    }
   });
 });
 

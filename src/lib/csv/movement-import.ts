@@ -1,4 +1,5 @@
 import { resolveSite, type SiteLookup } from "@/lib/csv/site-lookup";
+import type { Translator } from "@/i18n/translator";
 
 export const MOVEMENT_FIELDS = [
   "movementDate",
@@ -22,19 +23,6 @@ export const REQUIRED_MOVEMENT_FIELDS: MovementField[] = [
   "direction",
   "quantity",
 ];
-
-export const MOVEMENT_FIELD_LABELS: Record<MovementField, string> = {
-  movementDate: "Data movimento",
-  counterparty: "Controparte",
-  palletType: "Tipo pallet",
-  site: "Sito (opzionale)",
-  direction: "Direzione (IN/OUT)",
-  quantity: "Quantità",
-  documentType: "Tipo documento",
-  documentNumber: "Numero documento",
-  voucherNumber: "Numero buono",
-  notes: "Note",
-};
 
 export type ColumnMapping = Partial<Record<MovementField, string>>;
 
@@ -131,6 +119,7 @@ export function validateMovementRow(
   mapping: ColumnMapping,
   lookups: MovementLookups,
   rowNumber: number,
+  t: Translator,
 ): RowValidationResult {
   const errors: string[] = [];
 
@@ -146,37 +135,37 @@ export function validateMovementRow(
   const notes = getField(headers, row, mapping, "notes") || null;
 
   const movementDate = rawDate ? normalizeDate(rawDate) : null;
-  if (!rawDate) errors.push("Data movimento mancante");
-  else if (!movementDate) errors.push(`Data movimento non valida: "${rawDate}"`);
+  if (!rawDate) errors.push(t("bulkImport.rowErrors.movementDateMissing"));
+  else if (!movementDate) errors.push(t("bulkImport.rowErrors.movementDateInvalid", { value: rawDate }));
 
-  if (!rawCounterparty) errors.push("Controparte mancante");
+  if (!rawCounterparty) errors.push(t("bulkImport.rowErrors.counterpartyMissing"));
   const counterpartyId = rawCounterparty
     ? lookups.counterpartyIdByKey.get(buildLookupKey(rawCounterparty))
     : undefined;
-  if (rawCounterparty && !counterpartyId) errors.push(`Controparte non trovata: "${rawCounterparty}"`);
+  if (rawCounterparty && !counterpartyId) errors.push(t("bulkImport.rowErrors.counterpartyNotFound", { value: rawCounterparty }));
 
-  if (!rawPalletType) errors.push("Tipo pallet mancante");
+  if (!rawPalletType) errors.push(t("bulkImport.rowErrors.palletTypeMissing"));
   const palletTypeId = rawPalletType
     ? lookups.palletTypeIdByKey.get(buildLookupKey(rawPalletType))
     : undefined;
-  if (rawPalletType && !palletTypeId) errors.push(`Tipo pallet non trovato: "${rawPalletType}"`);
+  if (rawPalletType && !palletTypeId) errors.push(t("bulkImport.rowErrors.palletTypeNotFound", { value: rawPalletType }));
 
   let siteId: string | null = null;
-  const siteResolution = resolveSite(counterpartyId, rawSite, lookups.siteLookup);
+  const siteResolution = resolveSite(counterpartyId, rawSite, lookups.siteLookup, t);
   if (siteResolution.status === "resolved") siteId = siteResolution.siteId;
   else if (siteResolution.status === "error" && counterpartyId) errors.push(siteResolution.message);
 
   const direction = rawDirection ? normalizeDirection(rawDirection) : null;
-  if (!rawDirection) errors.push("Direzione mancante");
-  else if (!direction) errors.push(`Direzione non riconosciuta: "${rawDirection}" (usa IN/OUT)`);
+  if (!rawDirection) errors.push(t("bulkImport.rowErrors.directionMissing"));
+  else if (!direction) errors.push(t("bulkImport.rowErrors.directionUnrecognized", { value: rawDirection }));
 
   let quantity: number | null = null;
   if (!rawQuantity) {
-    errors.push("Quantità mancante");
+    errors.push(t("bulkImport.rowErrors.quantityMissing"));
   } else {
     const parsedQuantity = Number(rawQuantity.replace(",", "."));
     if (!Number.isInteger(parsedQuantity) || parsedQuantity <= 0) {
-      errors.push(`Quantità non valida: "${rawQuantity}" (deve essere un intero positivo)`);
+      errors.push(t("bulkImport.rowErrors.quantityInvalid", { value: rawQuantity }));
     } else {
       quantity = parsedQuantity;
     }
@@ -209,8 +198,9 @@ export function validateMovementRows(
   rows: string[][],
   mapping: ColumnMapping,
   lookups: MovementLookups,
+  t: Translator,
 ): RowValidationResult[] {
-  return rows.map((row, index) => validateMovementRow(headers, row, mapping, lookups, index + 1));
+  return rows.map((row, index) => validateMovementRow(headers, row, mapping, lookups, index + 1, t));
 }
 
 export function missingRequiredMappings(mapping: ColumnMapping): MovementField[] {

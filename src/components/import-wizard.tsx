@@ -14,6 +14,9 @@ import {
 } from "@/lib/csv/movement-import";
 import { buildSiteLookup, type SiteRecord } from "@/lib/csv/site-lookup";
 import { commitMovementImportAction, type ImportActionState } from "@/lib/actions/import";
+import { getDictionary } from "@/i18n/dictionaries";
+import { createTranslator } from "@/i18n/translator";
+import type { Locale } from "@/i18n/locale";
 
 type LookupOption = { id: string; code: string | null; legalName?: string };
 
@@ -79,12 +82,19 @@ export function ImportWizard({
   palletTypes,
   sites,
   labels,
+  locale,
 }: {
   counterparties: LookupOption[];
   palletTypes: LookupOption[];
   sites: SiteRecord[];
   labels: ImportWizardLabels;
+  locale: Locale;
 }) {
+  // Locale (a plain string, unlike a bound t() function) can cross the
+  // server -> client boundary as a prop, so per-row CSV validation errors
+  // -- which depend on the *data*, not just static labels -- can still be
+  // translated here instead of only at the initial render.
+  const t = useMemo(() => createTranslator(getDictionary(locale)), [locale]);
   const [step, setStep] = useState<"upload" | "review">("upload");
   const [filename, setFilename] = useState("");
   const [headers, setHeaders] = useState<string[]>([]);
@@ -107,8 +117,8 @@ export function ImportWizard({
   }, [counterparties, palletTypes, sites]);
 
   const results = useMemo(
-    () => (step === "review" ? validateMovementRows(headers, rows, mapping, lookups) : []),
-    [step, headers, rows, mapping, lookups],
+    () => (step === "review" ? validateMovementRows(headers, rows, mapping, lookups, t) : []),
+    [step, headers, rows, mapping, lookups, t],
   );
   const validCount = results.filter((r) => r.valid).length;
   const invalidResults = results.filter((r): r is Extract<typeof r, { valid: false }> => !r.valid);

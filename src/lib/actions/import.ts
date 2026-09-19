@@ -72,7 +72,7 @@ export async function commitMovementImportAction(
     lookups.palletTypeIdByKey.set(buildLookupKey(pt.code), pt.id);
   }
 
-  const results = validateMovementRows(headers, rows, mapping, lookups);
+  const results = validateMovementRows(headers, rows, mapping, lookups, t);
   const validMovements = results.filter((r) => r.valid).map((r) => r.movement);
   const rowsValid = validMovements.length;
   const rowsInvalid = results.length - rowsValid;
@@ -209,7 +209,7 @@ export async function commitVoucherImportAction(
     lookups.existingVoucherNumbers.add(buildLookupKey(v.voucher_number));
   }
 
-  const results = validateVoucherRows(headers, rows, mapping, lookups);
+  const results = validateVoucherRows(headers, rows, mapping, lookups, t);
   const validVouchers = results.filter((r) => r.valid).map((r) => r.voucher);
   const rowsValid = validVouchers.length;
   const rowsInvalid = results.length - rowsValid;

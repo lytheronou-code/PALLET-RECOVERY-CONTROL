@@ -771,6 +771,29 @@
         "voucherNumber": "Voucher number",
         "notes": "Notes"
       }
+    },
+    "rowErrors": {
+      "movementDateMissing": "Movement date missing",
+      "movementDateInvalid": "Invalid movement date: \"{value}\"",
+      "counterpartyMissing": "Counterparty missing",
+      "counterpartyNotFound": "Counterparty not found: \"{value}\"",
+      "palletTypeMissing": "Pallet type missing",
+      "palletTypeNotFound": "Pallet type not found: \"{value}\"",
+      "directionMissing": "Direction missing",
+      "directionUnrecognized": "Unrecognized direction: \"{value}\" (use IN/OUT)",
+      "quantityMissing": "Quantity missing",
+      "quantityInvalid": "Invalid quantity: \"{value}\" (must be a positive integer)",
+      "siteIndicatedButCounterpartyUnresolved": "Site \"{value}\" given but the counterparty could not be resolved",
+      "siteAmbiguous": "Ambiguous site: \"{value}\" matches more than one site for this counterparty",
+      "siteNotBelongingToCounterparty": "Site \"{value}\" does not belong to the selected counterparty",
+      "siteNotFound": "Site not found: \"{value}\"",
+      "voucherNumberMissing": "Voucher number missing",
+      "voucherNumberAlreadyExists": "Voucher number already exists: \"{value}\"",
+      "voucherNumberDuplicateInFile": "Duplicate voucher number in file: \"{value}\"",
+      "issueDateMissing": "Issue date missing",
+      "issueDateInvalid": "Invalid issue date: \"{value}\"",
+      "dueDateInvalid": "Invalid due date: \"{value}\"",
+      "dueDateBeforeIssueDate": "The due date cannot be before the issue date"
     }
   },
   "reconciliation": {

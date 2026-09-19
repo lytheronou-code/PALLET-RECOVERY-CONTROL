@@ -771,6 +771,29 @@
         "voucherNumber": "Numero buono",
         "notes": "Note"
       }
+    },
+    "rowErrors": {
+      "movementDateMissing": "Data movimento mancante",
+      "movementDateInvalid": "Data movimento non valida: \"{value}\"",
+      "counterpartyMissing": "Controparte mancante",
+      "counterpartyNotFound": "Controparte non trovata: \"{value}\"",
+      "palletTypeMissing": "Tipo pallet mancante",
+      "palletTypeNotFound": "Tipo pallet non trovato: \"{value}\"",
+      "directionMissing": "Direzione mancante",
+      "directionUnrecognized": "Direzione non riconosciuta: \"{value}\" (usa IN/OUT)",
+      "quantityMissing": "Quantità mancante",
+      "quantityInvalid": "Quantità non valida: \"{value}\" (deve essere un intero positivo)",
+      "siteIndicatedButCounterpartyUnresolved": "Sito \"{value}\" indicato ma la controparte non è stata risolta",
+      "siteAmbiguous": "Sito ambiguo: \"{value}\" corrisponde a più siti di questa controparte",
+      "siteNotBelongingToCounterparty": "Sito \"{value}\" non appartiene alla controparte selezionata",
+      "siteNotFound": "Sito non trovato: \"{value}\"",
+      "voucherNumberMissing": "Numero buono mancante",
+      "voucherNumberAlreadyExists": "Numero buono già esistente: \"{value}\"",
+      "voucherNumberDuplicateInFile": "Numero buono duplicato nel file: \"{value}\"",
+      "issueDateMissing": "Data emissione mancante",
+      "issueDateInvalid": "Data emissione non valida: \"{value}\"",
+      "dueDateInvalid": "Scadenza recupero non valida: \"{value}\"",
+      "dueDateBeforeIssueDate": "La scadenza non può precedere la data di emissione"
     }
   },
   "reconciliation": {

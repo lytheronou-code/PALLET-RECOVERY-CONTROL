@@ -19,7 +19,7 @@ function statusLabels(t: Translator): Record<string, string> {
 
 export default async function VoucherImportPage() {
   const membership = await requireMembership();
-  const { t, formatDate, formatNumber } = await getPageContext(membership.organizationId);
+  const { t, locale, formatDate, formatNumber } = await getPageContext(membership.organizationId);
   const STATUS_LABELS = statusLabels(t);
   const [counterparties, palletTypes, sites, existingVoucherNumbers, batches] = await Promise.all([
     listCounterparties(membership.organizationId, { includeInactive: true }),
@@ -49,6 +49,7 @@ export default async function VoucherImportPage() {
         palletTypes={palletTypes.map((p) => ({ id: p.id, code: p.code }))}
         sites={sites}
         existingVoucherNumbers={existingVoucherNumbers}
+        locale={locale}
         labels={{
           invalidFile: t("bulkImport.vouchers.wizard.invalidFile"),
           prerequisiteNotice: t("bulkImport.vouchers.wizard.prerequisiteNotice"),

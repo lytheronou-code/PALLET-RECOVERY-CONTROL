@@ -1,5 +1,6 @@
 import { buildLookupKey, normalizeDate } from "@/lib/csv/movement-import";
 import { resolveSite, type SiteLookup } from "@/lib/csv/site-lookup";
+import type { Translator } from "@/i18n/translator";
 
 export const VOUCHER_FIELDS = [
   "voucherNumber",
@@ -21,17 +22,6 @@ export const REQUIRED_VOUCHER_FIELDS: VoucherField[] = [
   "issueDate",
   "quantity",
 ];
-
-export const VOUCHER_FIELD_LABELS: Record<VoucherField, string> = {
-  voucherNumber: "Numero buono",
-  counterparty: "Controparte",
-  palletType: "Tipo pallet",
-  site: "Sito (opzionale)",
-  issueDate: "Data emissione",
-  recoveryDueDate: "Scadenza recupero",
-  quantity: "Quantità",
-  notes: "Note",
-};
 
 export type VoucherColumnMapping = Partial<Record<VoucherField, string>>;
 
@@ -75,6 +65,7 @@ export function validateVoucherRows(
   rows: string[][],
   mapping: VoucherColumnMapping,
   lookups: VoucherLookups,
+  t: Translator,
 ): VoucherRowValidationResult[] {
   const seenInFile = new Set<string>();
 
@@ -91,56 +82,56 @@ export function validateVoucherRows(
     const notes = getField(headers, row, mapping, "notes") || null;
 
     if (!rawVoucherNumber) {
-      errors.push("Numero buono mancante");
+      errors.push(t("bulkImport.rowErrors.voucherNumberMissing"));
     } else {
       const key = buildLookupKey(rawVoucherNumber);
       if (lookups.existingVoucherNumbers.has(key)) {
-        errors.push(`Numero buono già esistente: "${rawVoucherNumber}"`);
+        errors.push(t("bulkImport.rowErrors.voucherNumberAlreadyExists", { value: rawVoucherNumber }));
       } else if (seenInFile.has(key)) {
-        errors.push(`Numero buono duplicato nel file: "${rawVoucherNumber}"`);
+        errors.push(t("bulkImport.rowErrors.voucherNumberDuplicateInFile", { value: rawVoucherNumber }));
       } else {
         seenInFile.add(key);
       }
     }
 
-    if (!rawCounterparty) errors.push("Controparte mancante");
+    if (!rawCounterparty) errors.push(t("bulkImport.rowErrors.counterpartyMissing"));
     const counterpartyId = rawCounterparty
       ? lookups.counterpartyIdByKey.get(buildLookupKey(rawCounterparty))
       : undefined;
-    if (rawCounterparty && !counterpartyId) errors.push(`Controparte non trovata: "${rawCounterparty}"`);
+    if (rawCounterparty && !counterpartyId) errors.push(t("bulkImport.rowErrors.counterpartyNotFound", { value: rawCounterparty }));
 
-    if (!rawPalletType) errors.push("Tipo pallet mancante");
+    if (!rawPalletType) errors.push(t("bulkImport.rowErrors.palletTypeMissing"));
     const palletTypeId = rawPalletType
       ? lookups.palletTypeIdByKey.get(buildLookupKey(rawPalletType))
       : undefined;
-    if (rawPalletType && !palletTypeId) errors.push(`Tipo pallet non trovato: "${rawPalletType}"`);
+    if (rawPalletType && !palletTypeId) errors.push(t("bulkImport.rowErrors.palletTypeNotFound", { value: rawPalletType }));
 
     const rawSite = getField(headers, row, mapping, "site");
     let siteId: string | null = null;
-    const siteResolution = resolveSite(counterpartyId, rawSite, lookups.siteLookup);
+    const siteResolution = resolveSite(counterpartyId, rawSite, lookups.siteLookup, t);
     if (siteResolution.status === "resolved") siteId = siteResolution.siteId;
     else if (siteResolution.status === "error" && counterpartyId) errors.push(siteResolution.message);
 
     const issueDate = rawIssueDate ? normalizeDate(rawIssueDate) : null;
-    if (!rawIssueDate) errors.push("Data emissione mancante");
-    else if (!issueDate) errors.push(`Data emissione non valida: "${rawIssueDate}"`);
+    if (!rawIssueDate) errors.push(t("bulkImport.rowErrors.issueDateMissing"));
+    else if (!issueDate) errors.push(t("bulkImport.rowErrors.issueDateInvalid", { value: rawIssueDate }));
 
     let recoveryDueDate: string | null = null;
     if (rawRecoveryDueDate) {
       recoveryDueDate = normalizeDate(rawRecoveryDueDate);
-      if (!recoveryDueDate) errors.push(`Scadenza recupero non valida: "${rawRecoveryDueDate}"`);
+      if (!recoveryDueDate) errors.push(t("bulkImport.rowErrors.dueDateInvalid", { value: rawRecoveryDueDate }));
       else if (issueDate && recoveryDueDate < issueDate) {
-        errors.push("La scadenza non può precedere la data di emissione");
+        errors.push(t("bulkImport.rowErrors.dueDateBeforeIssueDate"));
       }
     }
 
     let quantity: number | null = null;
     if (!rawQuantity) {
-      errors.push("Quantità mancante");
+      errors.push(t("bulkImport.rowErrors.quantityMissing"));
     } else {
       const parsedQuantity = Number(rawQuantity.replace(",", "."));
       if (!Number.isInteger(parsedQuantity) || parsedQuantity <= 0) {
-        errors.push(`Quantità non valida: "${rawQuantity}" (deve essere un intero positivo)`);
+        errors.push(t("bulkImport.rowErrors.quantityInvalid", { value: rawQuantity }));
       } else {
         quantity = parsedQuantity;
       }
