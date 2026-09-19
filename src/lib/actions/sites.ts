@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import { requireMembership } from "@/lib/data/organization";
 import { listActiveSitesForCounterparty } from "@/lib/data/sites";
 import { siteSchema } from "@/lib/validation/master-data";
+import { mapDatabaseError } from "@/lib/errors/friendly";
+import { getT } from "@/i18n/server";
 import type { FormState } from "@/lib/actions/form-state";
 
 // Called directly from client components (not bound to a form) whenever
@@ -66,7 +68,8 @@ export async function createSiteAction(
   });
 
   if (error) {
-    return { error: "Impossibile creare il sito. Verifica i permessi." };
+    const { t } = await getT(membership.organizationId);
+    return { error: mapDatabaseError(error, t) };
   }
 
   revalidatePath("/sites");
@@ -103,7 +106,8 @@ export async function updateSiteAction(
     .eq("organization_id", membership.organizationId);
 
   if (error) {
-    return { error: "Impossibile aggiornare il sito. Verifica i permessi." };
+    const { t } = await getT(membership.organizationId);
+    return { error: mapDatabaseError(error, t) };
   }
 
   revalidatePath("/sites");

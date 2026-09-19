@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireMembership } from "@/lib/data/organization";
 import { counterpartySchema } from "@/lib/validation/master-data";
+import { mapDatabaseError } from "@/lib/errors/friendly";
+import { getT } from "@/i18n/server";
 import type { FormState } from "@/lib/actions/form-state";
 
 function parseCounterpartyForm(formData: FormData) {
@@ -59,7 +61,8 @@ export async function createCounterpartyAction(
   });
 
   if (error) {
-    return { error: "Impossibile creare la controparte. Verifica i permessi." };
+    const { t } = await getT(membership.organizationId);
+    return { error: mapDatabaseError(error, t) };
   }
 
   revalidatePath("/counterparties");
@@ -102,7 +105,8 @@ export async function updateCounterpartyAction(
     .eq("organization_id", membership.organizationId);
 
   if (error) {
-    return { error: "Impossibile aggiornare la controparte. Verifica i permessi." };
+    const { t } = await getT(membership.organizationId);
+    return { error: mapDatabaseError(error, t) };
   }
 
   revalidatePath("/counterparties");

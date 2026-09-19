@@ -66,6 +66,7 @@ export async function updateOrganizationCompanyAction(
   }
 
   revalidatePath("/settings");
+  revalidatePath("/onboarding/setup");
   return { message: t("common.actions.save") };
 }
 
@@ -114,5 +115,6 @@ export async function updateOrganizationLocalizationAction(
   }
 
   revalidatePath("/settings");
+  revalidatePath("/onboarding/setup");
   return { message: t("common.actions.save") };
 }

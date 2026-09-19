@@ -72,6 +72,7 @@ export async function updateBrandingAction(_prevState: FormState, formData: Form
   }
 
   revalidatePath("/settings");
+  revalidatePath("/onboarding/setup");
   return { message: t("common.actions.save") };
 }
 
@@ -152,6 +153,7 @@ export async function uploadBrandingLogoAction(
   }
 
   revalidatePath("/settings");
+  revalidatePath("/onboarding/setup");
   revalidatePath("/portal");
   return { message: t("common.actions.save") };
 }

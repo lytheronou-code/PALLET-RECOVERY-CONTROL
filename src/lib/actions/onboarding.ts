@@ -36,5 +36,5 @@ export async function createOrganizationAction(
     return { error: t("onboarding.errors.createFailed") };
   }
 
-  redirect("/dashboard");
+  redirect("/onboarding/setup?step=company");
 }

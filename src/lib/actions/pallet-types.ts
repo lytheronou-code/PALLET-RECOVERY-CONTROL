@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireMembership } from "@/lib/data/organization";
 import { palletTypeSchema } from "@/lib/validation/master-data";
+import { mapDatabaseError } from "@/lib/errors/friendly";
+import { getT } from "@/i18n/server";
 import type { FormState } from "@/lib/actions/form-state";
 
 function parsePalletTypeForm(formData: FormData) {
@@ -35,9 +37,8 @@ export async function createPalletTypeAction(
   });
 
   if (error) {
-    return {
-      error: error.code === "23505" ? "Codice già esistente" : "Impossibile creare il tipo pallet.",
-    };
+    const { t } = await getT(membership.organizationId);
+    return { error: mapDatabaseError(error, t) };
   }
 
   revalidatePath("/pallet-types");
@@ -70,9 +71,8 @@ export async function updatePalletTypeAction(
     .eq("organization_id", membership.organizationId);
 
   if (error) {
-    return {
-      error: error.code === "23505" ? "Codice già esistente" : "Impossibile aggiornare il tipo pallet.",
-    };
+    const { t } = await getT(membership.organizationId);
+    return { error: mapDatabaseError(error, t) };
   }
 
   revalidatePath("/pallet-types");
