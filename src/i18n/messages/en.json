@@ -286,7 +286,16 @@
   },
   "reports": {
     "title": "Reports",
-    "exportCsv": "Export CSV"
+    "exportCsv": "Export CSV",
+    "csv": {
+      "counterparty": "Counterparty",
+      "openCases": "Open cases",
+      "outstandingPallets": "Outstanding pallets",
+      "outstandingValue": "Outstanding value",
+      "recoveredPalletsInPeriod": "Recovered in period (pallets)",
+      "recoveredValueInPeriod": "Recovered in period (value)",
+      "maxAgeingDays": "Max ageing (days)"
+    }
   },
   "search": {
     "title": "Search",

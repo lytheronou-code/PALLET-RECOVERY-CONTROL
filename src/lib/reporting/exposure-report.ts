@@ -185,16 +185,13 @@ export function buildExposureReport(
   };
 }
 
-export function exposureReportToCsv(report: ExposureReport): string {
-  const header = [
-    "Controparte",
-    "Pratiche aperte",
-    "Outstanding pallet",
-    "Outstanding valore",
-    "Recuperato periodo (pallet)",
-    "Recuperato periodo (valore)",
-    "Anzianità max (giorni)",
-  ];
+// header is caller-supplied (the 7 column titles, already resolved to the
+// viewer's locale by the route handler via getT()) so this module -- pure
+// aggregation math -- never needs its own i18n dependency. The underlying
+// row values are always plain machine numbers (toFixed(2), not a
+// locale-formatted currency string): exported data stays stable across
+// languages, only the column headers change.
+export function exposureReportToCsv(report: ExposureReport, header: string[]): string {
   const lines = [header.join(",")];
 
   for (const row of report.rows) {

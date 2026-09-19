@@ -286,7 +286,16 @@
   },
   "reports": {
     "title": "Report",
-    "exportCsv": "Esporta CSV"
+    "exportCsv": "Esporta CSV",
+    "csv": {
+      "counterparty": "Controparte",
+      "openCases": "Pratiche aperte",
+      "outstandingPallets": "Pallet outstanding",
+      "outstandingValue": "Valore outstanding",
+      "recoveredPalletsInPeriod": "Recuperato periodo (pallet)",
+      "recoveredValueInPeriod": "Recuperato periodo (valore)",
+      "maxAgeingDays": "Anzianità max (giorni)"
+    }
   },
   "search": {
     "title": "Ricerca",
