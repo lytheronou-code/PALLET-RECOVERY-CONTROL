@@ -424,6 +424,38 @@ export type Database = {
           },
         ]
       }
+      organization_branding_localizations: {
+        Row: {
+          created_at: string
+          locale: string
+          organization_id: string
+          updated_at: string
+          welcome_message: string | null
+        }
+        Insert: {
+          created_at?: string
+          locale: string
+          organization_id: string
+          updated_at?: string
+          welcome_message?: string | null
+        }
+        Update: {
+          created_at?: string
+          locale?: string
+          organization_id?: string
+          updated_at?: string
+          welcome_message?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_branding_localizations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           created_at: string
@@ -1111,8 +1143,6 @@ export type Database = {
           p_support_email?: string
           p_support_phone?: string
           p_website?: string
-          p_welcome_message_en?: string
-          p_welcome_message_it?: string
         }
         Returns: {
           compact_logo_path: string | null
@@ -1132,6 +1162,26 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "organization_branding"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_update_organization_branding_localization: {
+        Args: {
+          p_locale: string
+          p_organization_id: string
+          p_welcome_message?: string
+        }
+        Returns: {
+          created_at: string
+          locale: string
+          organization_id: string
+          updated_at: string
+          welcome_message: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "organization_branding_localizations"
           isOneToOne: true
           isSetofReturn: false
         }

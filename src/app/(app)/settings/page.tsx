@@ -3,7 +3,8 @@ import { Building2, ShieldCheck, UserRound } from "lucide-react";
 import { requireMembership } from "@/lib/data/organization";
 import { createClient } from "@/lib/supabase/server";
 import { getPageContext } from "@/i18n/server";
-import { getOrganizationBranding, getBrandingImageUrl } from "@/lib/data/branding";
+import { getOrganizationBranding, getOrganizationBrandingLocalizations, getBrandingImageUrl } from "@/lib/data/branding";
+import { buildWelcomeMessageLabels } from "@/lib/branding/welcome-message-labels";
 import { listTimezones } from "@/lib/timezones";
 import { OrganizationCompanyForm } from "@/components/organization-company-form";
 import { OrganizationLocalizationForm } from "@/components/organization-localization-form";
@@ -35,12 +36,14 @@ export default async function SettingsPage({
   const isAdmin = membership.role === "admin";
   const supabase = await createClient();
 
-  const [{ data: organization }, { data: userData }, { count: memberCount }, branding] = await Promise.all([
-    supabase.from("organizations").select("*").eq("id", membership.organizationId).maybeSingle(),
-    supabase.auth.getUser(),
-    supabase.from("organization_members").select("id", { count: "exact", head: true }).eq("organization_id", membership.organizationId),
-    getOrganizationBranding(membership.organizationId),
-  ]);
+  const [{ data: organization }, { data: userData }, { count: memberCount }, branding, welcomeMessageLocalizations] =
+    await Promise.all([
+      supabase.from("organizations").select("*").eq("id", membership.organizationId).maybeSingle(),
+      supabase.auth.getUser(),
+      supabase.from("organization_members").select("id", { count: "exact", head: true }).eq("organization_id", membership.organizationId),
+      getOrganizationBranding(membership.organizationId),
+      getOrganizationBrandingLocalizations(membership.organizationId),
+    ]);
 
   const [logoUrl, compactLogoUrl] = await Promise.all([
     getBrandingImageUrl(branding?.logo_path ?? null),
@@ -195,6 +198,7 @@ export default async function SettingsPage({
             isAdmin ? (
               <OrganizationBrandingForm
                 branding={branding}
+                welcomeMessageLocalizations={welcomeMessageLocalizations}
                 logoUrl={logoUrl}
                 compactLogoUrl={compactLogoUrl}
                 labels={{
@@ -206,8 +210,7 @@ export default async function SettingsPage({
                   supportEmail: t("settings.branding.supportEmail"),
                   supportPhone: t("settings.branding.supportPhone"),
                   website: t("settings.branding.website"),
-                  welcomeMessageIt: t("settings.branding.welcomeMessageIt"),
-                  welcomeMessageEn: t("settings.branding.welcomeMessageEn"),
+                  welcomeMessageLabels: buildWelcomeMessageLabels(t),
                   save: t("common.actions.save"),
                   saving: t("common.actions.saving"),
                   uploadLogo: t("settings.branding.uploadLogo"),

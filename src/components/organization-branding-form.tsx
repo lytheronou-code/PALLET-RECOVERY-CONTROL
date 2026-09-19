@@ -1,8 +1,9 @@
 "use client";
 
 import { useActionState } from "react";
-import { updateBrandingAction, uploadBrandingLogoAction } from "@/lib/actions/branding";
+import { updateBrandingAction, updateBrandingLocalizationAction, uploadBrandingLogoAction } from "@/lib/actions/branding";
 import { emptyFormState } from "@/lib/actions/form-state";
+import { SUPPORTED_LOCALES, type Locale } from "@/i18n/locale";
 import type { Tables } from "@/lib/supabase/database.types";
 
 export type OrganizationBrandingLabels = {
@@ -14,8 +15,10 @@ export type OrganizationBrandingLabels = {
   supportEmail: string;
   supportPhone: string;
   website: string;
-  welcomeMessageIt: string;
-  welcomeMessageEn: string;
+  // One label per supported locale (e.g. "Welcome message (English)") --
+  // adding a locale only means adding an entry here, never a new prop or
+  // a new field in this component.
+  welcomeMessageLabels: Record<Locale, string>;
   save: string;
   saving: string;
   uploadLogo: string;
@@ -55,13 +58,51 @@ function LogoUploadForm({
   );
 }
 
+// One independent form per locale -- each posts to
+// updateBrandingLocalizationAction bound to its own locale, so saving the
+// English message never touches the Italian row (or any future locale's).
+function WelcomeMessageForm({
+  locale,
+  currentValue,
+  label,
+  saveLabel,
+  savingLabel,
+}: {
+  locale: Locale;
+  currentValue: string;
+  label: string;
+  saveLabel: string;
+  savingLabel: string;
+}) {
+  const [state, formAction, pending] = useActionState(
+    updateBrandingLocalizationAction.bind(null, locale),
+    emptyFormState,
+  );
+
+  return (
+    <div className="field">
+      <label htmlFor={`welcomeMessage-${locale}`}>{label}</label>
+      <form action={formAction} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {state.error ? <div className="form-error">{state.error}</div> : null}
+        {state.message ? <div className="form-message">{state.message}</div> : null}
+        <textarea id={`welcomeMessage-${locale}`} name="welcomeMessage" rows={2} defaultValue={currentValue} />
+        <button type="submit" className="btn btn-secondary btn-sm" disabled={pending} style={{ width: "auto" }}>
+          {pending ? savingLabel : saveLabel}
+        </button>
+      </form>
+    </div>
+  );
+}
+
 export function OrganizationBrandingForm({
   branding,
+  welcomeMessageLocalizations,
   logoUrl,
   compactLogoUrl,
   labels,
 }: {
   branding: Tables<"organization_branding"> | null;
+  welcomeMessageLocalizations: Partial<Record<Locale, string>>;
   logoUrl: string | null;
   compactLogoUrl: string | null;
   labels: OrganizationBrandingLabels;
@@ -133,21 +174,23 @@ export function OrganizationBrandingForm({
           </div>
         </div>
 
-        <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <div className="field">
-            <label htmlFor="welcomeMessageIt">{labels.welcomeMessageIt}</label>
-            <textarea id="welcomeMessageIt" name="welcomeMessageIt" rows={2} defaultValue={branding?.welcome_message_it ?? ""} />
-          </div>
-          <div className="field">
-            <label htmlFor="welcomeMessageEn">{labels.welcomeMessageEn}</label>
-            <textarea id="welcomeMessageEn" name="welcomeMessageEn" rows={2} defaultValue={branding?.welcome_message_en ?? ""} />
-          </div>
-        </div>
-
         <button type="submit" className="btn btn-primary btn-sm" disabled={pending} style={{ width: "auto" }}>
           {pending ? labels.saving : labels.save}
         </button>
       </form>
+
+      <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 12 }}>
+        {SUPPORTED_LOCALES.map((locale) => (
+          <WelcomeMessageForm
+            key={locale}
+            locale={locale}
+            currentValue={welcomeMessageLocalizations[locale] ?? ""}
+            label={labels.welcomeMessageLabels[locale]}
+            saveLabel={labels.save}
+            savingLabel={labels.saving}
+          />
+        ))}
+      </div>
     </div>
   );
 }

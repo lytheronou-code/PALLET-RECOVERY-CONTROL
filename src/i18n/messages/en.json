@@ -344,8 +344,11 @@
       "supportEmail": "Support email",
       "supportPhone": "Support phone",
       "website": "Website",
-      "welcomeMessageEn": "Welcome message (English)",
-      "welcomeMessageIt": "Welcome message (Italian)",
+      "welcomeMessageFor": "Welcome message ({language})",
+      "languageNames": {
+        "en": "English",
+        "it": "Italian"
+      },
       "uploadLogo": "Upload logo"
     },
     "team": {
@@ -362,6 +365,7 @@
       "documents": "Documents"
     },
     "welcome": "Client portal",
+    "defaultWelcomeMessage": "Welcome to your client portal.",
     "readOnlyNotice": "Read-only area. Contact your account representative for corrections or disputes."
   },
   "workspaceSelector": {

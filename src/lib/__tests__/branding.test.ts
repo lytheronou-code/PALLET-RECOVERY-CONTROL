@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { isValidHexColor, getReadableTextColor } from "@/lib/branding/color";
 import { validateLogoFile, matchesLogoFileSignature, isAllowedLogoMimeType, MAX_LOGO_SIZE_BYTES } from "@/lib/branding/logo";
+import { resolveWelcomeMessage } from "@/lib/branding/welcome-message";
 import { isSupportedCurrency, CURRENCY_CODES } from "@/lib/currencies";
 import { isSupportedCountry, countryName } from "@/lib/countries";
+import { getDictionary } from "@/i18n/dictionaries";
+import { createTranslator } from "@/i18n/translator";
 
 describe("isValidHexColor", () => {
   it("accepts a well-formed 6-digit hex color", () => {
@@ -136,5 +139,39 @@ describe("isSupportedCountry / countryName", () => {
   it("resolves a country name for a known code", () => {
     expect(countryName("IT")).toBe("Italy");
     expect(countryName(null)).toBe("—");
+  });
+});
+
+// Independent-review DoD #3 / #9: the welcome-message fallback chain must
+// render clean copy for every white-label combination, not just the happy
+// path of "admin configured a message in the viewer's own locale".
+describe("resolveWelcomeMessage", () => {
+  const tEn = createTranslator(getDictionary("en"));
+  const tIt = createTranslator(getDictionary("it"));
+
+  it("prefers the viewer's own resolved locale", () => {
+    const result = resolveWelcomeMessage({ en: "Hello there", it: "Ciao" }, "it", "en", tEn);
+    expect(result).toBe("Ciao");
+  });
+
+  it("falls back to the organization's default locale when the viewer's locale has no message", () => {
+    const result = resolveWelcomeMessage({ en: "Hello there" }, "it", "en", tEn);
+    expect(result).toBe("Hello there");
+  });
+
+  it("falls back to a generic translated message when no localization exists at all", () => {
+    expect(resolveWelcomeMessage({}, "en", "en", tEn)).toBe(tEn("clientPortal.defaultWelcomeMessage"));
+    expect(resolveWelcomeMessage({}, "it", "it", tIt)).toBe(tIt("clientPortal.defaultWelcomeMessage"));
+  });
+
+  it("never returns a blank string for a configured-but-empty branding row", () => {
+    const result = resolveWelcomeMessage({}, "en", "it", tEn);
+    expect(result).toBe(tEn("clientPortal.defaultWelcomeMessage"));
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  it("does not leak the org-default-locale message when the viewer's own locale has an explicit (even if different) message", () => {
+    const result = resolveWelcomeMessage({ en: "English welcome", it: "Benvenuto" }, "en", "it", tEn);
+    expect(result).toBe("English welcome");
   });
 });

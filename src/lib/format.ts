@@ -35,19 +35,24 @@ export type Formatters = {
 export function createFormatters(locale: Locale, currency: string, timeZone: string): Formatters {
   const intlLocale = INTL_LOCALE[locale];
 
+  // No maximumFractionDigits override: `style: "currency"` already derives
+  // the correct minor-unit digit count from the ISO 4217 currency itself
+  // (2 for EUR/GBP/USD, 0 for JPY, ...). Forcing 0 here previously rounded
+  // 12.50 to "13" -- pallet_types.unit_value and recovery_cases.
+  // unit_value_snapshot are both numeric(12,2); a formatter that discards
+  // the decimal changes the *displayed* economic value, not just its
+  // presentation.
   let currencyFormatter: Intl.NumberFormat;
   try {
     currencyFormatter = new Intl.NumberFormat(intlLocale, {
       style: "currency",
       currency,
-      maximumFractionDigits: 0,
       useGrouping: true,
     });
   } catch {
     currencyFormatter = new Intl.NumberFormat(intlLocale, {
       style: "currency",
       currency: "EUR",
-      maximumFractionDigits: 0,
       useGrouping: true,
     });
   }

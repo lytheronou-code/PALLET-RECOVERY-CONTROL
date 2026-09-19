@@ -12,6 +12,7 @@ import {
   validateLogoFile,
 } from "@/lib/branding/logo";
 import type { FormState } from "@/lib/actions/form-state";
+import { isLocale } from "@/i18n/locale";
 
 // undefined (not null): see the identical note in organization-settings.ts
 // -- the generated RPC Args type marks each optional column as `p_x?:
@@ -63,8 +64,6 @@ export async function updateBrandingAction(_prevState: FormState, formData: Form
     p_support_email: stringOrUndefined(formData.get("supportEmail")),
     p_support_phone: stringOrUndefined(formData.get("supportPhone")),
     p_website: stringOrUndefined(formData.get("website")),
-    p_welcome_message_it: stringOrUndefined(formData.get("welcomeMessageIt")),
-    p_welcome_message_en: stringOrUndefined(formData.get("welcomeMessageEn")),
   });
 
   if (error) {
@@ -73,6 +72,43 @@ export async function updateBrandingAction(_prevState: FormState, formData: Form
 
   revalidatePath("/settings");
   revalidatePath("/onboarding/setup");
+  return { message: t("common.actions.save") };
+}
+
+// One call per (organization, locale) pair -- welcome messages live in
+// organization_branding_localizations now, not a fixed pair of columns,
+// so this action is parameterized by locale rather than duplicated per
+// language. A new locale needs no new action, only a new
+// SUPPORTED_LOCALES entry driving the form that calls this.
+export async function updateBrandingLocalizationAction(
+  locale: string,
+  _prevState: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const membership = await requireMembership();
+  const { t } = await getT(membership.organizationId);
+
+  if (membership.role !== "admin") {
+    return { error: t("common.errors.forbidden") };
+  }
+  if (!isLocale(locale)) {
+    return { error: t("common.errors.generic") };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_update_organization_branding_localization", {
+    p_organization_id: membership.organizationId,
+    p_locale: locale,
+    p_welcome_message: stringOrUndefined(formData.get("welcomeMessage")),
+  });
+
+  if (error) {
+    return { error: t("common.errors.generic") };
+  }
+
+  revalidatePath("/settings");
+  revalidatePath("/onboarding/setup");
+  revalidatePath("/portal");
   return { message: t("common.actions.save") };
 }
 
@@ -135,8 +171,6 @@ export async function uploadBrandingLogoAction(
     p_support_email: existing?.support_email ?? undefined,
     p_support_phone: existing?.support_phone ?? undefined,
     p_website: existing?.website ?? undefined,
-    p_welcome_message_it: existing?.welcome_message_it ?? undefined,
-    p_welcome_message_en: existing?.welcome_message_en ?? undefined,
   });
 
   if (rpcError) {

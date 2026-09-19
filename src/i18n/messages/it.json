@@ -344,8 +344,11 @@
       "supportEmail": "Email di supporto",
       "supportPhone": "Telefono di supporto",
       "website": "Sito web",
-      "welcomeMessageEn": "Messaggio di benvenuto (inglese)",
-      "welcomeMessageIt": "Messaggio di benvenuto (italiano)",
+      "welcomeMessageFor": "Messaggio di benvenuto ({language})",
+      "languageNames": {
+        "en": "Inglese",
+        "it": "Italiano"
+      },
       "uploadLogo": "Carica logo"
     },
     "team": {
@@ -362,6 +365,7 @@
       "documents": "Documenti"
     },
     "welcome": "Portale clienti",
+    "defaultWelcomeMessage": "Benvenuto nel tuo portale clienti.",
     "readOnlyNotice": "Area riservata a sola lettura. Per correzioni o contestazioni contatta il tuo referente."
   },
   "workspaceSelector": {

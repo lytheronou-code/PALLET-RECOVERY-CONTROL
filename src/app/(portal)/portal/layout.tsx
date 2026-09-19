@@ -3,18 +3,25 @@ import { requirePortalContext } from "@/lib/data/portal";
 import { signOutAction } from "@/lib/actions/auth";
 import { PortalNav } from "@/components/portal-nav";
 import { LanguageSwitcher } from "@/components/language-switcher";
-import { getT } from "@/i18n/server";
-import { getOrganizationBranding, getBrandingImageUrl } from "@/lib/data/branding";
+import { resolveLocaleAndOrgSettings } from "@/i18n/resolve";
+import { getDictionary } from "@/i18n/dictionaries";
+import { createTranslator } from "@/i18n/translator";
+import { getOrganizationBranding, getOrganizationBrandingLocalizations, getBrandingImageUrl } from "@/lib/data/branding";
+import { resolveWelcomeMessage } from "@/lib/branding/welcome-message";
 import { getReadableTextColor } from "@/lib/branding/color";
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const context = await requirePortalContext();
-  const { locale, t } = await getT(context.organizationId);
-  const branding = await getOrganizationBranding(context.organizationId);
+  const { locale, org } = await resolveLocaleAndOrgSettings(context.organizationId);
+  const t = createTranslator(getDictionary(locale));
+  const [branding, welcomeMessageLocalizations] = await Promise.all([
+    getOrganizationBranding(context.organizationId),
+    getOrganizationBrandingLocalizations(context.organizationId),
+  ]);
   const logoUrl = await getBrandingImageUrl(branding?.logo_path ?? null);
 
   const portalName = branding?.portal_name || context.counterpartyName;
-  const welcomeMessage = locale === "it" ? branding?.welcome_message_it : branding?.welcome_message_en;
+  const welcomeMessage = resolveWelcomeMessage(welcomeMessageLocalizations, locale, org.defaultLocale, t);
 
   const brandStyle: React.CSSProperties & Record<string, string> = {};
   if (branding?.primary_color) {
@@ -33,7 +40,7 @@ export default async function PortalLayout({ children }: { children: React.React
             <div className="eyebrow">{portalName}</div>
           )}
           <h1 className="page-title">{context.counterpartyName}</h1>
-          {welcomeMessage ? <div className="page-subtitle">{welcomeMessage}</div> : null}
+          <div className="page-subtitle">{welcomeMessage}</div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <LanguageSwitcher locale={locale} ariaLabel={t("common.language")} />

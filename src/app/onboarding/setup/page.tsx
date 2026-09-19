@@ -4,7 +4,8 @@ import { CheckCircle2 } from "lucide-react";
 import { requireMembership } from "@/lib/data/organization";
 import { createClient } from "@/lib/supabase/server";
 import { getPageContext } from "@/i18n/server";
-import { getOrganizationBranding, getBrandingImageUrl } from "@/lib/data/branding";
+import { getOrganizationBranding, getOrganizationBrandingLocalizations, getBrandingImageUrl } from "@/lib/data/branding";
+import { buildWelcomeMessageLabels } from "@/lib/branding/welcome-message-labels";
 import { listTimezones } from "@/lib/timezones";
 import { OrganizationCompanyForm } from "@/components/organization-company-form";
 import { OrganizationLocalizationForm } from "@/components/organization-localization-form";
@@ -37,9 +38,10 @@ export default async function OnboardingSetupPage({
   const { t } = await getPageContext(membership.organizationId);
   const supabase = await createClient();
 
-  const [{ data: organization }, branding, { count: palletTypeCount }] = await Promise.all([
+  const [{ data: organization }, branding, welcomeMessageLocalizations, { count: palletTypeCount }] = await Promise.all([
     supabase.from("organizations").select("*").eq("id", membership.organizationId).maybeSingle(),
     getOrganizationBranding(membership.organizationId),
+    getOrganizationBrandingLocalizations(membership.organizationId),
     supabase
       .from("pallet_types")
       .select("id", { count: "exact", head: true })
@@ -151,6 +153,7 @@ export default async function OnboardingSetupPage({
               <p className="muted" style={{ fontSize: 12, marginBottom: 12 }}>{t("onboarding.steps.branding.description")}</p>
               <OrganizationBrandingForm
                 branding={branding}
+                welcomeMessageLocalizations={welcomeMessageLocalizations}
                 logoUrl={logoUrl}
                 compactLogoUrl={compactLogoUrl}
                 labels={{
@@ -162,8 +165,7 @@ export default async function OnboardingSetupPage({
                   supportEmail: t("settings.branding.supportEmail"),
                   supportPhone: t("settings.branding.supportPhone"),
                   website: t("settings.branding.website"),
-                  welcomeMessageIt: t("settings.branding.welcomeMessageIt"),
-                  welcomeMessageEn: t("settings.branding.welcomeMessageEn"),
+                  welcomeMessageLabels: buildWelcomeMessageLabels(t),
                   save: t("common.actions.save"),
                   saving: t("common.actions.saving"),
                   uploadLogo: t("settings.branding.uploadLogo"),
