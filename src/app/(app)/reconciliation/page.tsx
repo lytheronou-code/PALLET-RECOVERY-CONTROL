@@ -3,6 +3,7 @@ import { AlertTriangle, GitCompareArrows, Plus } from "lucide-react";
 import { requireMembership } from "@/lib/data/organization";
 import { getReconciliation } from "@/lib/data/reconciliation";
 import { getPageContext } from "@/i18n/server";
+import type { Translator } from "@/i18n/translator";
 import type { Finding } from "@/lib/reconciliation/engine";
 
 function createCaseHref(finding: Finding): string | null {
@@ -26,47 +27,85 @@ function createCaseHref(finding: Finding): string | null {
   return null;
 }
 
-const FINDING_LABELS: Record<Finding["type"], string> = {
-  unbalanced_movements: "Movimenti non bilanciati",
-  open_voucher: "Buoni aperti",
-  duplicate_document: "Documenti potenzialmente duplicati",
-  missing_documentation: "Movimenti senza documento",
-  voucher_due_soon: "Buoni in scadenza",
-  voucher_overdue: "Buoni scaduti",
-};
+const FINDING_LABEL_KEYS = {
+  unbalanced_movements: "reconciliation.findings.unbalancedMovements",
+  open_voucher: "reconciliation.findings.openVoucher",
+  duplicate_document: "reconciliation.findings.duplicateDocument",
+  missing_documentation: "reconciliation.findings.missingDocumentation",
+  voucher_due_soon: "reconciliation.findings.voucherDueSoon",
+  voucher_overdue: "reconciliation.findings.voucherOverdue",
+} as const satisfies Record<Finding["type"], Parameters<Translator>[0]>;
 
 function describeFinding(
   finding: Finding,
   names: Map<string, { counterpartyName: string; palletTypeCode: string }>,
+  t: Translator,
   formatNumber: (value: number) => string,
 ): string {
   switch (finding.type) {
     case "unbalanced_movements": {
       const label = names.get(finding.counterpartyId + "::" + finding.palletTypeId);
-      return (label?.counterpartyName ?? "—") + " · " + (label?.palletTypeCode ?? "—") + ": " + formatNumber(finding.outstandingQuantity) + " pallet non rientrati";
+      return (
+        (label?.counterpartyName ?? "—") +
+        " · " +
+        (label?.palletTypeCode ?? "—") +
+        ": " +
+        t("reconciliation.describe.unbalancedMovementsOutstanding", {
+          quantity: formatNumber(finding.outstandingQuantity),
+        })
+      );
     }
     case "open_voucher": {
       const label = names.get(finding.counterpartyId + "::" + finding.palletTypeId);
-      return (label?.counterpartyName ?? "—") + " · " + (label?.palletTypeCode ?? "—") + ": " + formatNumber(finding.outstandingQuantity) + " pallet residui";
+      return (
+        (label?.counterpartyName ?? "—") +
+        " · " +
+        (label?.palletTypeCode ?? "—") +
+        ": " +
+        t("reconciliation.describe.openVoucherOutstanding", {
+          quantity: formatNumber(finding.outstandingQuantity),
+        })
+      );
     }
     case "duplicate_document": {
       const label = names.get(finding.counterpartyId + "::" + finding.palletTypeId);
-      return (label?.counterpartyName ?? "—") + " · " + (label?.palletTypeCode ?? "—") + ': documento "' + finding.documentNumber + '" ripetuto su ' + finding.movementIds.length + " movimenti";
+      return (
+        (label?.counterpartyName ?? "—") +
+        " · " +
+        (label?.palletTypeCode ?? "—") +
+        ": " +
+        t("reconciliation.describe.duplicateDocument", {
+          document: finding.documentNumber,
+          count: finding.movementIds.length,
+        })
+      );
     }
     case "missing_documentation": {
       const label = names.get(finding.counterpartyId + "::" + finding.palletTypeId);
-      return (label?.counterpartyName ?? "—") + " · " + (label?.palletTypeCode ?? "—") + ": movimento senza numero documento";
+      return (
+        (label?.counterpartyName ?? "—") +
+        " · " +
+        (label?.palletTypeCode ?? "—") +
+        ": " +
+        t("reconciliation.describe.missingDocumentation")
+      );
     }
     case "voucher_due_soon":
-      return "Buono in scadenza tra " + finding.daysUntilDue + " giorni (" + finding.dueDate + ")";
+      return t("reconciliation.describe.voucherDueSoon", {
+        days: finding.daysUntilDue,
+        date: finding.dueDate,
+      });
     case "voucher_overdue":
-      return "Buono scaduto da " + finding.daysOverdue + " giorni (" + finding.dueDate + ")";
+      return t("reconciliation.describe.voucherOverdue", {
+        days: finding.daysOverdue,
+        date: finding.dueDate,
+      });
   }
 }
 
 export default async function ReconciliationPage() {
   const membership = await requireMembership();
-  const { formatCurrency, formatNumber } = await getPageContext(membership.organizationId);
+  const { t, formatCurrency, formatNumber } = await getPageContext(membership.organizationId);
   const { balances, findings } = await getReconciliation(membership.organizationId);
 
   const names = new Map(
@@ -91,53 +130,69 @@ export default async function ReconciliationPage() {
     <div className="shell">
       <div className="header">
         <div className="page-heading">
-          <div className="eyebrow">Deterministic control</div>
-          <h1 className="page-title">Riconciliazione</h1>
-          <div className="page-subtitle">
-            Confronta OUT, IN e buoni per trasformare anomalie documentali in azioni di recupero.
-          </div>
+          <div className="eyebrow">{t("reconciliation.eyebrow")}</div>
+          <h1 className="page-title">{t("reconciliation.title")}</h1>
+          <div className="page-subtitle">{t("reconciliation.subtitle")}</div>
         </div>
-        <Link href="/recovery-cases/new" className="btn btn-primary"><Plus size={14} />Nuova pratica</Link>
+        <Link href="/recovery-cases/new" className="btn btn-primary">
+          <Plus size={14} />
+          {t("recoveryCases.new")}
+        </Link>
       </div>
 
       <div className="grid premium-kpis">
         <div className="metric-card">
-          <div className="metric-top"><span className="metric-caption">Posizioni riconciliate</span><span className="metric-icon"><GitCompareArrows size={17} /></span></div>
+          <div className="metric-top">
+            <span className="metric-caption">{t("reconciliation.metrics.reconciledPositions")}</span>
+            <span className="metric-icon"><GitCompareArrows size={17} /></span>
+          </div>
           <div className="metric-value">{formatNumber(balances.length)}</div>
-          <div className="metric-foot">controparte × tipo pallet</div>
+          <div className="metric-foot">{t("reconciliation.metrics.reconciledPositionsFoot")}</div>
         </div>
         <div className="metric-card">
-          <div className="metric-top"><span className="metric-caption">Outstanding</span></div>
+          <div className="metric-top"><span className="metric-caption">{t("reconciliation.metrics.outstanding")}</span></div>
           <div className="metric-value">{formatNumber(totalOutstanding)}</div>
-          <div className="metric-foot">pallet da spiegare o recuperare</div>
+          <div className="metric-foot">{t("reconciliation.metrics.outstandingFoot")}</div>
         </div>
         <div className="metric-card">
-          <div className="metric-top"><span className="metric-caption">Valore stimato</span></div>
+          <div className="metric-top"><span className="metric-caption">{t("reconciliation.metrics.estimatedValue")}</span></div>
           <div className="metric-value">{formatCurrency(totalValue)}</div>
-          <div className="metric-foot">esposizione teorica</div>
+          <div className="metric-foot">{t("reconciliation.metrics.estimatedValueFoot")}</div>
         </div>
         <div className="metric-card">
-          <div className="metric-top"><span className="metric-caption">Anomalie</span><span className="metric-icon danger"><AlertTriangle size={17} /></span></div>
+          <div className="metric-top">
+            <span className="metric-caption">{t("reconciliation.metrics.anomalies")}</span>
+            <span className="metric-icon danger"><AlertTriangle size={17} /></span>
+          </div>
           <div className="metric-value">{formatNumber(findings.length)}</div>
-          <div className="metric-foot">{formatNumber(overdue)} buoni scaduti</div>
+          <div className="metric-foot">
+            {t("reconciliation.metrics.anomaliesFoot", { count: formatNumber(overdue) })}
+          </div>
         </div>
       </div>
 
       <section className="panel" style={{ marginBottom: 16 }}>
         <div className="panel-header">
           <div>
-            <h2 className="panel-title">Saldo per controparte / tipo pallet</h2>
-            <div className="panel-subtitle">Vista quantitativa che alimenta il decisioning operativo.</div>
+            <h2 className="panel-title">{t("reconciliation.balanceTable.title")}</h2>
+            <div className="panel-subtitle">{t("reconciliation.balanceTable.subtitle")}</div>
           </div>
         </div>
         {balances.length === 0 ? (
-          <div className="empty-state">Nessun movimento o buono registrato.</div>
+          <div className="empty-state">{t("reconciliation.emptyBalances")}</div>
         ) : (
           <div className="table-wrap">
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Controparte</th><th>Pallet</th><th>OUT</th><th>IN</th><th>Saldo teorico</th><th>Buoni aperti</th><th>Outstanding</th><th>Valore</th>
+                  <th>{t("reconciliation.balanceTable.counterparty")}</th>
+                  <th>{t("reconciliation.balanceTable.palletType")}</th>
+                  <th>{t("reconciliation.balanceTable.out")}</th>
+                  <th>{t("reconciliation.balanceTable.in")}</th>
+                  <th>{t("reconciliation.balanceTable.theoreticalBalance")}</th>
+                  <th>{t("reconciliation.balanceTable.openVouchers")}</th>
+                  <th>{t("reconciliation.balanceTable.outstanding")}</th>
+                  <th>{t("reconciliation.balanceTable.value")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -161,14 +216,14 @@ export default async function ReconciliationPage() {
 
       <div className="section-grid equal">
         {findings.length === 0 ? (
-          <div className="panel" style={{ gridColumn: "1 / -1" }}><div className="empty-state">Nessuna anomalia rilevata.</div></div>
+          <div className="panel" style={{ gridColumn: "1 / -1" }}><div className="empty-state">{t("reconciliation.emptyFindings")}</div></div>
         ) : (
           Array.from(findingsByType.entries()).map(([type, items]) => (
             <section className="panel" key={type}>
               <div className="panel-header">
                 <div>
-                  <h2 className="panel-title">{FINDING_LABELS[type]}</h2>
-                  <div className="panel-subtitle">{items.length} segnalazioni</div>
+                  <h2 className="panel-title">{t(FINDING_LABEL_KEYS[type])}</h2>
+                  <div className="panel-subtitle">{t("reconciliation.findingsCount", { count: items.length })}</div>
                 </div>
               </div>
               <div className="panel-body" style={{ padding: 0 }}>
@@ -176,12 +231,22 @@ export default async function ReconciliationPage() {
                   const href = createCaseHref(finding);
                   return (
                     <div className="search-result" key={index}>
-                      <div className="search-result-title">{describeFinding(finding, names, formatNumber)}</div>
-                      {href ? <div style={{ marginTop: 8 }}><Link href={href} className="btn btn-secondary btn-sm">Crea pratica</Link></div> : null}
+                      <div className="search-result-title">{describeFinding(finding, names, t, formatNumber)}</div>
+                      {href ? (
+                        <div style={{ marginTop: 8 }}>
+                          <Link href={href} className="btn btn-secondary btn-sm">
+                            {t("reconciliation.createCase")}
+                          </Link>
+                        </div>
+                      ) : null}
                     </div>
                   );
                 })}
-                {items.length > 50 ? <div className="search-result-meta" style={{ padding: 12 }}>+{items.length - 50} altre</div> : null}
+                {items.length > 50 ? (
+                  <div className="search-result-meta" style={{ padding: 12 }}>
+                    {t("reconciliation.moreFindings", { count: items.length - 50 })}
+                  </div>
+                ) : null}
               </div>
             </section>
           ))
