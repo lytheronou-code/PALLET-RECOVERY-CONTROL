@@ -476,4 +476,306 @@ Security Advisor: only the same pre-existing intentional `SECURITY
 DEFINER` warnings (now 12, including the fixed
 `admin_grant_client_portal_access` — all confirmed `search_path=public`,
 `anon` execute explicitly revoked, `authenticated` execute intentional).
+
+## Premium V4 — international self-service foundation (2026-09-19)
+
+On `claude/premium-v4-international-selfservice` (PR open toward `main`,
+not merged). Builds the foundation for internationalization, self-service
+organization configuration, and white-label Client Portal branding — a
+"not necessarily 100% end-state" foundation as scoped by the task, not a
+translation of every existing screen (see "What's deliberately not done"
+below).
+
+### i18n architecture
+
+Hand-rolled, not a routing-framework library (no `next-intl`): centralized
+JSON dictionaries (`src/i18n/messages/en.json`, `it.json`), a type-safe
+`createTranslator()` deriving every valid dot-path key from `en.json`'s own
+shape (`typeof en`), and **no locale-prefixed routes** (`/en/...`,
+`/it/...`). This was a deliberate choice over `next-intl`'s default
+routing: this is an authenticated B2B app where locale is a per-user/
+per-organization *data* decision (see hierarchy below), not a URL/SEO
+concern, and locale-prefixed routing would have meant rewriting every
+route under `app/[locale]/...` — high risk to the already-built auth/
+workspace-resolution routing for no benefit here. Extending to `de`/`fr`/
+`es`/`pt` later is: add the locale to `SUPPORTED_LOCALES`
+(`src/i18n/locale.ts`), add a new dictionary file, extend the two DB CHECK
+constraints (locale is validated in exactly two places: the
+`organizations.default_locale`/`profiles.preferred_locale` CHECK
+constraints and the `admin_update_organization_localization` RPC) — no
+page rewrites.
+
+**Locale resolution hierarchy** (`src/i18n/resolve.ts`):
+`profiles.preferred_locale` (explicit per-user choice, nullable = "not
+set") → `organizations.default_locale` (per-tenant default, itself
+constrained to `en`/`it`) → a `prc_locale` cookie or `Accept-Language`
+header (unauthenticated pages only) → `en`. Internal operators and Client
+Portal users resolve through the *same* function with their own
+organization context, so — the worked example from the task spec — an
+Italian-default organization can have an English-preference internal
+operator and an English-preference portal customer coexisting with an
+Italian-preference operator and an Italian-preference portal customer, all
+correctly independent. `src/i18n/server.ts`'s `getPageContext()` is the one
+call operational pages use: resolves locale + org currency/timezone in a
+single round trip and returns a translator plus bound formatters together.
+
+**Language switcher** (`src/components/language-switcher.tsx` +
+`src/lib/actions/locale.ts`): two buttons (EN/IT), present in the internal
+app topbar and the Client Portal header. Persists to
+`profiles.preferred_locale` for authenticated users (their own row, via
+the existing `self_update_profile` RLS policy — no new policy needed) and
+to the `prc_locale` cookie for everyone (harmless for authenticated users,
+since the cookie is never consulted once a profile preference exists).
+Implemented as a plain `<form action={serverAction}>` per button — no
+client-side state, no refresh loop, and it cannot affect
+`resolveWorkspace()`/auth routing because it only ever writes
+`profiles.preferred_locale` and a cookie, never `organization_members` or
+`client_portal_memberships` (the two tables workspace routing actually
+reads).
+
+**Formatting** (`src/lib/format.ts`): `createFormatters(locale, currency,
+timeZone)` built on `Intl.NumberFormat`/`Intl.DateTimeFormat`, replacing
+the previous hardcoded `it-IT`/`EUR`/implicit-local-timezone formatters.
+`en` renders as `en-GB` (DD/MM dates, leading currency symbol) rather than
+`en-US`, a deliberate choice for an EU-heavy international B2B product,
+not a US-only assumption. Every page that reads `formatCurrency`/
+`formatDate`/`formatNumber` now gets them from `getPageContext()` — no
+remaining hardcoded `it-IT`/`EUR` formatter in the app. The 3 interactive
+client-side table components that render dates receive `locale`/
+`currency`/`timeZone` as plain serializable props and build their own
+formatter locally (a bound function can't cross the server/client
+boundary as a prop).
+
+**Translation-completeness test**
+(`src/lib/__tests__/i18n-completeness.test.ts`, and `npm run i18n:check`
+to run it alone): fails if `en.json` and `it.json` ever have different key
+sets in either direction, or if either has an empty string value. Runs as
+part of `npm run test`, so it already gates CI.
+
+### Organization localization, currency, timezone
+
+Additive migrations, all nullable/safely-defaulted (verified before
+writing them: **zero** organization rows existed in this database at the
+time, so there was no real Italian-tenant data to preserve or default
+toward — the defaults below are the neutral international choice for a
+brand-new tenant, not a backfill decision):
+
+- `organizations.default_locale text not null default 'en' check (in
+  ('en','it'))`
+- `organizations.default_currency text not null default 'EUR' check
+  (format ~ '^[A-Z]{3}$')` — format-checked at the DB layer; the actual
+  *supported* set (25 common international currencies,
+  `src/lib/currencies.ts`) is enforced by `admin_update_organization_localization`
+  and mirrored in a SQL array inside that function (documented there as
+  the thing to keep in sync when adding a currency).
+- `organizations.timezone text not null default 'UTC'` — validated
+  against Postgres's own `pg_timezone_names` inside the RPC (can't be a
+  CHECK constraint; that catalog isn't immutable), so it's always a real
+  IANA name.
+- `profiles.preferred_locale text` (nullable — see hierarchy above).
+
+Mutated only via two admin-only `SECURITY DEFINER` RPCs,
+`admin_update_organization_company` and `admin_update_organization_localization`
+(deliberately two functions, not one combined — see "bug found and fixed"
+below for why). No direct RLS `UPDATE` policy on `organizations` exists or
+is needed; the RPCs are the sole write path, same pattern as
+`bootstrap_organization`.
+
+**One real bug found and fixed by this phase's own adversarial QA**
+(`20260919110000_fix_country_currency_validation_logic.sql`): both RPCs
+validated their allow-list with `value <> any(array[...])`, which
+evaluates true as soon as the value differs from *at least one* array
+element — true for nearly any input, not the SQL spelling of "not in this
+list" (`<> all(...)` is). Every legitimate call with a real country code
+or currency, including `'IT'`/`'EUR'`, was being rejected as
+"unsupported". Neither RPC had ever actually accepted a valid value since
+being created a few commits earlier in this same PR. Caught by a
+"positive control" scenario (a legitimate update should succeed) in the
+17-scenario adversarial suite, fixed, and the full suite re-run clean.
+
+### International company/counterparty/site schema
+
+Additive columns only, existing `address_line`/`province` kept as-is
+(they already served as "line 1"/"region"; not renamed, to avoid an
+invasive sweep across every form/CSV-import/data-layer consumer for no
+functional gain):
+
+- `organizations`: `legal_name`, `trading_name`, `country_code`, `tax_id`,
+  `vat_id`, `registration_number`, `address_line_1`, `address_line_2`,
+  `city`, `region`, `postal_code`, `website`, `support_email`,
+  `support_phone` — all nullable, no existing rows to backfill.
+- `counterparties`: `+ trading_name, tax_id, registration_number,
+  address_line_2` (existing `vat_number` already served as the
+  international "vat_id" concept and was already optional — no schema
+  change needed to satisfy "VAT not mandatory globally").
+- `sites`: `+ address_line_2`.
+
+A curated ISO 3166-1 alpha-2 country list (`src/lib/countries.ts`, ~195
+entries, English names — reference data, not translated UI copy) backs a
+real `<select>` (`src/components/country-select.tsx`) that replaced the
+free-text 2-letter country inputs on the counterparty/site forms, and
+`counterpartySchema`/`siteSchema` now validate against it
+(`isSupportedCountry`) instead of only checking string length.
+
+### Self-service Organization Settings (`/settings`)
+
+Four tabs (Company / Localization / Branding / Client Portal) via
+`?tab=` query params — a server-rendered tab pattern (same as the Client
+Portal nav), no client-side tab state. Admins get the real forms; every
+other role gets a read-only `<dl>` of the same fields. The Client Portal
+tab is intentionally a pointer to the existing per-counterparty
+`ClientPortalAccessPanel` (on each counterparty's own detail page) rather
+than a duplicate management UI — that feature already existed from
+Premium V3 and manages access per-counterparty, which is where it belongs.
+
+### White-label branding foundation
+
+`organization_branding` (`organization_id` primary key — branding is
+inherently 1:1 with an org): `portal_name`, `logo_path`,
+`compact_logo_path`, `primary_color`/`secondary_color` (hex, DB
+CHECK-validated), `support_email`, `support_phone`, `website`,
+`welcome_message_it`/`welcome_message_en`. A single combined SELECT RLS
+policy (`readers_read_branding`, merged from two policies after a
+Performance Advisor "multiple permissive policies" finding) grants read to
+an org's own internal members *or* its own active Client Portal members
+— never any other organization's, verified adversarially. Mutation is a
+single admin-only `SECURITY DEFINER` RPC
+(`admin_update_organization_branding`), which also validates that any
+supplied `logo_path`/`compact_logo_path` actually sits under the calling
+organization's own Storage prefix (blocks a forged cross-tenant path even
+from a legitimate admin of a *different* org).
+
+**Logo storage**: a separate private Storage bucket, `branding-assets`
+(deliberately not the `documents` bucket — branding assets are
+non-sensitive presentation images with no audit-trail requirement, unlike
+evidence documents, so a replace/delete flow is safe here in a way it
+isn't for documents). PNG/JPEG/WEBP only (no SVG — an SVG can embed
+`<script>`, and "safely sanitized" is a real parsing project not justified
+for v1), magic-byte-validated (not just MIME/extension — mirrors the
+documents feature's approach), 2 MB limit, enforced at both the app layer
+(`src/lib/branding/logo.ts`) and the Storage bucket's own
+`file_size_limit`/`allowed_mime_types`.
+
+**Brand color**: hex-format server-side validation
+(`src/lib/branding/color.ts`, both app-layer and a DB CHECK constraint on
+`organization_branding`) rejects arbitrary CSS strings (`red`,
+`javascript:alert(1)`, anything not `#RRGGBB`) — verified adversarially.
+Accessibility is handled by automatic WCAG contrast derivation
+(`getReadableTextColor`, relative-luminance formula) rather than by
+rejecting valid-but-unusual colors: any well-formed hex color is accepted,
+and the portal always picks black or white button text against it.
+
+**Client Portal white-label behavior**: the portal layout
+(`src/app/(portal)/portal/layout.tsx`) renders the organization's own
+logo, portal name, welcome message (in the viewer's resolved locale),
+support email/phone, and brand color — the brand color is applied via a
+CSS custom-property override (`--accent`/`--portal-text-on-accent`)
+scoped to a `.portal-shell` wrapper class, so it affects only the portal's
+own buttons/accents and never leaks into the internal app's own `:root`
+branding. A discreet "Powered by Pallet Recovery Control" line is always
+present as plain text (not a config flag), specifically so a future
+plan-controlled toggle can gate it later without restructuring the
+layout — no plan-gating logic exists yet, per the explicit scope
+boundary. The internal app's own sidebar/topbar branding
+("Recovery Control" + the workspace's own org name in the sidebar footer)
+is untouched — full internal-app white-labeling was explicitly out of
+scope for this milestone.
+
+**Future custom-domain compatibility**: nothing here assumes
+`app.palletrecoverycontrol.com`. `organization_branding.portal_name` and
+the branding resolution path (`getOrganizationBranding(organizationId)`,
+keyed purely by the caller's own resolved org context, never by hostname)
+would work unchanged if a future `portal.<tenant>.com` were added in
+front of the same routes — domain provisioning itself remains out of
+scope for this PR, as instructed.
+
+### Guided self-service onboarding
+
+`createOrganizationAction` now redirects to `/onboarding/setup?step=company`
+instead of straight to `/dashboard`. A 6-step wizard (Company →
+Localization → Branding → Operational setup → First customer → Ready),
+reusing the exact same form components as `/settings` (one place that
+knows how to save each kind of data, not two). Every step after Company
+has both a persistent "Skip for now" link straight to the dashboard and a
+"Next" link that never depends on that step's form having been submitted
+— nothing is a hard gate, and everything remains editable from Settings
+afterward. Pallet type presets (EPAL/EUR, CHEP, LPR, Generic) seed a
+normal, fully editable `pallet_types` row with `unit_value = 0` rather
+than a fabricated price — the app has no basis for guessing what a pallet
+is worth to an arbitrary organization in its own base currency, and a
+wrong invented number would be worse than an obvious placeholder.
+
+### Friendly error mapping
+
+`src/lib/errors/friendly.ts` (`mapDatabaseError`) maps a raw Postgres
+error to a translated, non-technical message — a `23505` unique-violation
+code becomes "A record with these details already exists." /"Esiste già
+un record con questi dati.", an RLS/permission-denied message becomes "You
+do not have permission to perform this action." — never the raw
+`error.message`/`error.code`. Wired into the counterparties/sites/
+pallet-types Server Actions (previously ad hoc hardcoded Italian strings
+for every failure path, including ones unrelated to permissions).
+
+### CSV import/export
+
+Verified rather than rebuilt: the column-mapping architecture already
+supported both IT and EN header names (`AUTO_MAP_HINTS` in
+`movement-import.ts`/`voucher-import-wizard.tsx` already included
+`"controparte"/"customer"`, `"quantità"/"quantity"`,
+`"buono"/"voucher number"`, etc.) as *pre-fill suggestions* for an
+explicit, user-confirmed dropdown — never a silent automatic guess that
+changes which column feeds which field. What was added: the exposure
+report's CSV export (`/report/export`) now takes its 7 column headers as
+a parameter, resolved to the viewer's locale via `getT()`, instead of a
+hardcoded Italian list — the exported row *values* are byte-identical
+regardless of language (plain numbers, never locale-formatted strings).
+
+### Adversarial security QA (17 scenarios)
+
+Run via raw SQL against the real Supabase project, all inside one
+`BEGIN ... ROLLBACK` transaction (role-switched to `authenticated` with
+`request.jwt.claim.sub` set per test user, mirroring how PostgREST
+actually authorizes a request) — confirmed zero residual rows afterward.
+All 17 scenarios (plus 3 positive controls, including the two that caught
+the currency/country bug above) pass: cross-org branding read/write
+blocked, operator/portal-user blocked from admin-only mutation, forged
+org ID and forged logo path blocked, invalid currency/locale/timezone/
+country/color all blocked with the correct error, oversized/wrong-format
+logo blocked at the Storage bucket config level (`file_size_limit`:
+2097152, `allowed_mime_types`: png/jpeg/webp — app-layer magic-byte
+rejection covered separately by unit tests), a legitimate update
+succeeds and persists correctly, switching locale/currency does not
+alter an unrelated `recovery_cases` row's `quantity_claimed`, and
+switching language cannot affect auth/workspace routing by construction
+(the switcher only ever writes `profiles.preferred_locale` and a cookie,
+never `organization_members`/`client_portal_memberships`).
+
+### What's deliberately not done (foundation, not full end-state)
+
+- **Full screen-by-screen translation.** The i18n architecture, the
+  translation-completeness test, and the highest-leverage/most-visible
+  surfaces (auth, nav shell, topbar, Client Portal shell, Settings,
+  onboarding wizard, dashboard KPI labels for currency/date/number,
+  exposure report CSV headers) are translated end-to-end and proven in
+  both languages. The remaining operational page *body* copy (table
+  column headers and inline labels on movements/vouchers/reconciliation/
+  recovery-case detail/CSV import screens, etc.) still renders Italian
+  text regardless of the viewer's resolved locale — the DB-facing
+  values under them are already fully locale-aware
+  (`formatCurrency`/`formatDate`/`formatNumber` via `getPageContext()`
+  everywhere), but the surrounding labels are not yet routed through
+  `t()`. This is the largest remaining piece of work before "the entire
+  product is usable in English" is literally true end to end, and it is
+  mechanical (thread `t()` through ~15-20 more page files using the same
+  pattern already established) rather than architectural.
+- Zod validation messages outside `auth`/`onboarding` (master-data.ts,
+  document.ts, etc.) remain hardcoded Italian strings — the factory-
+  function pattern used for auth (`buildLoginSchema(t)`) was not extended
+  to every other schema.
+- SMTP/Client Portal invitation email sending (explicitly out of scope —
+  no SMTP configured); the data model (`profiles.preferred_locale`,
+  `organizations.default_locale`) is already shaped for a future
+  transactional email's language to resolve the same way.
+- Stripe/plans/billing, custom domain provisioning, full internal-app
+  white-labeling: all explicitly out of scope per the task.
 Performance Advisor: only informational "unused index" notices.
