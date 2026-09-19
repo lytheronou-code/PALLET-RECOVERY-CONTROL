@@ -1144,8 +1144,10 @@
       "defaultCurrency": "Base currency",
       "timezone": "Timezone",
       "adminOnly": "Only organization admins can change these settings.",
-      "languageEn": "English",
-      "languageIt": "Italian"
+      "languageNames": {
+        "en": "English",
+        "it": "Italian"
+      }
     },
     "branding": {
       "portalName": "Portal name",
@@ -1157,10 +1159,6 @@
       "supportPhone": "Support phone",
       "website": "Website",
       "welcomeMessageFor": "Welcome message ({language})",
-      "languageNames": {
-        "en": "English",
-        "it": "Italian"
-      },
       "uploadLogo": "Upload logo"
     },
     "team": {

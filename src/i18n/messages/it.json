@@ -1144,8 +1144,10 @@
       "defaultCurrency": "Valuta di base",
       "timezone": "Fuso orario",
       "adminOnly": "Solo gli amministratori dell'organizzazione possono modificare queste impostazioni.",
-      "languageEn": "Inglese",
-      "languageIt": "Italiano"
+      "languageNames": {
+        "en": "Inglese",
+        "it": "Italiano"
+      }
     },
     "branding": {
       "portalName": "Nome del portale",
@@ -1157,10 +1159,6 @@
       "supportPhone": "Telefono di supporto",
       "website": "Sito web",
       "welcomeMessageFor": "Messaggio di benvenuto ({language})",
-      "languageNames": {
-        "en": "Inglese",
-        "it": "Italiano"
-      },
       "uploadLogo": "Carica logo"
     },
     "team": {

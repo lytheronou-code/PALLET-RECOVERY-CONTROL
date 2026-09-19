@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getPageContext } from "@/i18n/server";
 import { getOrganizationBranding, getOrganizationBrandingLocalizations, getBrandingImageUrl } from "@/lib/data/branding";
 import { buildWelcomeMessageLabels } from "@/lib/branding/welcome-message-labels";
+import { buildLocaleNames } from "@/lib/i18n/locale-names";
 import { listTimezones } from "@/lib/timezones";
 import { OrganizationCompanyForm } from "@/components/organization-company-form";
 import { OrganizationLocalizationForm } from "@/components/organization-localization-form";
@@ -142,8 +143,7 @@ export default async function OnboardingSetupPage({
                 timezone: t("settings.localization.timezone"),
                 save: t("common.actions.save"),
                 saving: t("common.actions.saving"),
-                languageEn: t("settings.localization.languageEn"),
-                languageIt: t("settings.localization.languageIt"),
+                languageNames: buildLocaleNames(t),
               }}
             />
           ) : null}

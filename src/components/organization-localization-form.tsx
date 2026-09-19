@@ -5,6 +5,7 @@ import { updateOrganizationLocalizationAction } from "@/lib/actions/organization
 import { emptyFormState } from "@/lib/actions/form-state";
 import { CurrencySelect } from "@/components/currency-select";
 import { TimezoneSelect } from "@/components/timezone-select";
+import { SUPPORTED_LOCALES, type Locale } from "@/i18n/locale";
 import type { Tables } from "@/lib/supabase/database.types";
 
 export type OrganizationLocalizationLabels = {
@@ -13,8 +14,10 @@ export type OrganizationLocalizationLabels = {
   timezone: string;
   save: string;
   saving: string;
-  languageEn: string;
-  languageIt: string;
+  // One name per supported locale -- adding a locale means adding an
+  // entry here (see buildWelcomeMessageLabels for the same shape), never
+  // a new hardcoded <option> in this component.
+  languageNames: Record<Locale, string>;
 };
 
 export function OrganizationLocalizationForm({
@@ -37,8 +40,11 @@ export function OrganizationLocalizationForm({
         <div className="field">
           <label htmlFor="defaultLocale">{labels.defaultLanguage}</label>
           <select id="defaultLocale" name="defaultLocale" defaultValue={organization.default_locale}>
-            <option value="en">{labels.languageEn}</option>
-            <option value="it">{labels.languageIt}</option>
+            {SUPPORTED_LOCALES.map((locale) => (
+              <option key={locale} value={locale}>
+                {labels.languageNames[locale]}
+              </option>
+            ))}
           </select>
         </div>
         <div className="field">
