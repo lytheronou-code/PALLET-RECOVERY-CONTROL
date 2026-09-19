@@ -72,7 +72,8 @@
       "invalidCountry": "Seleziona un paese valido.",
       "invalidCurrency": "Seleziona una valuta valida.",
       "invalidTimezone": "Seleziona un fuso orario valido.",
-      "invalidLocale": "Seleziona una lingua supportata."
+      "invalidLocale": "Seleziona una lingua supportata.",
+      "cannotBeNegative": "Questo valore non può essere negativo."
     },
     "confirmDelete": {
       "title": "Conferma eliminazione",
@@ -341,6 +342,9 @@
       "carrier": "Trasportatore",
       "supplier": "Fornitore",
       "other": "Altro"
+    },
+    "validation": {
+      "legalNameRequired": "La ragione sociale è obbligatoria."
     }
   },
   "sites": {
@@ -371,7 +375,10 @@
     "active": "Attivo",
     "inactive": "Non attivo",
     "deactivate": "Disattiva",
-    "reactivate": "Riattiva"
+    "reactivate": "Riattiva",
+    "validation": {
+      "nameRequired": "Il nome è obbligatorio."
+    }
   },
   "palletTypes": {
     "title": "Tipi pallet",
@@ -388,7 +395,11 @@
     "active": "Attivo",
     "inactive": "Non attivo",
     "deactivate": "Disattiva",
-    "reactivate": "Riattiva"
+    "reactivate": "Riattiva",
+    "validation": {
+      "codeRequired": "Il codice è obbligatorio.",
+      "descriptionRequired": "La descrizione è obbligatoria."
+    }
   },
   "movements": {
     "title": "Movimenti",
@@ -454,25 +465,97 @@
       },
       "reverseButton": "Storna movimento",
       "correctButton": "Correggi movimento"
+    },
+    "validation": {
+      "reasonTooShort": "Spiega il motivo della correzione (minimo 3 caratteri)."
+    },
+    "errors": {
+      "originalMovementNotFound": "Movimento originale non trovato.",
+      "alreadyCorrected": "Questo movimento è già stato corretto in precedenza.",
+      "invalidDirection": "Seleziona una direzione valida per il movimento corretto.",
+      "siteDifferentCounterparty": "Il sito selezionato non appartiene alla controparte del movimento.",
+      "correctionFailed": "Impossibile registrare la correzione.",
+      "reversedMessage": "Movimento stornato.",
+      "correctedMessage": "Movimento corretto."
     }
   },
   "vouchers": {
     "title": "Buoni",
-    "new": "Nuovo buono"
+    "new": "Nuovo buono",
+    "validation": {
+      "numberRequired": "Il numero del buono è obbligatorio.",
+      "issueDateRequired": "La data di emissione è obbligatoria.",
+      "dueDateBeforeIssueDate": "La scadenza non può precedere la data di emissione."
+    },
+    "errors": {
+      "counterpartyNotFoundOrInactive": "Controparte non trovata o non attiva.",
+      "palletTypeNotFoundOrInactive": "Tipo pallet non trovato o non attivo.",
+      "siteDifferentCounterparty": "Il sito selezionato non appartiene alla controparte scelta.",
+      "duplicateNumber": "Esiste già un buono con questo numero.",
+      "createFailed": "Impossibile creare il buono.",
+      "notFound": "Buono non trovato.",
+      "cancelledCannotEdit": "Un buono annullato non può essere modificato.",
+      "quantityBelowRecovered": "La quantità non può essere inferiore a quanto già recuperato.",
+      "newQuantityBelowCommitted": "La nuova quantità lascerebbe solo {residual} pallet residui, ma le pratiche attive ne impegnano {committed}.",
+      "quantityBelowActiveCommitments": "La quantità non può essere inferiore agli impegni delle pratiche attive.",
+      "updateFailed": "Impossibile aggiornare il buono.",
+      "alreadyCancelled": "Buono già annullato.",
+      "cannotCancelWithRecoveries": "Non puoi annullare un buono con recuperi già registrati.",
+      "cannotCancelLinkedToCase": "Non puoi annullare un buono collegato a una pratica di recupero.",
+      "cancelFailed": "Impossibile annullare il buono.",
+      "cancelled": "Buono annullato."
+    }
   },
   "bulkImport": {
     "title": "Importazioni",
     "uploadFile": "Carica file",
     "mapColumns": "Mappa colonne",
     "preview": "Anteprima",
-    "confirmImport": "Conferma importazione"
+    "confirmImport": "Conferma importazione",
+    "validation": {
+      "tooManyRows": "Massimo {max} righe per import."
+    },
+    "errors": {
+      "missingPayload": "Payload di import mancante.",
+      "invalidPayload": "Payload di import non valido.",
+      "noRows": "Il file non contiene righe da importare.",
+      "batchCreateFailed": "Impossibile creare il batch di import.",
+      "interrupted": "Import interrotto dopo aver salvato {count} righe. Controlla il batch #{batchId} prima di reimportare il resto."
+    }
   },
   "reconciliation": {
     "title": "Riconciliazione"
   },
   "recoveryCases": {
     "title": "Pratiche di recupero",
-    "new": "Nuova pratica"
+    "new": "Nuova pratica",
+    "validation": {
+      "selectCounterparty": "Seleziona una controparte.",
+      "selectPalletType": "Seleziona un tipo pallet."
+    },
+    "errors": {
+      "palletTypeNotFound": "Tipo pallet non trovato.",
+      "counterpartyNotFound": "Controparte non trovata.",
+      "voucherNotFound": "Buono non trovato.",
+      "voucherCounterpartyOrPalletTypeMismatch": "Il buono selezionato non appartiene alla stessa controparte e allo stesso tipo pallet.",
+      "voucherClosedOrCancelled": "Il buono è chiuso o annullato e non può generare una nuova pratica.",
+      "quantityExceedsVoucherOutstanding": "La quantità supera il residuo del buono ({outstanding} pallet).",
+      "activeCaseAlreadyLinked": "Esiste già una pratica attiva collegata a questo buono.",
+      "quantityExceedsVoucherResidual": "La quantità richiesta supera il residuo disponibile del buono.",
+      "siteDifferentCounterparty": "Il sito selezionato non appartiene alla controparte scelta.",
+      "createFailed": "Impossibile creare la pratica. Verifica dati e permessi.",
+      "recoveredExceedsClaimed": "La quantità recuperata supererebbe quella richiesta.",
+      "recoveryExceedsVoucherResidual": "Il recupero supererebbe il residuo del buono collegato.",
+      "fullRecoveryMustCoverRemaining": "Il recupero completo deve coprire tutto il residuo.",
+      "closedCaseOnlyNotes": "La pratica è chiusa; puoi aggiungere solo una nota.",
+      "caseNotFound": "Pratica non trovata.",
+      "assigneeNotMember": "L'utente selezionato non è un membro dell'organizzazione.",
+      "assignFailed": "Impossibile aggiornare l'assegnatario.",
+      "assigned": "Pratica assegnata.",
+      "unassigned": "Assegnazione rimossa.",
+      "eventFailed": "Impossibile registrare l'evento.",
+      "eventRecorded": "Evento registrato."
+    }
   },
   "recoveryEvents": {
     "title": "Eventi"
@@ -480,7 +563,39 @@
   "documents": {
     "title": "Documenti",
     "upload": "Carica documento",
-    "noDocuments": "Ancora nessun documento."
+    "noDocuments": "Ancora nessun documento.",
+    "validation": {
+      "typeRequired": "Seleziona un tipo di documento."
+    },
+    "types": {
+      "ddt": "DDT",
+      "voucher": "Buono",
+      "voucherScan": "Scansione buono",
+      "pickupProof": "Prova di ritiro",
+      "deliveryProof": "Prova di consegna",
+      "palletPhoto": "Foto pallet",
+      "disputeEvidence": "Prova di contestazione",
+      "settlementDocument": "Documento di liquidazione",
+      "other": "Altro"
+    },
+    "errors": {
+      "linkedMovementDifferentCounterparty": "Il movimento collegato appartiene a un'altra controparte.",
+      "linkedVoucherDifferentCounterparty": "Il buono collegato appartiene a un'altra controparte.",
+      "linkedRecoveryCaseDifferentCounterparty": "La pratica collegata appartiene a un'altra controparte.",
+      "linkedRecoveryEventDifferentCounterparty": "L'evento collegato appartiene a un'altra controparte.",
+      "linkedSiteDifferentCounterparty": "Il sito collegato appartiene a un'altra controparte.",
+      "operationFailed": "Operazione non riuscita.",
+      "selectFileToUpload": "Seleziona un file da caricare.",
+      "fileContentMismatch": "Il contenuto del file non corrisponde al formato dichiarato.",
+      "uploadFailed": "Impossibile caricare il file. Verifica formato e dimensione.",
+      "uploadSuccess": "Documento caricato.",
+      "downloadLinkFailed": "Impossibile generare il link di download.",
+      "missingFilename": "Nome file mancante.",
+      "emptyFile": "Il file è vuoto.",
+      "fileTooLarge": "Il file supera la dimensione massima di 15 MB.",
+      "unsupportedFormat": "Formato non supportato. Usa PDF, JPG, PNG o WEBP.",
+      "extensionMismatch": "L'estensione del file non corrisponde al formato dichiarato."
+    }
   },
   "reports": {
     "title": "Report",
@@ -581,6 +696,15 @@
       "title": "Qualcosa è andato storto",
       "description": "Si è verificato un errore imprevisto. Riprova.",
       "retry": "Riprova"
+    }
+  },
+  "clientPortalAccess": {
+    "errors": {
+      "noAccountFound": "Nessun account trovato con questa email. Il cliente deve prima registrarsi.",
+      "adminOnly": "Solo un amministratore può gestire l'accesso al portale clienti.",
+      "alreadyActiveElsewhere": "Questo account ha già accesso attivo al portale di un'altra controparte.",
+      "grantFailed": "Impossibile concedere l'accesso al portale.",
+      "granted": "Accesso al portale concesso."
     }
   }
 }

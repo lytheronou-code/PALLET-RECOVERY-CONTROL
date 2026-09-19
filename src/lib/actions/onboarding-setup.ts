@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireMembership } from "@/lib/data/organization";
-import { counterpartySchema } from "@/lib/validation/master-data";
+import { buildCounterpartySchema } from "@/lib/validation/master-data";
+import { mapDatabaseError } from "@/lib/errors/friendly";
 import { getT } from "@/i18n/server";
 import type { FormState } from "@/lib/actions/form-state";
 
@@ -24,9 +25,10 @@ export const PALLET_TYPE_PRESETS = [
 
 export async function applyPalletTypePresetAction(presetCode: string): Promise<{ error?: string }> {
   const membership = await requireMembership();
+  const { t } = await getT(membership.organizationId);
   const preset = PALLET_TYPE_PRESETS.find((p) => p.code === presetCode);
   if (!preset) {
-    return { error: "unknown preset" };
+    return { error: t("common.errors.generic") };
   }
 
   const supabase = await createClient();
@@ -38,7 +40,7 @@ export async function applyPalletTypePresetAction(presetCode: string): Promise<{
   });
 
   if (error && error.code !== "23505") {
-    return { error: error.message };
+    return { error: mapDatabaseError(error, t) };
   }
 
   revalidatePath("/onboarding/setup");
@@ -46,15 +48,15 @@ export async function applyPalletTypePresetAction(presetCode: string): Promise<{
   return {};
 }
 
-// A deliberately trimmed-down subset of counterpartySchema's full form
-// (legal name + country only) -- this is the guided-onboarding "add your
-// first customer" nudge, not the real Counterparties form; the full
+// A deliberately trimmed-down subset of buildCounterpartySchema's full
+// form (legal name + country only) -- this is the guided-onboarding "add
+// your first customer" nudge, not the real Counterparties form; the full
 // record can be completed any time from Counterparties.
 export async function createFirstCustomerAction(_prevState: FormState, formData: FormData): Promise<FormState> {
   const membership = await requireMembership();
   const { t } = await getT(membership.organizationId);
 
-  const parsed = counterpartySchema.pick({ legalName: true, countryCode: true }).safeParse({
+  const parsed = buildCounterpartySchema(t).pick({ legalName: true, countryCode: true }).safeParse({
     legalName: formData.get("legalName"),
     countryCode: formData.get("countryCode") || "IT",
   });
@@ -72,7 +74,7 @@ export async function createFirstCustomerAction(_prevState: FormState, formData:
   });
 
   if (error) {
-    return { error: t("common.errors.duplicate") };
+    return { error: mapDatabaseError(error, t) };
   }
 
   revalidatePath("/onboarding/setup");

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireMembership } from "@/lib/data/organization";
-import { uploadDocumentSchema } from "@/lib/validation/document";
+import { buildUploadDocumentSchema } from "@/lib/validation/document";
 import {
   buildDocumentStoragePath,
   matchesFileSignature,
@@ -11,6 +11,9 @@ import {
   validateDocumentFile,
   type DocumentEntity,
 } from "@/lib/documents/storage-path";
+import { mapKeyedError } from "@/lib/errors/friendly";
+import { getT } from "@/i18n/server";
+import type { Translator, TranslationKey } from "@/i18n/translator";
 import type { FormState } from "@/lib/actions/form-state";
 
 export type DocumentLinkContext = {
@@ -24,20 +27,17 @@ export type DocumentLinkContext = {
   recoveryEventId?: string;
 };
 
-const RPC_ERROR_MESSAGES: Record<string, string> = {
-  "linked movement belongs to a different counterparty": "Il movimento collegato appartiene a un'altra controparte.",
-  "linked voucher belongs to a different counterparty": "Il buono collegato appartiene a un'altra controparte.",
-  "linked recovery case belongs to a different counterparty": "La pratica collegata appartiene a un'altra controparte.",
-  "linked recovery event belongs to a different counterparty": "L'evento collegato appartiene a un'altra controparte.",
-  "linked site belongs to a different counterparty": "Il sito collegato appartiene a un'altra controparte.",
-  "row-level security policy": "Permessi insufficienti per questa operazione.",
-};
+const RPC_ERROR_RULES: ReadonlyArray<readonly [string, TranslationKey]> = [
+  ["linked movement belongs to a different counterparty", "documents.errors.linkedMovementDifferentCounterparty"],
+  ["linked voucher belongs to a different counterparty", "documents.errors.linkedVoucherDifferentCounterparty"],
+  ["linked recovery case belongs to a different counterparty", "documents.errors.linkedRecoveryCaseDifferentCounterparty"],
+  ["linked recovery event belongs to a different counterparty", "documents.errors.linkedRecoveryEventDifferentCounterparty"],
+  ["linked site belongs to a different counterparty", "documents.errors.linkedSiteDifferentCounterparty"],
+  ["row-level security policy", "common.errors.forbidden"],
+];
 
-function mapDocumentError(message: string): string {
-  for (const [needle, friendly] of Object.entries(RPC_ERROR_MESSAGES)) {
-    if (message.includes(needle)) return friendly;
-  }
-  return "Operazione non riuscita.";
+function mapDocumentError(message: string, t: Translator): string {
+  return mapKeyedError(message, RPC_ERROR_RULES, "documents.errors.operationFailed", t);
 }
 
 function revalidateDocumentViews(link: Pick<DocumentLinkContext, "counterpartyId" | "recoveryCaseId" | "voucherId" | "movementId">) {
@@ -58,21 +58,22 @@ export async function uploadDocumentAction(
   formData: FormData,
 ): Promise<FormState> {
   const membership = await requireMembership();
+  const { t } = await getT(membership.organizationId);
 
-  const parsed = uploadDocumentSchema.safeParse({
+  const parsed = buildUploadDocumentSchema(t).safeParse({
     documentType: formData.get("documentType"),
     notes: formData.get("notes"),
   });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Dati non validi" };
+    return { error: parsed.error.issues[0]?.message ?? t("common.errors.generic") };
   }
 
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
-    return { error: "Seleziona un file da caricare." };
+    return { error: t("documents.errors.selectFileToUpload") };
   }
 
-  const validation = validateDocumentFile({ type: file.type, size: file.size, name: file.name });
+  const validation = validateDocumentFile({ type: file.type, size: file.size, name: file.name }, t);
   if (!validation.valid) {
     return { error: validation.error };
   }
@@ -84,7 +85,7 @@ export async function uploadDocumentAction(
   // real signature before ever touching Storage.
   const header = await readFileHeader(file);
   if (!matchesFileSignature(header, file.type)) {
-    return { error: "Il contenuto del file non corrisponde al formato dichiarato." };
+    return { error: t("documents.errors.fileContentMismatch") };
   }
 
   const storagePath = buildDocumentStoragePath({
@@ -103,7 +104,7 @@ export async function uploadDocumentAction(
   });
 
   if (uploadError) {
-    return { error: "Impossibile caricare il file. Verifica formato e dimensione." };
+    return { error: t("documents.errors.uploadFailed") };
   }
 
   const {
@@ -134,11 +135,11 @@ export async function uploadDocumentAction(
     // anyway: the SELECT storage policy authorizes strictly through a
     // matching public.documents row, never through the raw path.
     await supabase.storage.from("documents").remove([storagePath]);
-    return { error: mapDocumentError(insertError.message) };
+    return { error: mapDocumentError(insertError.message, t) };
   }
 
   revalidateDocumentViews(link);
-  return { message: "Documento caricato." };
+  return { message: t("documents.errors.uploadSuccess") };
 }
 
 // Soft-delete only: marks the document superseded rather than removing it,
@@ -151,11 +152,12 @@ export async function setDocumentStatusAction(
   status: "active" | "superseded",
   link: Pick<DocumentLinkContext, "counterpartyId" | "recoveryCaseId" | "voucherId" | "movementId">,
 ): Promise<{ error?: string }> {
-  await requireMembership();
+  const membership = await requireMembership();
+  const { t } = await getT(membership.organizationId);
   const supabase = await createClient();
   const { error } = await supabase.rpc("update_document_state", { p_document_id: documentId, p_new_status: status });
   if (error) {
-    return { error: mapDocumentError(error.message) };
+    return { error: mapDocumentError(error.message, t) };
   }
   revalidateDocumentViews(link);
   return {};
@@ -166,14 +168,15 @@ export async function setDocumentVisibilityAction(
   visibility: "internal" | "client",
   link: Pick<DocumentLinkContext, "counterpartyId" | "recoveryCaseId" | "voucherId" | "movementId">,
 ): Promise<{ error?: string }> {
-  await requireMembership();
+  const membership = await requireMembership();
+  const { t } = await getT(membership.organizationId);
   const supabase = await createClient();
   const { error } = await supabase.rpc("update_document_state", {
     p_document_id: documentId,
     p_new_visibility: visibility,
   });
   if (error) {
-    return { error: mapDocumentError(error.message) };
+    return { error: mapDocumentError(error.message, t) };
   }
   revalidateDocumentViews(link);
   return {};
@@ -186,6 +189,7 @@ export async function setDocumentVisibilityAction(
 // below ignore whatever the client claims.
 export async function getSignedDocumentUrlAction(documentId: string): Promise<{ url: string } | { error: string }> {
   const membership = await requireMembership();
+  const { t } = await getT(membership.organizationId);
   const supabase = await createClient();
 
   const { data: doc, error: docError } = await supabase
@@ -196,12 +200,12 @@ export async function getSignedDocumentUrlAction(documentId: string): Promise<{ 
     .maybeSingle();
 
   if (docError || !doc) {
-    return { error: "Documento non trovato." };
+    return { error: t("common.errors.notFound") };
   }
 
   const { data, error } = await supabase.storage.from("documents").createSignedUrl(doc.storage_path, 60);
   if (error || !data) {
-    return { error: "Impossibile generare il link di download." };
+    return { error: t("documents.errors.downloadLinkFailed") };
   }
 
   return { url: data.signedUrl };

@@ -4,7 +4,10 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireMembership } from "@/lib/data/organization";
-import { addRecoveryEventSchema, createRecoveryCaseSchema } from "@/lib/validation/recovery-case";
+import { buildAddRecoveryEventSchema, buildCreateRecoveryCaseSchema } from "@/lib/validation/recovery-case";
+import { mapKeyedError } from "@/lib/errors/friendly";
+import { getT } from "@/i18n/server";
+import type { TranslationKey } from "@/i18n/translator";
 import type { FormState } from "@/lib/actions/form-state";
 
 const ACTIVE_CASE_STATUSES = ["open", "contacted", "scheduled", "partial", "disputed"];
@@ -32,7 +35,8 @@ export async function createRecoveryCaseAction(
   formData: FormData,
 ): Promise<FormState> {
   const membership = await requireMembership();
-  const parsed = createRecoveryCaseSchema.safeParse({
+  const { t } = await getT(membership.organizationId);
+  const parsed = buildCreateRecoveryCaseSchema(t).safeParse({
     counterpartyId: formData.get("counterpartyId"),
     palletTypeId: formData.get("palletTypeId"),
     voucherId: formData.get("voucherId"),
@@ -44,7 +48,7 @@ export async function createRecoveryCaseAction(
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Dati non validi" };
+    return { error: parsed.error.issues[0]?.message ?? t("common.errors.generic") };
   }
 
   const supabase = await createClient();
@@ -64,8 +68,8 @@ export async function createRecoveryCaseAction(
         .maybeSingle(),
     ]);
 
-  if (palletTypeError || !palletType) return { error: "Tipo pallet non trovato." };
-  if (counterpartyError || !counterparty) return { error: "Controparte non trovata." };
+  if (palletTypeError || !palletType) return { error: t("recoveryCases.errors.palletTypeNotFound") };
+  if (counterpartyError || !counterparty) return { error: t("recoveryCases.errors.counterpartyNotFound") };
 
   if (parsed.data.voucherId) {
     const [{ data: voucher, error: voucherError }, { count: activeCases }] = await Promise.all([
@@ -83,26 +87,26 @@ export async function createRecoveryCaseAction(
         .in("status", ACTIVE_CASE_STATUSES),
     ]);
 
-    if (voucherError || !voucher) return { error: "Buono non trovato." };
+    if (voucherError || !voucher) return { error: t("recoveryCases.errors.voucherNotFound") };
 
     if (
       voucher.counterparty_id !== parsed.data.counterpartyId ||
       voucher.pallet_type_id !== parsed.data.palletTypeId
     ) {
-      return { error: "Il buono selezionato non appartiene alla stessa controparte e allo stesso tipo pallet." };
+      return { error: t("recoveryCases.errors.voucherCounterpartyOrPalletTypeMismatch") };
     }
 
     if (voucher.status === "closed" || voucher.status === "cancelled") {
-      return { error: "Il buono è chiuso o annullato e non può generare una nuova pratica." };
+      return { error: t("recoveryCases.errors.voucherClosedOrCancelled") };
     }
 
     const voucherOutstanding = voucher.quantity - voucher.recovered_quantity;
     if (parsed.data.quantityClaimed > voucherOutstanding) {
-      return { error: "La quantità supera il residuo del buono (" + voucherOutstanding + " pallet)." };
+      return { error: t("recoveryCases.errors.quantityExceedsVoucherOutstanding", { outstanding: voucherOutstanding }) };
     }
 
     if ((activeCases ?? 0) > 0) {
-      return { error: "Esiste già una pratica attiva collegata a questo buono." };
+      return { error: t("recoveryCases.errors.activeCaseAlreadyLinked") };
     }
   }
 
@@ -125,35 +129,26 @@ export async function createRecoveryCaseAction(
     .single();
 
   if (error || !created) {
-    if (error?.message.includes("recovery case quantity exceeds voucher outstanding quantity")) {
-      return { error: "La quantità richiesta supera il residuo disponibile del buono." };
-    }
-    if (error?.message.includes("site must belong to the same counterparty")) {
-      return { error: "Il sito selezionato non appartiene alla controparte scelta." };
-    }
-    return { error: "Impossibile creare la pratica. Verifica dati e permessi." };
+    const createRules: ReadonlyArray<readonly [string, TranslationKey]> = [
+      ["recovery case quantity exceeds voucher outstanding quantity", "recoveryCases.errors.quantityExceedsVoucherResidual"],
+      ["site must belong to the same counterparty", "recoveryCases.errors.siteDifferentCounterparty"],
+    ];
+    return { error: mapKeyedError(error?.message, createRules, "recoveryCases.errors.createFailed", t) };
   }
 
   revalidateRecoveryViews(created.id);
   redirect("/recovery-cases/" + created.id);
 }
 
-const RPC_ERROR_MESSAGES: Record<string, string> = {
-  "quantity must be a positive integer": "Inserisci una quantità intera positiva.",
-  "would exceed claimed quantity": "La quantità recuperata supererebbe quella richiesta.",
-  "voucher recovered quantity": "Il recupero supererebbe il residuo del buono collegato.",
-  "full_recovery quantity must equal remaining quantity": "Il recupero completo deve coprire tutto il residuo.",
-  "closed recovery case only accepts note events": "La pratica è chiusa; puoi aggiungere solo una nota.",
-  "recovery case not found or not accessible": "Pratica non trovata.",
-  "update blocked": "Permessi insufficienti per aggiornare questa pratica.",
-};
-
-function mapRpcError(message: string): string {
-  for (const [needle, friendly] of Object.entries(RPC_ERROR_MESSAGES)) {
-    if (message.includes(needle)) return friendly;
-  }
-  return "Impossibile registrare l'evento.";
-}
+const RPC_ERROR_RULES: ReadonlyArray<readonly [string, TranslationKey]> = [
+  ["quantity must be a positive integer", "common.validation.mustBePositive"],
+  ["would exceed claimed quantity", "recoveryCases.errors.recoveredExceedsClaimed"],
+  ["voucher recovered quantity", "recoveryCases.errors.recoveryExceedsVoucherResidual"],
+  ["full_recovery quantity must equal remaining quantity", "recoveryCases.errors.fullRecoveryMustCoverRemaining"],
+  ["closed recovery case only accepts note events", "recoveryCases.errors.closedCaseOnlyNotes"],
+  ["recovery case not found or not accessible", "recoveryCases.errors.caseNotFound"],
+  ["update blocked", "common.errors.forbidden"],
+];
 
 export async function assignRecoveryCaseAction(
   caseId: string,
@@ -161,6 +156,7 @@ export async function assignRecoveryCaseAction(
   formData: FormData,
 ): Promise<FormState> {
   const membership = await requireMembership();
+  const { t } = await getT(membership.organizationId);
   const raw = formData.get("assigneeUserId");
   const assigneeUserId = typeof raw === "string" && raw.length > 0 ? raw : null;
 
@@ -172,14 +168,14 @@ export async function assignRecoveryCaseAction(
     .eq("id", caseId);
 
   if (error) {
-    if (error.message.includes("assignee must be a member of the organization")) {
-      return { error: "L'utente selezionato non è un membro dell'organizzazione." };
-    }
-    return { error: "Impossibile aggiornare l'assegnatario." };
+    const assignRules: ReadonlyArray<readonly [string, TranslationKey]> = [
+      ["assignee must be a member of the organization", "recoveryCases.errors.assigneeNotMember"],
+    ];
+    return { error: mapKeyedError(error.message, assignRules, "recoveryCases.errors.assignFailed", t) };
   }
 
   revalidateRecoveryViews(caseId);
-  return { message: assigneeUserId ? "Pratica assegnata." : "Assegnazione rimossa." };
+  return { message: assigneeUserId ? t("recoveryCases.errors.assigned") : t("recoveryCases.errors.unassigned") };
 }
 
 export async function addRecoveryEventAction(
@@ -187,15 +183,16 @@ export async function addRecoveryEventAction(
   _prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  await requireMembership();
-  const parsed = addRecoveryEventSchema.safeParse({
+  const membership = await requireMembership();
+  const { t } = await getT(membership.organizationId);
+  const parsed = buildAddRecoveryEventSchema(t).safeParse({
     eventType: formData.get("eventType"),
     quantity: formData.get("quantity") || undefined,
     notes: formData.get("notes"),
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Dati non validi" };
+    return { error: parsed.error.issues[0]?.message ?? t("common.errors.generic") };
   }
 
   const supabase = await createClient();
@@ -206,8 +203,8 @@ export async function addRecoveryEventAction(
     p_notes: parsed.data.notes || undefined,
   });
 
-  if (error) return { error: mapRpcError(error.message) };
+  if (error) return { error: mapKeyedError(error.message, RPC_ERROR_RULES, "recoveryCases.errors.eventFailed", t) };
 
   revalidateRecoveryViews(caseId);
-  return { message: "Evento registrato." };
+  return { message: t("recoveryCases.errors.eventRecorded") };
 }

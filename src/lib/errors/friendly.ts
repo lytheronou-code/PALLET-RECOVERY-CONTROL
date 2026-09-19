@@ -1,4 +1,4 @@
-import type { Translator } from "@/i18n/translator";
+import type { Translator, TranslationKey } from "@/i18n/translator";
 
 // Maps a raw Postgres/PostgREST error to a translated, non-technical
 // message -- callers must never surface error.message or error.code
@@ -18,4 +18,28 @@ export function mapDatabaseError(error: { code?: string; message?: string } | nu
   }
 
   return t("common.errors.generic");
+}
+
+/**
+ * Same "never expose a raw Postgres/RPC message" principle as
+ * mapDatabaseError above, for Server Actions that call a
+ * SECURITY DEFINER RPC raising a specific, known set of plpgsql
+ * exceptions (`raise exception '...'`) that need distinct friendly
+ * messages rather than one generic fallback. `rules` is checked in
+ * order, matching on a case-sensitive substring of the raw exception
+ * text (which is itself a fixed, lowercase, developer-authored string in
+ * the migration SQL, not user input) -- the caller never sees that raw
+ * text, only the translated message for the first rule that matches.
+ */
+export function mapKeyedError(
+  message: string | null | undefined,
+  rules: ReadonlyArray<readonly [needle: string, key: TranslationKey]>,
+  fallback: TranslationKey,
+  t: Translator,
+): string {
+  const text = message ?? "";
+  for (const [needle, key] of rules) {
+    if (text.includes(needle)) return t(key);
+  }
+  return t(fallback);
 }

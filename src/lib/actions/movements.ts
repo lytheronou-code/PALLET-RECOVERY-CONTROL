@@ -3,26 +3,22 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireMembership } from "@/lib/data/organization";
-import { correctMovementSchema } from "@/lib/validation/movement-correction";
+import { buildCorrectMovementSchema } from "@/lib/validation/movement-correction";
+import { mapKeyedError } from "@/lib/errors/friendly";
+import { getT } from "@/i18n/server";
+import type { TranslationKey } from "@/i18n/translator";
 import type { FormState } from "@/lib/actions/form-state";
 
-const RPC_ERROR_MESSAGES: Record<string, string> = {
-  "movement not found or not accessible": "Movimento originale non trovato.",
-  "already been corrected": "Questo movimento è già stato corretto in precedenza.",
-  "correction reason of at least 3 characters": "Il motivo della correzione deve avere almeno 3 caratteri.",
-  "quantity must be a positive integer": "Inserisci una quantità intera positiva per il movimento corretto.",
-  "direction must be inbound or outbound": "Seleziona una direzione valida per il movimento corretto.",
-  "must belong to the same counterparty": "Il sito selezionato non appartiene alla controparte del movimento.",
-  "movement corrections must be created through": "Permessi insufficienti per correggere questo movimento.",
-  "row-level security policy": "Permessi insufficienti per correggere questo movimento.",
-};
-
-function mapCorrectionError(message: string): string {
-  for (const [needle, friendly] of Object.entries(RPC_ERROR_MESSAGES)) {
-    if (message.includes(needle)) return friendly;
-  }
-  return "Impossibile registrare la correzione.";
-}
+const RPC_ERROR_RULES: ReadonlyArray<readonly [string, TranslationKey]> = [
+  ["movement not found or not accessible", "movements.errors.originalMovementNotFound"],
+  ["already been corrected", "movements.errors.alreadyCorrected"],
+  ["correction reason of at least 3 characters", "movements.validation.reasonTooShort"],
+  ["quantity must be a positive integer", "common.validation.mustBePositive"],
+  ["direction must be inbound or outbound", "movements.errors.invalidDirection"],
+  ["must belong to the same counterparty", "movements.errors.siteDifferentCounterparty"],
+  ["movement corrections must be created through", "common.errors.forbidden"],
+  ["row-level security policy", "common.errors.forbidden"],
+];
 
 // The movement ledger is immutable (no UPDATE policy on pallet_movements),
 // so a wrong row can only be fixed by inserting new, linked rows: a
@@ -37,8 +33,9 @@ export async function correctMovementAction(
   _prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  await requireMembership();
-  const parsed = correctMovementSchema.safeParse({
+  const membership = await requireMembership();
+  const { t } = await getT(membership.organizationId);
+  const parsed = buildCorrectMovementSchema(t).safeParse({
     reason: formData.get("reason"),
     reversalOnly: formData.get("reversalOnly") === "on",
     movementDate: formData.get("movementDate") || undefined,
@@ -49,7 +46,7 @@ export async function correctMovementAction(
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Dati non validi" };
+    return { error: parsed.error.issues[0]?.message ?? t("common.errors.generic") };
   }
 
   const supabase = await createClient();
@@ -65,11 +62,11 @@ export async function correctMovementAction(
   });
 
   if (error) {
-    return { error: mapCorrectionError(error.message) };
+    return { error: mapKeyedError(error.message, RPC_ERROR_RULES, "movements.errors.correctionFailed", t) };
   }
 
   revalidatePath("/movements");
   revalidatePath("/reconciliation");
   revalidatePath("/dashboard");
-  return { message: parsed.data.reversalOnly ? "Movimento stornato." : "Movimento corretto." };
+  return { message: parsed.data.reversalOnly ? t("movements.errors.reversedMessage") : t("movements.errors.correctedMessage") };
 }

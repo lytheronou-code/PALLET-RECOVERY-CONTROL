@@ -4,13 +4,14 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireMembership } from "@/lib/data/organization";
-import { counterpartySchema } from "@/lib/validation/master-data";
+import { buildCounterpartySchema } from "@/lib/validation/master-data";
 import { mapDatabaseError } from "@/lib/errors/friendly";
 import { getT } from "@/i18n/server";
+import type { Translator } from "@/i18n/translator";
 import type { FormState } from "@/lib/actions/form-state";
 
-function parseCounterpartyForm(formData: FormData) {
-  return counterpartySchema.safeParse({
+function parseCounterpartyForm(formData: FormData, t: Translator) {
+  return buildCounterpartySchema(t).safeParse({
     legalName: formData.get("legalName"),
     tradingName: formData.get("tradingName"),
     code: formData.get("code"),
@@ -34,10 +35,11 @@ export async function createCounterpartyAction(
   formData: FormData,
 ): Promise<FormState> {
   const membership = await requireMembership();
-  const parsed = parseCounterpartyForm(formData);
+  const { t } = await getT(membership.organizationId);
+  const parsed = parseCounterpartyForm(formData, t);
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Dati non validi" };
+    return { error: parsed.error.issues[0]?.message ?? t("common.errors.generic") };
   }
 
   const supabase = await createClient();
@@ -61,7 +63,6 @@ export async function createCounterpartyAction(
   });
 
   if (error) {
-    const { t } = await getT(membership.organizationId);
     return { error: mapDatabaseError(error, t) };
   }
 
@@ -75,10 +76,11 @@ export async function updateCounterpartyAction(
   formData: FormData,
 ): Promise<FormState> {
   const membership = await requireMembership();
-  const parsed = parseCounterpartyForm(formData);
+  const { t } = await getT(membership.organizationId);
+  const parsed = parseCounterpartyForm(formData, t);
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Dati non validi" };
+    return { error: parsed.error.issues[0]?.message ?? t("common.errors.generic") };
   }
 
   const supabase = await createClient();
@@ -105,7 +107,6 @@ export async function updateCounterpartyAction(
     .eq("organization_id", membership.organizationId);
 
   if (error) {
-    const { t } = await getT(membership.organizationId);
     return { error: mapDatabaseError(error, t) };
   }
 

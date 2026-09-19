@@ -4,10 +4,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireMembership } from "@/lib/data/organization";
-import { movementImportPayloadSchema, voucherImportPayloadSchema } from "@/lib/validation/import";
+import { buildMovementImportPayloadSchema, buildVoucherImportPayloadSchema } from "@/lib/validation/import";
 import { buildLookupKey, validateMovementRows, type MovementLookups } from "@/lib/csv/movement-import";
 import { validateVoucherRows, type VoucherLookups } from "@/lib/csv/voucher-import";
 import { buildSiteLookup } from "@/lib/csv/site-lookup";
+import { getT } from "@/i18n/server";
 
 export type ImportActionState = {
   error?: string;
@@ -20,28 +21,29 @@ export async function commitMovementImportAction(
   formData: FormData,
 ): Promise<ImportActionState> {
   const membership = await requireMembership();
+  const { t } = await getT(membership.organizationId);
   const supabase = await createClient();
 
   const rawPayload = formData.get("payload");
   if (typeof rawPayload !== "string") {
-    return { error: "Payload di import mancante." };
+    return { error: t("bulkImport.errors.missingPayload") };
   }
 
   let parsedJson: unknown;
   try {
     parsedJson = JSON.parse(rawPayload);
   } catch {
-    return { error: "Payload di import non valido." };
+    return { error: t("bulkImport.errors.invalidPayload") };
   }
 
-  const parsed = movementImportPayloadSchema.safeParse(parsedJson);
+  const parsed = buildMovementImportPayloadSchema(t).safeParse(parsedJson);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Payload di import non valido." };
+    return { error: parsed.error.issues[0]?.message ?? t("bulkImport.errors.invalidPayload") };
   }
   const { filename, headers, rows, mapping } = parsed.data;
 
   if (rows.length === 0) {
-    return { error: "Il file non contiene righe da importare." };
+    return { error: t("bulkImport.errors.noRows") };
   }
 
   // Re-validate from scratch server-side with fresh lookups: never trust the
@@ -95,7 +97,7 @@ export async function commitMovementImportAction(
     .single();
 
   if (batchError || !batch) {
-    return { error: "Impossibile creare il batch di import." };
+    return { error: t("bulkImport.errors.batchCreateFailed") };
   }
 
   let insertedCount = 0;
@@ -121,7 +123,7 @@ export async function commitMovementImportAction(
         })
         .eq("id", batch.id);
       return {
-        error: `Import interrotto dopo aver salvato ${insertedCount} righe. Controlla il batch #${batch.id} prima di reimportare il resto.`,
+        error: t("bulkImport.errors.interrupted", { count: insertedCount, batchId: batch.id }),
       };
     }
     insertedCount += chunk.length;
@@ -146,28 +148,29 @@ export async function commitVoucherImportAction(
   formData: FormData,
 ): Promise<ImportActionState> {
   const membership = await requireMembership();
+  const { t } = await getT(membership.organizationId);
   const supabase = await createClient();
 
   const rawPayload = formData.get("payload");
   if (typeof rawPayload !== "string") {
-    return { error: "Payload di import mancante." };
+    return { error: t("bulkImport.errors.missingPayload") };
   }
 
   let parsedJson: unknown;
   try {
     parsedJson = JSON.parse(rawPayload);
   } catch {
-    return { error: "Payload di import non valido." };
+    return { error: t("bulkImport.errors.invalidPayload") };
   }
 
-  const parsed = voucherImportPayloadSchema.safeParse(parsedJson);
+  const parsed = buildVoucherImportPayloadSchema(t).safeParse(parsedJson);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Payload di import non valido." };
+    return { error: parsed.error.issues[0]?.message ?? t("bulkImport.errors.invalidPayload") };
   }
   const { filename, headers, rows, mapping } = parsed.data;
 
   if (rows.length === 0) {
-    return { error: "Il file non contiene righe da importare." };
+    return { error: t("bulkImport.errors.noRows") };
   }
 
   // Re-validate from scratch server-side with fresh lookups: never trust the
@@ -231,7 +234,7 @@ export async function commitVoucherImportAction(
     .single();
 
   if (batchError || !batch) {
-    return { error: "Impossibile creare il batch di import." };
+    return { error: t("bulkImport.errors.batchCreateFailed") };
   }
 
   let insertedCount = 0;
@@ -256,7 +259,7 @@ export async function commitVoucherImportAction(
         })
         .eq("id", batch.id);
       return {
-        error: `Import interrotto dopo aver salvato ${insertedCount} righe. Controlla il batch #${batch.id} prima di reimportare il resto.`,
+        error: t("bulkImport.errors.interrupted", { count: insertedCount, batchId: batch.id }),
       };
     }
     insertedCount += chunk.length;

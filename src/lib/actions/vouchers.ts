@@ -4,7 +4,10 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireMembership } from "@/lib/data/organization";
-import { voucherEditSchema, voucherSchema } from "@/lib/validation/voucher";
+import { buildVoucherEditSchema, buildVoucherSchema } from "@/lib/validation/voucher";
+import { mapKeyedError } from "@/lib/errors/friendly";
+import { getT } from "@/i18n/server";
+import type { TranslationKey } from "@/i18n/translator";
 import type { FormState } from "@/lib/actions/form-state";
 
 const ACTIVE_CASE_STATUSES = ["open", "contacted", "scheduled", "partial", "disputed"];
@@ -21,7 +24,8 @@ export async function createVoucherAction(
   formData: FormData,
 ): Promise<FormState> {
   const membership = await requireMembership();
-  const parsed = voucherSchema.safeParse({
+  const { t } = await getT(membership.organizationId);
+  const parsed = buildVoucherSchema(t).safeParse({
     counterpartyId: formData.get("counterpartyId"),
     palletTypeId: formData.get("palletTypeId"),
     siteId: formData.get("siteId"),
@@ -32,7 +36,7 @@ export async function createVoucherAction(
     notes: formData.get("notes"),
   });
 
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Dati non validi" };
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? t("common.errors.generic") };
 
   const supabase = await createClient();
   const [{ data: counterparty }, { data: palletType }] = await Promise.all([
@@ -52,8 +56,8 @@ export async function createVoucherAction(
       .maybeSingle(),
   ]);
 
-  if (!counterparty) return { error: "Controparte non trovata o non attiva." };
-  if (!palletType) return { error: "Tipo pallet non trovato o non attivo." };
+  if (!counterparty) return { error: t("vouchers.errors.counterpartyNotFoundOrInactive") };
+  if (!palletType) return { error: t("vouchers.errors.palletTypeNotFoundOrInactive") };
 
   const { error } = await supabase.from("vouchers").insert({
     organization_id: membership.organizationId,
@@ -68,11 +72,11 @@ export async function createVoucherAction(
   });
 
   if (error) {
-    if (error.code === "23505") return { error: "Esiste già un buono con questo numero." };
-    if (error.message.includes("site must belong to the same counterparty")) {
-      return { error: "Il sito selezionato non appartiene alla controparte scelta." };
-    }
-    return { error: "Impossibile creare il buono." };
+    const createRules: ReadonlyArray<readonly [string, TranslationKey]> = [
+      ["site must belong to the same counterparty", "vouchers.errors.siteDifferentCounterparty"],
+    ];
+    if (error.code === "23505") return { error: t("vouchers.errors.duplicateNumber") };
+    return { error: mapKeyedError(error.message, createRules, "vouchers.errors.createFailed", t) };
   }
 
   revalidateVoucherViews();
@@ -85,7 +89,8 @@ export async function updateVoucherAction(
   formData: FormData,
 ): Promise<FormState> {
   const membership = await requireMembership();
-  const parsed = voucherEditSchema.safeParse({
+  const { t } = await getT(membership.organizationId);
+  const parsed = buildVoucherEditSchema(t).safeParse({
     voucherNumber: formData.get("voucherNumber"),
     issueDate: formData.get("issueDate"),
     recoveryDueDate: formData.get("recoveryDueDate"),
@@ -93,7 +98,7 @@ export async function updateVoucherAction(
     notes: formData.get("notes"),
   });
 
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Dati non validi" };
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? t("common.errors.generic") };
 
   const supabase = await createClient();
   const { data: voucher } = await supabase
@@ -103,10 +108,10 @@ export async function updateVoucherAction(
     .eq("id", id)
     .maybeSingle();
 
-  if (!voucher) return { error: "Buono non trovato." };
-  if (voucher.status === "cancelled") return { error: "Un buono annullato non può essere modificato." };
+  if (!voucher) return { error: t("vouchers.errors.notFound") };
+  if (voucher.status === "cancelled") return { error: t("vouchers.errors.cancelledCannotEdit") };
   if (parsed.data.quantity < voucher.recovered_quantity) {
-    return { error: "La quantità non può essere inferiore a quanto già recuperato." };
+    return { error: t("vouchers.errors.quantityBelowRecovered") };
   }
 
   if (parsed.data.quantity !== voucher.quantity) {
@@ -125,12 +130,7 @@ export async function updateVoucherAction(
 
     if (committedOutstanding > newResidual) {
       return {
-        error:
-          "La nuova quantità lascerebbe solo " +
-          newResidual +
-          " pallet residui, ma le pratiche attive ne impegnano " +
-          committedOutstanding +
-          ".",
+        error: t("vouchers.errors.newQuantityBelowCommitted", { residual: newResidual, committed: committedOutstanding }),
       };
     }
   }
@@ -158,12 +158,11 @@ export async function updateVoucherAction(
     .eq("id", id);
 
   if (error) {
-    const message = error.message.includes("outstanding linked recovery commitments")
-      ? "La quantità non può essere inferiore agli impegni delle pratiche attive."
-      : error.code === "23505"
-        ? "Esiste già un buono con questo numero."
-        : "Impossibile aggiornare il buono.";
-    return { error: message };
+    const updateRules: ReadonlyArray<readonly [string, TranslationKey]> = [
+      ["outstanding linked recovery commitments", "vouchers.errors.quantityBelowActiveCommitments"],
+    ];
+    if (error.code === "23505") return { error: t("vouchers.errors.duplicateNumber") };
+    return { error: mapKeyedError(error.message, updateRules, "vouchers.errors.updateFailed", t) };
   }
 
   revalidateVoucherViews(id);
@@ -176,6 +175,7 @@ export async function cancelVoucherAction(
   _formData: FormData,
 ): Promise<FormState> {
   const membership = await requireMembership();
+  const { t } = await getT(membership.organizationId);
   const supabase = await createClient();
 
   const [{ data: voucher }, { count: linkedCases }] = await Promise.all([
@@ -192,10 +192,10 @@ export async function cancelVoucherAction(
       .eq("voucher_id", id),
   ]);
 
-  if (!voucher) return { error: "Buono non trovato." };
-  if (voucher.status === "cancelled") return { message: "Buono già annullato." };
-  if (voucher.recovered_quantity > 0) return { error: "Non puoi annullare un buono con recuperi già registrati." };
-  if ((linkedCases ?? 0) > 0) return { error: "Non puoi annullare un buono collegato a una pratica di recupero." };
+  if (!voucher) return { error: t("vouchers.errors.notFound") };
+  if (voucher.status === "cancelled") return { message: t("vouchers.errors.alreadyCancelled") };
+  if (voucher.recovered_quantity > 0) return { error: t("vouchers.errors.cannotCancelWithRecoveries") };
+  if ((linkedCases ?? 0) > 0) return { error: t("vouchers.errors.cannotCancelLinkedToCase") };
 
   const { error } = await supabase
     .from("vouchers")
@@ -203,8 +203,8 @@ export async function cancelVoucherAction(
     .eq("organization_id", membership.organizationId)
     .eq("id", id);
 
-  if (error) return { error: "Impossibile annullare il buono." };
+  if (error) return { error: t("vouchers.errors.cancelFailed") };
 
   revalidateVoucherViews(id);
-  return { message: "Buono annullato." };
+  return { message: t("vouchers.errors.cancelled") };
 }

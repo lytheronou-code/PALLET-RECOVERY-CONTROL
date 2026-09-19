@@ -72,7 +72,8 @@
       "invalidCountry": "Select a valid country.",
       "invalidCurrency": "Select a valid currency.",
       "invalidTimezone": "Select a valid timezone.",
-      "invalidLocale": "Select a supported language."
+      "invalidLocale": "Select a supported language.",
+      "cannotBeNegative": "This value cannot be negative."
     },
     "confirmDelete": {
       "title": "Confirm deletion",
@@ -341,6 +342,9 @@
       "carrier": "Carrier",
       "supplier": "Supplier",
       "other": "Other"
+    },
+    "validation": {
+      "legalNameRequired": "Legal name is required."
     }
   },
   "sites": {
@@ -371,7 +375,10 @@
     "active": "Active",
     "inactive": "Inactive",
     "deactivate": "Deactivate",
-    "reactivate": "Reactivate"
+    "reactivate": "Reactivate",
+    "validation": {
+      "nameRequired": "Name is required."
+    }
   },
   "palletTypes": {
     "title": "Pallet types",
@@ -388,7 +395,11 @@
     "active": "Active",
     "inactive": "Inactive",
     "deactivate": "Deactivate",
-    "reactivate": "Reactivate"
+    "reactivate": "Reactivate",
+    "validation": {
+      "codeRequired": "Code is required.",
+      "descriptionRequired": "Description is required."
+    }
   },
   "movements": {
     "title": "Movements",
@@ -454,25 +465,97 @@
       },
       "reverseButton": "Reverse movement",
       "correctButton": "Correct movement"
+    },
+    "validation": {
+      "reasonTooShort": "Explain the reason for the correction (minimum 3 characters)."
+    },
+    "errors": {
+      "originalMovementNotFound": "Original movement not found.",
+      "alreadyCorrected": "This movement has already been corrected.",
+      "invalidDirection": "Select a valid direction for the corrected movement.",
+      "siteDifferentCounterparty": "The selected site does not belong to the movement's counterparty.",
+      "correctionFailed": "The correction could not be recorded.",
+      "reversedMessage": "Movement reversed.",
+      "correctedMessage": "Movement corrected."
     }
   },
   "vouchers": {
     "title": "Vouchers",
-    "new": "New voucher"
+    "new": "New voucher",
+    "validation": {
+      "numberRequired": "Voucher number is required.",
+      "issueDateRequired": "Issue date is required.",
+      "dueDateBeforeIssueDate": "The due date cannot be before the issue date."
+    },
+    "errors": {
+      "counterpartyNotFoundOrInactive": "Counterparty not found or not active.",
+      "palletTypeNotFoundOrInactive": "Pallet type not found or not active.",
+      "siteDifferentCounterparty": "The selected site does not belong to the chosen counterparty.",
+      "duplicateNumber": "A voucher with this number already exists.",
+      "createFailed": "The voucher could not be created.",
+      "notFound": "Voucher not found.",
+      "cancelledCannotEdit": "A cancelled voucher cannot be edited.",
+      "quantityBelowRecovered": "The quantity cannot be lower than what has already been recovered.",
+      "newQuantityBelowCommitted": "The new quantity would leave only {residual} pallets outstanding, but active cases commit {committed}.",
+      "quantityBelowActiveCommitments": "The quantity cannot be lower than the active cases' commitments.",
+      "updateFailed": "The voucher could not be updated.",
+      "alreadyCancelled": "Voucher already cancelled.",
+      "cannotCancelWithRecoveries": "You cannot cancel a voucher with recoveries already recorded.",
+      "cannotCancelLinkedToCase": "You cannot cancel a voucher linked to a recovery case.",
+      "cancelFailed": "The voucher could not be cancelled.",
+      "cancelled": "Voucher cancelled."
+    }
   },
   "bulkImport": {
     "title": "Imports",
     "uploadFile": "Upload file",
     "mapColumns": "Map columns",
     "preview": "Preview",
-    "confirmImport": "Confirm import"
+    "confirmImport": "Confirm import",
+    "validation": {
+      "tooManyRows": "Maximum {max} rows per import."
+    },
+    "errors": {
+      "missingPayload": "Missing import payload.",
+      "invalidPayload": "Invalid import payload.",
+      "noRows": "The file contains no rows to import.",
+      "batchCreateFailed": "The import batch could not be created.",
+      "interrupted": "Import stopped after saving {count} rows. Check batch #{batchId} before re-importing the rest."
+    }
   },
   "reconciliation": {
     "title": "Reconciliation"
   },
   "recoveryCases": {
     "title": "Recovery cases",
-    "new": "New case"
+    "new": "New case",
+    "validation": {
+      "selectCounterparty": "Select a counterparty.",
+      "selectPalletType": "Select a pallet type."
+    },
+    "errors": {
+      "palletTypeNotFound": "Pallet type not found.",
+      "counterpartyNotFound": "Counterparty not found.",
+      "voucherNotFound": "Voucher not found.",
+      "voucherCounterpartyOrPalletTypeMismatch": "The selected voucher does not belong to the same counterparty and pallet type.",
+      "voucherClosedOrCancelled": "The voucher is closed or cancelled and cannot generate a new case.",
+      "quantityExceedsVoucherOutstanding": "The quantity exceeds the voucher's outstanding balance ({outstanding} pallets).",
+      "activeCaseAlreadyLinked": "An active case is already linked to this voucher.",
+      "quantityExceedsVoucherResidual": "The requested quantity exceeds the voucher's available balance.",
+      "siteDifferentCounterparty": "The selected site does not belong to the chosen counterparty.",
+      "createFailed": "The case could not be created. Check the data and permissions.",
+      "recoveredExceedsClaimed": "The recovered quantity would exceed the claimed quantity.",
+      "recoveryExceedsVoucherResidual": "The recovery would exceed the linked voucher's outstanding balance.",
+      "fullRecoveryMustCoverRemaining": "A full recovery must cover the entire outstanding balance.",
+      "closedCaseOnlyNotes": "This case is closed; you can only add a note.",
+      "caseNotFound": "Case not found.",
+      "assigneeNotMember": "The selected user is not a member of the organization.",
+      "assignFailed": "The assignee could not be updated.",
+      "assigned": "Case assigned.",
+      "unassigned": "Assignment removed.",
+      "eventFailed": "The event could not be recorded.",
+      "eventRecorded": "Event recorded."
+    }
   },
   "recoveryEvents": {
     "title": "Events"
@@ -480,7 +563,39 @@
   "documents": {
     "title": "Documents",
     "upload": "Upload document",
-    "noDocuments": "No documents yet."
+    "noDocuments": "No documents yet.",
+    "validation": {
+      "typeRequired": "Select a document type."
+    },
+    "types": {
+      "ddt": "DDT",
+      "voucher": "Voucher",
+      "voucherScan": "Voucher scan",
+      "pickupProof": "Pickup proof",
+      "deliveryProof": "Delivery proof",
+      "palletPhoto": "Pallet photo",
+      "disputeEvidence": "Dispute evidence",
+      "settlementDocument": "Settlement document",
+      "other": "Other"
+    },
+    "errors": {
+      "linkedMovementDifferentCounterparty": "The linked movement belongs to a different counterparty.",
+      "linkedVoucherDifferentCounterparty": "The linked voucher belongs to a different counterparty.",
+      "linkedRecoveryCaseDifferentCounterparty": "The linked recovery case belongs to a different counterparty.",
+      "linkedRecoveryEventDifferentCounterparty": "The linked recovery event belongs to a different counterparty.",
+      "linkedSiteDifferentCounterparty": "The linked site belongs to a different counterparty.",
+      "operationFailed": "This operation could not be completed.",
+      "selectFileToUpload": "Select a file to upload.",
+      "fileContentMismatch": "The file's content does not match its declared format.",
+      "uploadFailed": "The file could not be uploaded. Check its format and size.",
+      "uploadSuccess": "Document uploaded.",
+      "downloadLinkFailed": "The download link could not be generated.",
+      "missingFilename": "Missing filename.",
+      "emptyFile": "The file is empty.",
+      "fileTooLarge": "The file exceeds the maximum size of 15 MB.",
+      "unsupportedFormat": "Unsupported format. Use PDF, JPG, PNG or WEBP.",
+      "extensionMismatch": "The file extension does not match its declared format."
+    }
   },
   "reports": {
     "title": "Reports",
@@ -581,6 +696,15 @@
       "title": "Something went wrong",
       "description": "An unexpected error occurred. Please try again.",
       "retry": "Try again"
+    }
+  },
+  "clientPortalAccess": {
+    "errors": {
+      "noAccountFound": "No account found with this email. The customer must sign up first.",
+      "adminOnly": "Only an organization admin can manage client portal access.",
+      "alreadyActiveElsewhere": "This account already has active portal access to another counterparty.",
+      "grantFailed": "Portal access could not be granted.",
+      "granted": "Portal access granted."
     }
   }
 }

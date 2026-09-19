@@ -4,11 +4,16 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireMembership } from "@/lib/data/organization";
+import { mapKeyedError } from "@/lib/errors/friendly";
+import { getT } from "@/i18n/server";
+import type { Translator, TranslationKey } from "@/i18n/translator";
 import type { FormState } from "@/lib/actions/form-state";
 
-const grantSchema = z.object({
-  email: z.string().trim().email("Inserisci un indirizzo email valido."),
-});
+function buildGrantSchema(t: Translator) {
+  return z.object({
+    email: z.string().trim().email(t("common.validation.invalidEmail")),
+  });
+}
 
 // admin_grant_client_portal_access does its own admin/operator
 // authorization check server-side (SECURITY DEFINER) -- requireMembership()
@@ -19,11 +24,12 @@ export async function grantClientPortalAccessAction(
   _prevState: FormState,
   formData: FormData,
 ): Promise<FormState> {
-  await requireMembership();
+  const membership = await requireMembership();
+  const { t } = await getT(membership.organizationId);
 
-  const parsed = grantSchema.safeParse({ email: formData.get("email") });
+  const parsed = buildGrantSchema(t).safeParse({ email: formData.get("email") });
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Email non valida." };
+    return { error: parsed.error.issues[0]?.message ?? t("common.validation.invalidEmail") };
   }
 
   const supabase = await createClient();
@@ -33,20 +39,16 @@ export async function grantClientPortalAccessAction(
   });
 
   if (error) {
-    if (error.message.includes("no account found")) {
-      return { error: "Nessun account trovato con questa email. Il cliente deve prima registrarsi." };
-    }
-    if (error.message.includes("insufficient privileges")) {
-      return { error: "Solo un amministratore può gestire l'accesso al portale clienti." };
-    }
-    if (error.message.includes("already has an active portal membership")) {
-      return { error: "Questo account ha già accesso attivo al portale di un'altra controparte." };
-    }
-    return { error: "Impossibile concedere l'accesso al portale." };
+    const grantRules: ReadonlyArray<readonly [string, TranslationKey]> = [
+      ["no account found", "clientPortalAccess.errors.noAccountFound"],
+      ["insufficient privileges", "clientPortalAccess.errors.adminOnly"],
+      ["already has an active portal membership", "clientPortalAccess.errors.alreadyActiveElsewhere"],
+    ];
+    return { error: mapKeyedError(error.message, grantRules, "clientPortalAccess.errors.grantFailed", t) };
   }
 
   revalidatePath("/counterparties/" + counterpartyId);
-  return { message: "Accesso al portale concesso." };
+  return { message: t("clientPortalAccess.errors.granted") };
 }
 
 // Returns an explicit result (never void): a blocked RLS update or a
@@ -59,7 +61,8 @@ export async function setClientPortalMembershipActiveAction(
   active: boolean,
   counterpartyId: string,
 ): Promise<{ error?: string }> {
-  await requireMembership();
+  const membership = await requireMembership();
+  const { t } = await getT(membership.organizationId);
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("client_portal_memberships")
@@ -71,14 +74,14 @@ export async function setClientPortalMembershipActiveAction(
   revalidatePath("/counterparties/" + counterpartyId);
 
   if (error) {
-    if (error.message.includes("client_portal_memberships_one_active_per_user")) {
-      return { error: "Questo account ha già accesso attivo al portale di un'altra controparte." };
-    }
-    return { error: "Operazione non riuscita." };
+    const updateRules: ReadonlyArray<readonly [string, TranslationKey]> = [
+      ["client_portal_memberships_one_active_per_user", "clientPortalAccess.errors.alreadyActiveElsewhere"],
+    ];
+    return { error: mapKeyedError(error.message, updateRules, "documents.errors.operationFailed", t) };
   }
 
   if (!data) {
-    return { error: "Solo un amministratore può gestire l'accesso al portale clienti." };
+    return { error: t("clientPortalAccess.errors.adminOnly") };
   }
 
   return {};

@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { counterpartySchema, palletTypeSchema, siteSchema } from "@/lib/validation/master-data";
+import { buildCounterpartySchema, buildPalletTypeSchema, buildSiteSchema } from "@/lib/validation/master-data";
+import { getDictionary } from "@/i18n/dictionaries";
+import { createTranslator } from "@/i18n/translator";
+
+const t = createTranslator(getDictionary("en"));
+const counterpartySchema = buildCounterpartySchema(t);
+const palletTypeSchema = buildPalletTypeSchema(t);
+const siteSchema = buildSiteSchema(t);
 
 describe("counterpartySchema", () => {
   it("accepts a minimal valid counterparty and defaults countryCode", () => {
