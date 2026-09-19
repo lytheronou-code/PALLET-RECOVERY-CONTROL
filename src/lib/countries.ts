@@ -1,10 +1,36 @@
-// ISO 3166-1 alpha-2 country codes with English names, covering the UN
-// member states plus a handful of common trade/logistics territories (HK,
-// TW, XK). Names are deliberately English-only and technical (this is
-// reference data for a country <select>, not translated UI copy) -- per
-// the "do not create hundreds of hardcoded country-specific business
-// rules" instruction, this list exists purely for correct international
-// storage/display and carries no per-country business logic.
+// Independent-review finding: this file previously described itself as
+// "ISO 3166-1 alpha-2 country codes" without qualification, which is
+// inaccurate -- the full standard currently has ~249 officially assigned
+// codes (UN member states plus dependent territories/special areas like
+// Greenland, Puerto Rico, Macao, the Faroe Islands, ...), and this list is
+// a deliberately smaller, explicitly curated subset, not that full set.
+//
+// Coverage, exact and verified (see countries.test.ts for the parity
+// check against this comment):
+//   - All 193 United Nations member states.
+//   - Four additional entries chosen for real-world B2B trade/logistics
+//     relevance: HK (Hong Kong), TW (Taiwan), VA (Holy See/Vatican City)
+//     -- all three ARE officially assigned ISO 3166-1 codes despite not
+//     being UN members -- and XK (Kosovo), which is NOT an official ISO
+//     3166-1 code. XK is a deliberate non-ISO product extension: Kosovo
+//     is a real trading partner with no assigned ISO code, and XK is the
+//     same "exceptionally reserved" / user-assigned code already used for
+//     it by the EU, Eurostat and SWIFT, so it is kept here rather than
+//     omitting a real country or inventing a different code.
+//
+// No dependent territories beyond the four above are included (no
+// Greenland, Puerto Rico, Macao, Gibraltar, French Guiana, ...) -- this is
+// a B2B logistics product whose customers are companies registered in a
+// country, not a full geographic gazetteer, and every omitted code is a
+// real, deliberate omission rather than an oversight.
+//
+// Adding a country/territory later is additive: add a row here (English
+// name, technical reference data, not translated UI copy -- per the "do
+// not create hundreds of hardcoded country-specific business rules"
+// instruction, this list carries no per-country business logic) AND widen
+// the matching CHECK constraint in a new migration (see
+// 20260919110000_fix_country_currency_validation_logic.sql for the
+// current SQL-side list) -- never let the two drift apart.
 export const COUNTRIES: ReadonlyArray<{ code: string; name: string }> = [
   { code: "AD", name: "Andorra" },
   { code: "AE", name: "United Arab Emirates" },
