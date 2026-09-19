@@ -674,10 +674,98 @@
         "confirmImport": "Conferma import ({count} righe valide)",
         "importing": "Import in corso…"
       }
+    },
+    "movements": {
+      "pageTitle": "Import movimenti",
+      "previousImports": "Import precedenti",
+      "noImportsYet": "Nessun import eseguito finora.",
+      "table": {
+        "file": "File",
+        "date": "Data",
+        "status": "Stato",
+        "totalRows": "Righe totali",
+        "validRows": "Valide",
+        "invalidRows": "Non valide"
+      },
+      "status": {
+        "processing": "In corso",
+        "completed": "Completato",
+        "failed": "Fallito"
+      },
+      "csvFileLabel": "File CSV movimenti",
+      "expectedColumns": "Colonne attese: data movimento, controparte, tipo pallet, direzione (IN/OUT), quantità, e opzionalmente tipo documento, numero documento, numero buono, note.",
+      "prerequisiteMissing": "Crea almeno una controparte e un tipo pallet prima di importare movimenti: servono per riconoscere le righe del file.",
+      "fileEmptyError": "Il file non contiene righe di dati valide.",
+      "step1Title": "1. Mappatura colonne",
+      "step2Title": "2. Anteprima e validazione",
+      "unmapped": "— non mappata —",
+      "missingRequiredFields": "Campi obbligatori non mappati: {fields}",
+      "invalidRowsTitle": "Righe non valide (prime 50)",
+      "rowNumber": "Riga",
+      "reason": "Motivo",
+      "importing": "Import in corso…",
+      "confirmImport": "Conferma import ({count} righe valide)",
+      "fields": {
+        "movementDate": "Data movimento",
+        "counterparty": "Controparte",
+        "palletType": "Tipo pallet",
+        "site": "Sito (opzionale)",
+        "direction": "Direzione (IN/OUT)",
+        "quantity": "Quantità",
+        "documentType": "Tipo documento",
+        "documentNumber": "Numero documento",
+        "voucherNumber": "Numero buono",
+        "notes": "Note"
+      }
     }
   },
   "reconciliation": {
-    "title": "Riconciliazione"
+    "title": "Riconciliazione",
+    "eyebrow": "Controllo deterministico",
+    "subtitle": "Confronta OUT, IN e buoni per trasformare anomalie documentali in azioni di recupero.",
+    "createCase": "Crea pratica",
+    "metrics": {
+      "reconciledPositions": "Posizioni riconciliate",
+      "reconciledPositionsFoot": "controparte × tipo pallet",
+      "outstanding": "Outstanding",
+      "outstandingFoot": "pallet da spiegare o recuperare",
+      "estimatedValue": "Valore stimato",
+      "estimatedValueFoot": "esposizione teorica",
+      "anomalies": "Anomalie",
+      "anomaliesFoot": "{count} buoni scaduti"
+    },
+    "balanceTable": {
+      "title": "Saldo per controparte / tipo pallet",
+      "subtitle": "Vista quantitativa che alimenta il decisioning operativo.",
+      "counterparty": "Controparte",
+      "palletType": "Pallet",
+      "out": "OUT",
+      "in": "IN",
+      "theoreticalBalance": "Saldo teorico",
+      "openVouchers": "Buoni aperti",
+      "outstanding": "Outstanding",
+      "value": "Valore"
+    },
+    "emptyBalances": "Nessun movimento o buono registrato.",
+    "emptyFindings": "Nessuna anomalia rilevata.",
+    "findingsCount": "{count} segnalazioni",
+    "moreFindings": "+{count} altre",
+    "findings": {
+      "unbalancedMovements": "Movimenti non bilanciati",
+      "openVoucher": "Buoni aperti",
+      "duplicateDocument": "Documenti potenzialmente duplicati",
+      "missingDocumentation": "Movimenti senza documento",
+      "voucherDueSoon": "Buoni in scadenza",
+      "voucherOverdue": "Buoni scaduti"
+    },
+    "describe": {
+      "unbalancedMovementsOutstanding": "{quantity} pallet non rientrati",
+      "openVoucherOutstanding": "{quantity} pallet residui",
+      "duplicateDocument": "documento \"{document}\" ripetuto su {count} movimenti",
+      "missingDocumentation": "movimento senza numero documento",
+      "voucherDueSoon": "Buono in scadenza tra {days} giorni ({date})",
+      "voucherOverdue": "Buono scaduto da {days} giorni ({date})"
+    }
   },
   "recoveryCases": {
     "title": "Pratiche di recupero",
@@ -855,7 +943,37 @@
       "fileTooLarge": "Il file supera la dimensione massima di 15 MB.",
       "unsupportedFormat": "Formato non supportato. Usa PDF, JPG, PNG o WEBP.",
       "extensionMismatch": "L'estensione del file non corrisponde al formato dichiarato."
-    }
+    },
+    "evidenceTitle": "Documenti e prove",
+    "countSingular": "{count} documento",
+    "countPlural": "{count} documenti",
+    "documentType": "Tipo documento",
+    "fileFieldLabel": "File (PDF, JPG, PNG, WEBP — max 15 MB)",
+    "notesOptional": "Note (opzionale)",
+    "table": {
+      "type": "Tipo",
+      "file": "File",
+      "uploadedBy": "Caricato da",
+      "date": "Data",
+      "visibility": "Visibilità",
+      "status": "Stato"
+    },
+    "visibility": {
+      "client": "Cliente",
+      "internal": "Interno"
+    },
+    "status": {
+      "active": "Attivo",
+      "superseded": "Superato"
+    },
+    "actions": {
+      "open": "Apri",
+      "makeInternal": "Rendi interno",
+      "share": "Condividi",
+      "markSuperseded": "Segna superato",
+      "reactivate": "Riattiva"
+    },
+    "shownOfTotal": "Mostrati i {shown} documenti più recenti su {total} totali."
   },
   "reports": {
     "title": "Report",
@@ -868,12 +986,54 @@
       "recoveredPalletsInPeriod": "Recuperato periodo (pallet)",
       "recoveredValueInPeriod": "Recuperato periodo (valore)",
       "maxAgeingDays": "Anzianità max (giorni)"
-    }
+    },
+    "eyebrow": "Value reporting",
+    "subtitle": "Misura outstanding e valore recuperato senza confondere stock odierno e recuperi del periodo.",
+    "dateFrom": "Dal",
+    "dateTo": "Al",
+    "applyPeriod": "Applica periodo",
+    "metrics": {
+      "outstandingPallets": "Outstanding pallet",
+      "currentSituation": "situazione corrente",
+      "outstandingValue": "Outstanding valore",
+      "recoveredInPeriod": "Recuperato nel periodo",
+      "recoveredValue": "Valore recuperato",
+      "periodRange": "{from} → {to}",
+      "casesOpenedInPeriod": "{count} pratiche aperte nel periodo"
+    },
+    "byCounterparty": {
+      "title": "Esposizione per controparte",
+      "subtitle": "Dove è concentrato il valore outstanding."
+    },
+    "emptyPeriod": "Nessun dato per il periodo selezionato.",
+    "ageingTitle": "Ageing",
+    "ageingSubtitle": "Valore outstanding per anzianità.",
+    "ageing": {
+      "d0to30": "0–30 gg",
+      "d31to60": "31–60 gg",
+      "d61to90": "61–90 gg",
+      "d90plus": "90+ gg"
+    },
+    "footnote": "L'outstanding è calcolato alla data odierna; i valori recuperati riflettono gli eventi registrati nel periodo selezionato."
   },
   "search": {
     "title": "Ricerca",
     "placeholder": "Cerca…",
-    "noResults": "Nessun risultato trovato."
+    "noResults": "Nessun risultato trovato.",
+    "eyebrow": "Ricerca globale",
+    "minChars": "Inserisci almeno due caratteri per cercare.",
+    "noResultsFor": "Nessun risultato per “{query}”.",
+    "resultsFor": "{count} risultati per “{query}”.",
+    "resultsCount": "{count} risultati",
+    "registryEntry": "Anagrafica",
+    "groups": {
+      "counterparties": "Controparti",
+      "cases": "Pratiche",
+      "vouchers": "Buoni"
+    },
+    "emptyCounterparties": "Nessuna controparte.",
+    "emptyCases": "Nessuna pratica.",
+    "emptyVouchers": "Nessun buono."
   },
   "settings": {
     "title": "Impostazioni",

@@ -674,10 +674,98 @@
         "confirmImport": "Confirm import ({count} valid rows)",
         "importing": "Import in progress…"
       }
+    },
+    "movements": {
+      "pageTitle": "Movement import",
+      "previousImports": "Previous imports",
+      "noImportsYet": "No imports yet.",
+      "table": {
+        "file": "File",
+        "date": "Date",
+        "status": "Status",
+        "totalRows": "Total rows",
+        "validRows": "Valid",
+        "invalidRows": "Invalid"
+      },
+      "status": {
+        "processing": "Processing",
+        "completed": "Completed",
+        "failed": "Failed"
+      },
+      "csvFileLabel": "Movement CSV file",
+      "expectedColumns": "Expected columns: movement date, counterparty, pallet type, direction (IN/OUT), quantity, and optionally document type, document number, voucher number, notes.",
+      "prerequisiteMissing": "Create at least one counterparty and one pallet type before importing movements: they're needed to recognize the file's rows.",
+      "fileEmptyError": "The file doesn't contain any valid data rows.",
+      "step1Title": "1. Column mapping",
+      "step2Title": "2. Preview and validation",
+      "unmapped": "— not mapped —",
+      "missingRequiredFields": "Required fields not mapped: {fields}",
+      "invalidRowsTitle": "Invalid rows (first 50)",
+      "rowNumber": "Row",
+      "reason": "Reason",
+      "importing": "Importing…",
+      "confirmImport": "Confirm import ({count} valid rows)",
+      "fields": {
+        "movementDate": "Movement date",
+        "counterparty": "Counterparty",
+        "palletType": "Pallet type",
+        "site": "Site (optional)",
+        "direction": "Direction (IN/OUT)",
+        "quantity": "Quantity",
+        "documentType": "Document type",
+        "documentNumber": "Document number",
+        "voucherNumber": "Voucher number",
+        "notes": "Notes"
+      }
     }
   },
   "reconciliation": {
-    "title": "Reconciliation"
+    "title": "Reconciliation",
+    "eyebrow": "Deterministic control",
+    "subtitle": "Compare outbound, inbound and vouchers to turn documentation gaps into recovery actions.",
+    "createCase": "Create case",
+    "metrics": {
+      "reconciledPositions": "Reconciled positions",
+      "reconciledPositionsFoot": "counterparty × pallet type",
+      "outstanding": "Outstanding",
+      "outstandingFoot": "pallets to explain or recover",
+      "estimatedValue": "Estimated value",
+      "estimatedValueFoot": "theoretical exposure",
+      "anomalies": "Anomalies",
+      "anomaliesFoot": "{count} overdue vouchers"
+    },
+    "balanceTable": {
+      "title": "Balance by counterparty / pallet type",
+      "subtitle": "Quantitative view feeding operational decisioning.",
+      "counterparty": "Counterparty",
+      "palletType": "Pallet type",
+      "out": "OUT",
+      "in": "IN",
+      "theoreticalBalance": "Theoretical balance",
+      "openVouchers": "Open vouchers",
+      "outstanding": "Outstanding",
+      "value": "Value"
+    },
+    "emptyBalances": "No movements or vouchers recorded.",
+    "emptyFindings": "No anomalies detected.",
+    "findingsCount": "{count} findings",
+    "moreFindings": "+{count} more",
+    "findings": {
+      "unbalancedMovements": "Unbalanced movements",
+      "openVoucher": "Open vouchers",
+      "duplicateDocument": "Possibly duplicate documents",
+      "missingDocumentation": "Movements without a document",
+      "voucherDueSoon": "Vouchers due soon",
+      "voucherOverdue": "Overdue vouchers"
+    },
+    "describe": {
+      "unbalancedMovementsOutstanding": "{quantity} pallets not returned",
+      "openVoucherOutstanding": "{quantity} pallets remaining",
+      "duplicateDocument": "document \"{document}\" repeated on {count} movements",
+      "missingDocumentation": "movement without a document number",
+      "voucherDueSoon": "Voucher due in {days} days ({date})",
+      "voucherOverdue": "Voucher overdue by {days} days ({date})"
+    }
   },
   "recoveryCases": {
     "title": "Recovery cases",
@@ -855,7 +943,37 @@
       "fileTooLarge": "The file exceeds the maximum size of 15 MB.",
       "unsupportedFormat": "Unsupported format. Use PDF, JPG, PNG or WEBP.",
       "extensionMismatch": "The file extension does not match its declared format."
-    }
+    },
+    "evidenceTitle": "Documents and evidence",
+    "countSingular": "{count} document",
+    "countPlural": "{count} documents",
+    "documentType": "Document type",
+    "fileFieldLabel": "File (PDF, JPG, PNG, WEBP — max 15 MB)",
+    "notesOptional": "Notes (optional)",
+    "table": {
+      "type": "Type",
+      "file": "File",
+      "uploadedBy": "Uploaded by",
+      "date": "Date",
+      "visibility": "Visibility",
+      "status": "Status"
+    },
+    "visibility": {
+      "client": "Client",
+      "internal": "Internal"
+    },
+    "status": {
+      "active": "Active",
+      "superseded": "Superseded"
+    },
+    "actions": {
+      "open": "Open",
+      "makeInternal": "Make internal",
+      "share": "Share",
+      "markSuperseded": "Mark superseded",
+      "reactivate": "Reactivate"
+    },
+    "shownOfTotal": "Showing the {shown} most recent documents out of {total}."
   },
   "reports": {
     "title": "Reports",
@@ -868,12 +986,54 @@
       "recoveredPalletsInPeriod": "Recovered in period (pallets)",
       "recoveredValueInPeriod": "Recovered in period (value)",
       "maxAgeingDays": "Max ageing (days)"
-    }
+    },
+    "eyebrow": "Value reporting",
+    "subtitle": "Measure outstanding exposure and recovered value without conflating today's stock with the period's recoveries.",
+    "dateFrom": "From",
+    "dateTo": "To",
+    "applyPeriod": "Apply period",
+    "metrics": {
+      "outstandingPallets": "Outstanding pallets",
+      "currentSituation": "current position",
+      "outstandingValue": "Outstanding value",
+      "recoveredInPeriod": "Recovered in period",
+      "recoveredValue": "Recovered value",
+      "periodRange": "{from} → {to}",
+      "casesOpenedInPeriod": "{count} cases opened in period"
+    },
+    "byCounterparty": {
+      "title": "Exposure by counterparty",
+      "subtitle": "Where outstanding value is concentrated."
+    },
+    "emptyPeriod": "No data for the selected period.",
+    "ageingTitle": "Ageing",
+    "ageingSubtitle": "Outstanding value by age.",
+    "ageing": {
+      "d0to30": "0–30 days",
+      "d31to60": "31–60 days",
+      "d61to90": "61–90 days",
+      "d90plus": "90+ days"
+    },
+    "footnote": "Outstanding is calculated as of today; recovered values reflect events recorded within the selected period."
   },
   "search": {
     "title": "Search",
     "placeholder": "Search…",
-    "noResults": "No matches found."
+    "noResults": "No matches found.",
+    "eyebrow": "Global search",
+    "minChars": "Type at least two characters to search.",
+    "noResultsFor": "No results for “{query}”.",
+    "resultsFor": "{count} results for “{query}”.",
+    "resultsCount": "{count} results",
+    "registryEntry": "Registry entry",
+    "groups": {
+      "counterparties": "Counterparties",
+      "cases": "Cases",
+      "vouchers": "Vouchers"
+    },
+    "emptyCounterparties": "No counterparties.",
+    "emptyCases": "No cases.",
+    "emptyVouchers": "No vouchers."
   },
   "settings": {
     "title": "Settings",
