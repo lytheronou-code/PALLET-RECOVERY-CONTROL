@@ -25,7 +25,8 @@ export function CountrySelect({
   const options = useMemo(() => getLocalizedCountryOptions(ALL_COUNTRY_CODES, locale), [locale]);
 
   return (
-    <select id={id} name={name} defaultValue={defaultValue || "IT"}>
+    <select id={id} name={name} defaultValue={defaultValue ?? ""}>
+      <option value="">—</option>
       {options.map((country) => (
         <option key={country.code} value={country.code}>
           {country.name}
