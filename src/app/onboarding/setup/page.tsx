@@ -180,7 +180,12 @@ export default async function OnboardingSetupPage({
               <p className="muted" style={{ fontSize: 12, marginBottom: 12 }}>{t("onboarding.steps.operational.description")}</p>
               <OnboardingPalletPresets
                 existingCount={palletTypeCount ?? 0}
-                labels={{ usePreset: t("onboarding.steps.operational.usePreset"), skip: t("onboarding.steps.operational.skipPresets") }}
+                labels={{
+                  usePreset: t("onboarding.steps.operational.usePreset"),
+                  skip: t("onboarding.steps.operational.skipPresets"),
+                  configuredSingular: t("onboarding.steps.operational.configuredSingular"),
+                  configuredPlural: t("onboarding.steps.operational.configuredPlural"),
+                }}
               />
             </>
           ) : null}
@@ -191,6 +196,7 @@ export default async function OnboardingSetupPage({
               <OnboardingFirstCustomerForm
                 labels={{
                   customerName: t("onboarding.steps.firstCustomer.customerName"),
+                  countryCode: t("onboarding.steps.firstCustomer.countryCode"),
                   save: t("common.actions.save"),
                   saving: t("common.actions.saving"),
                 }}

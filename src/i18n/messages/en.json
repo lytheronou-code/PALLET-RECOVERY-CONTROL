@@ -33,7 +33,8 @@
       "clear": "Clear",
       "signOut": "Sign out",
       "open": "Open",
-      "apply": "Apply"
+      "apply": "Apply",
+      "saveChanges": "Save changes"
     },
     "pagination": {
       "page": "Page",
@@ -207,13 +208,16 @@
         "title": "Pallet types",
         "description": "Optional — start from a preset or add your own later.",
         "usePreset": "Start from a preset",
-        "skipPresets": "I'll configure pallet types later"
+        "skipPresets": "I'll configure pallet types later",
+        "configuredSingular": "{count} pallet type configured.",
+        "configuredPlural": "{count} pallet types configured."
       },
       "firstCustomer": {
         "label": "First customer",
         "title": "Add your first customer",
         "description": "Optional — you can add customers at any time.",
-        "customerName": "Customer name"
+        "customerName": "Customer name",
+        "countryCode": "Country"
       },
       "ready": {
         "label": "Ready",
@@ -314,7 +318,9 @@
       "region": "Region / state",
       "postalCode": "Postal code",
       "email": "Email",
-      "phone": "Phone"
+      "phone": "Phone",
+      "tradingName": "Trading name",
+      "registrationNumber": "Registration number"
     },
     "eyebrow": "Network",
     "subtitle": "Customers, debtors, retail points and partners involved in pallet flows.",
@@ -345,6 +351,47 @@
     },
     "validation": {
       "legalNameRequired": "Legal name is required."
+    },
+    "editTitle": "Edit counterparty",
+    "detail": {
+      "subtitle": "Operational portfolio, exposure and pallet history for the counterparty.",
+      "openExposureFoot": "value still to recover",
+      "openCases": "Operational cases",
+      "openCasesFoot": "open or in progress",
+      "activeVouchers": "Active vouchers",
+      "activeVouchersFoot": "open, partial or disputed",
+      "recoveredPalletsFoot": "case history",
+      "recentCases": {
+        "title": "Recent cases",
+        "subtitle": "Latest recovery activity linked to the counterparty.",
+        "empty": "No cases recorded yet.",
+        "table": {
+          "pallet": "Pallet",
+          "outstanding": "Outstanding",
+          "value": "Value"
+        }
+      },
+      "profile": {
+        "title": "Profile",
+        "noInternalCode": "No internal code"
+      },
+      "sites": {
+        "title": "Sites",
+        "subtitle": "Depots and delivery points for this counterparty.",
+        "empty": "No sites registered for this counterparty."
+      },
+      "vouchers": {
+        "title": "Recent vouchers",
+        "subtitle": "Pallet credits and due dates.",
+        "openLink": "Open vouchers",
+        "empty": "No vouchers recorded yet."
+      },
+      "movements": {
+        "title": "Recent movements",
+        "subtitle": "Latest pallet flows recorded.",
+        "empty": "No movements recorded yet."
+      },
+      "documentsTitle": "Counterparty documents and evidence"
     }
   },
   "sites": {
@@ -357,7 +404,9 @@
       "addressLine2": "Address line 2",
       "city": "City",
       "region": "Region / state",
-      "postalCode": "Postal code"
+      "postalCode": "Postal code",
+      "linkedCounterparty": "Linked counterparty",
+      "noCounterpartyOption": "None (internal site/depot)"
     },
     "eyebrow": "Master data",
     "subtitle": "Depots, plants and delivery points where pallet exposure is physically located.",
@@ -399,6 +448,11 @@
     "validation": {
       "codeRequired": "Code is required.",
       "descriptionRequired": "Description is required."
+    },
+    "editTitle": "Edit pallet type",
+    "fields": {
+      "unitValue": "Unit value ({currency})",
+      "unitValueEditNote": "Already-open recovery cases keep their historic unit value snapshot: this change only applies to new cases."
     }
   },
   "movements": {
@@ -1086,7 +1140,33 @@
     },
     "team": {
       "members": "Members",
-      "role": "Role"
+      "role": "Role",
+      "roles": {
+        "admin": "Admin",
+        "operator": "Operator",
+        "viewer": "Viewer"
+      }
+    },
+    "eyebrow": "Workspace",
+    "subtitle": "Organization identity, account and current access model.",
+    "overview": {
+      "organization": {
+        "title": "Organization",
+        "subtitle": "Workspace that isolates data and operations.",
+        "name": "Name",
+        "slug": "Slug",
+        "createdAt": "Created on"
+      },
+      "account": {
+        "title": "Your account",
+        "subtitle": "Session and role within the workspace.",
+        "email": "Email",
+        "security": "Security",
+        "rlsActive": "RLS active"
+      }
+    },
+    "clientPortalTab": {
+      "description": "Manage client portal access from each counterparty's detail page."
     }
   },
   "clientPortal": {
@@ -1102,12 +1182,30 @@
     "readOnlyNotice": "Read-only area. Contact your account representative for corrections or disputes.",
     "overview": {
       "kpis": {
-        "outstandingPallets": { "label": "Outstanding pallets", "foot": "still to be returned or recovered" },
-        "estimatedExposure": { "label": "Estimated exposure", "foot": "estimated residual value" },
-        "openVouchers": { "label": "Open vouchers", "foot": "active pallet credits" },
-        "activeRecoveryCases": { "label": "Active recovery cases", "foot": "cases in progress" },
-        "recoveredPallets": { "label": "Recovered pallets", "foot": "all-time total" },
-        "recoveredValue": { "label": "Recovered value", "foot": "all-time total" }
+        "outstandingPallets": {
+          "label": "Outstanding pallets",
+          "foot": "still to be returned or recovered"
+        },
+        "estimatedExposure": {
+          "label": "Estimated exposure",
+          "foot": "estimated residual value"
+        },
+        "openVouchers": {
+          "label": "Open vouchers",
+          "foot": "active pallet credits"
+        },
+        "activeRecoveryCases": {
+          "label": "Active recovery cases",
+          "foot": "cases in progress"
+        },
+        "recoveredPallets": {
+          "label": "Recovered pallets",
+          "foot": "all-time total"
+        },
+        "recoveredValue": {
+          "label": "Recovered value",
+          "foot": "all-time total"
+        }
       },
       "nextDue": {
         "title": "Next due date",
@@ -1171,30 +1269,12 @@
     }
   },
   "clientPortalAccess": {
-    "title": "Client portal",
-    "subtitle": "Users authorized to view this counterparty's data in read-only mode.",
-    "grantForm": {
-      "emailLabel": "Client email",
-      "emailPlaceholder": "client@company.com",
-      "granting": "Granting…",
-      "grantButton": "Grant access",
-      "adminHint": "The client must already have an account (signed up at /signup) with this email. An account can have active access to only one counterparty at a time."
-    },
-    "readOnlyHint": "Only an administrator can grant or revoke client portal access. Below is the current status, read-only.",
-    "empty": "No portal users for this counterparty yet.",
-    "table": {
-      "email": "Email",
-      "name": "Name",
-      "grantedOn": "Granted on",
-      "status": "Status"
-    },
-    "status": {
-      "active": "Active",
-      "disabled": "Disabled"
-    },
-    "actions": {
-      "deactivate": "Deactivate",
-      "reactivate": "Reactivate"
+    "errors": {
+      "noAccountFound": "No account found with this email. The customer must sign up first.",
+      "adminOnly": "Only an organization admin can manage client portal access.",
+      "alreadyActiveElsewhere": "This account already has active portal access to another counterparty.",
+      "grantFailed": "Portal access could not be granted.",
+      "granted": "Portal access granted."
     }
   },
   "workspaceSelector": {
@@ -1212,15 +1292,6 @@
       "title": "Something went wrong",
       "description": "An unexpected error occurred. Please try again.",
       "retry": "Try again"
-    }
-  },
-  "clientPortalAccess": {
-    "errors": {
-      "noAccountFound": "No account found with this email. The customer must sign up first.",
-      "adminOnly": "Only an organization admin can manage client portal access.",
-      "alreadyActiveElsewhere": "This account already has active portal access to another counterparty.",
-      "grantFailed": "Portal access could not be granted.",
-      "granted": "Portal access granted."
     }
   }
 }

@@ -33,7 +33,8 @@
       "clear": "Azzera",
       "signOut": "Esci",
       "open": "Apri",
-      "apply": "Applica"
+      "apply": "Applica",
+      "saveChanges": "Salva modifiche"
     },
     "pagination": {
       "page": "Pagina",
@@ -207,13 +208,16 @@
         "title": "Tipi di pallet",
         "description": "Opzionale — parti da un preset o aggiungili in seguito.",
         "usePreset": "Parti da un preset",
-        "skipPresets": "Configurerò i tipi di pallet in seguito"
+        "skipPresets": "Configurerò i tipi di pallet in seguito",
+        "configuredSingular": "{count} tipo pallet configurato.",
+        "configuredPlural": "{count} tipi pallet configurati."
       },
       "firstCustomer": {
         "label": "Primo cliente",
         "title": "Aggiungi il tuo primo cliente",
         "description": "Opzionale — puoi aggiungere clienti in qualsiasi momento.",
-        "customerName": "Nome cliente"
+        "customerName": "Nome cliente",
+        "countryCode": "Paese"
       },
       "ready": {
         "label": "Pronto",
@@ -314,7 +318,9 @@
       "region": "Provincia / regione",
       "postalCode": "CAP",
       "email": "Email",
-      "phone": "Telefono"
+      "phone": "Telefono",
+      "tradingName": "Nome commerciale",
+      "registrationNumber": "Numero di registrazione"
     },
     "eyebrow": "Network",
     "subtitle": "Clienti, debitori, punti vendita e partner coinvolti nei flussi pallet.",
@@ -345,6 +351,47 @@
     },
     "validation": {
       "legalNameRequired": "La ragione sociale è obbligatoria."
+    },
+    "editTitle": "Modifica controparte",
+    "detail": {
+      "subtitle": "Portfolio operativo, esposizione e storico pallet della controparte.",
+      "openExposureFoot": "valore ancora da recuperare",
+      "openCases": "Pratiche operative",
+      "openCasesFoot": "aperte o in lavorazione",
+      "activeVouchers": "Buoni attivi",
+      "activeVouchersFoot": "aperti, parziali o contestati",
+      "recoveredPalletsFoot": "storico delle pratiche",
+      "recentCases": {
+        "title": "Pratiche recenti",
+        "subtitle": "Ultime attività di recovery collegate alla controparte.",
+        "empty": "Nessuna pratica registrata.",
+        "table": {
+          "pallet": "Pallet",
+          "outstanding": "Residuo",
+          "value": "Valore"
+        }
+      },
+      "profile": {
+        "title": "Anagrafica",
+        "noInternalCode": "Nessun codice interno"
+      },
+      "sites": {
+        "title": "Siti",
+        "subtitle": "Depositi e punti di consegna di questa controparte.",
+        "empty": "Nessun sito registrato per questa controparte."
+      },
+      "vouchers": {
+        "title": "Buoni recenti",
+        "subtitle": "Crediti pallet e scadenze.",
+        "openLink": "Apri buoni",
+        "empty": "Nessun buono registrato."
+      },
+      "movements": {
+        "title": "Movimenti recenti",
+        "subtitle": "Ultimi flussi pallet registrati.",
+        "empty": "Nessun movimento registrato."
+      },
+      "documentsTitle": "Documenti e prove della controparte"
     }
   },
   "sites": {
@@ -357,7 +404,9 @@
       "addressLine2": "Indirizzo (riga 2)",
       "city": "Città",
       "region": "Provincia / regione",
-      "postalCode": "CAP"
+      "postalCode": "CAP",
+      "linkedCounterparty": "Controparte collegata",
+      "noCounterpartyOption": "Nessuna (sito/deposito interno)"
     },
     "eyebrow": "Master data",
     "subtitle": "Depositi, stabilimenti e punti di consegna dove l'esposizione pallet è fisicamente localizzata.",
@@ -399,6 +448,11 @@
     "validation": {
       "codeRequired": "Il codice è obbligatorio.",
       "descriptionRequired": "La descrizione è obbligatoria."
+    },
+    "editTitle": "Modifica tipo pallet",
+    "fields": {
+      "unitValue": "Valore unitario ({currency})",
+      "unitValueEditNote": "Le pratiche di recupero già aperte mantengono il valore unitario storico (snapshot): questa modifica vale solo per le nuove pratiche."
     }
   },
   "movements": {
@@ -1086,7 +1140,33 @@
     },
     "team": {
       "members": "Membri",
-      "role": "Ruolo"
+      "role": "Ruolo",
+      "roles": {
+        "admin": "Admin",
+        "operator": "Operatore",
+        "viewer": "Osservatore"
+      }
+    },
+    "eyebrow": "Workspace",
+    "subtitle": "Identità organizzazione, account e modello di accesso corrente.",
+    "overview": {
+      "organization": {
+        "title": "Organizzazione",
+        "subtitle": "Workspace che isola dati e operazioni.",
+        "name": "Nome",
+        "slug": "Slug",
+        "createdAt": "Creata il"
+      },
+      "account": {
+        "title": "Il tuo account",
+        "subtitle": "Sessione e ruolo nel workspace.",
+        "email": "Email",
+        "security": "Sicurezza",
+        "rlsActive": "RLS attiva"
+      }
+    },
+    "clientPortalTab": {
+      "description": "Gestisci l'accesso al portale clienti dalla scheda di ogni singola controparte."
     }
   },
   "clientPortal": {
@@ -1102,12 +1182,30 @@
     "readOnlyNotice": "Area riservata a sola lettura. Per correzioni o contestazioni contatta il tuo referente.",
     "overview": {
       "kpis": {
-        "outstandingPallets": { "label": "Pallet in sospeso", "foot": "ancora da restituire o recuperare" },
-        "estimatedExposure": { "label": "Esposizione stimata", "foot": "valore residuo stimato" },
-        "openVouchers": { "label": "Buoni aperti", "foot": "crediti pallet attivi" },
-        "activeRecoveryCases": { "label": "Recuperi attivi", "foot": "pratiche in lavorazione" },
-        "recoveredPallets": { "label": "Pallet recuperati", "foot": "totale storico" },
-        "recoveredValue": { "label": "Valore recuperato", "foot": "totale storico" }
+        "outstandingPallets": {
+          "label": "Pallet in sospeso",
+          "foot": "ancora da restituire o recuperare"
+        },
+        "estimatedExposure": {
+          "label": "Esposizione stimata",
+          "foot": "valore residuo stimato"
+        },
+        "openVouchers": {
+          "label": "Buoni aperti",
+          "foot": "crediti pallet attivi"
+        },
+        "activeRecoveryCases": {
+          "label": "Recuperi attivi",
+          "foot": "pratiche in lavorazione"
+        },
+        "recoveredPallets": {
+          "label": "Pallet recuperati",
+          "foot": "totale storico"
+        },
+        "recoveredValue": {
+          "label": "Valore recuperato",
+          "foot": "totale storico"
+        }
       },
       "nextDue": {
         "title": "Prossima scadenza",
@@ -1171,30 +1269,12 @@
     }
   },
   "clientPortalAccess": {
-    "title": "Portale clienti",
-    "subtitle": "Utenti autorizzati a vedere i dati di questa controparte in sola lettura.",
-    "grantForm": {
-      "emailLabel": "Email cliente",
-      "emailPlaceholder": "cliente@azienda.it",
-      "granting": "Concessione…",
-      "grantButton": "Concedi accesso",
-      "adminHint": "Il cliente deve avere già un account (registrato su /signup) con questa email. Un account può avere accesso attivo a una sola controparte alla volta."
-    },
-    "readOnlyHint": "Solo un amministratore può concedere o revocare l'accesso al portale clienti. Di seguito lo stato attuale, in sola lettura.",
-    "empty": "Nessun utente portale per questa controparte.",
-    "table": {
-      "email": "Email",
-      "name": "Nome",
-      "grantedOn": "Concesso il",
-      "status": "Stato"
-    },
-    "status": {
-      "active": "Attivo",
-      "disabled": "Disattivato"
-    },
-    "actions": {
-      "deactivate": "Disattiva",
-      "reactivate": "Riattiva"
+    "errors": {
+      "noAccountFound": "Nessun account trovato con questa email. Il cliente deve prima registrarsi.",
+      "adminOnly": "Solo un amministratore può gestire l'accesso al portale clienti.",
+      "alreadyActiveElsewhere": "Questo account ha già accesso attivo al portale di un'altra controparte.",
+      "grantFailed": "Impossibile concedere l'accesso al portale.",
+      "granted": "Accesso al portale concesso."
     }
   },
   "workspaceSelector": {
@@ -1212,15 +1292,6 @@
       "title": "Qualcosa è andato storto",
       "description": "Si è verificato un errore imprevisto. Riprova.",
       "retry": "Riprova"
-    }
-  },
-  "clientPortalAccess": {
-    "errors": {
-      "noAccountFound": "Nessun account trovato con questa email. Il cliente deve prima registrarsi.",
-      "adminOnly": "Solo un amministratore può gestire l'accesso al portale clienti.",
-      "alreadyActiveElsewhere": "Questo account ha già accesso attivo al portale di un'altra controparte.",
-      "grantFailed": "Impossibile concedere l'accesso al portale.",
-      "granted": "Accesso al portale concesso."
     }
   }
 }

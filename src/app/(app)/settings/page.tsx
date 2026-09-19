@@ -10,12 +10,15 @@ import { OrganizationCompanyForm } from "@/components/organization-company-form"
 import { OrganizationLocalizationForm } from "@/components/organization-localization-form";
 import { OrganizationBrandingForm } from "@/components/organization-branding-form";
 import type { Tables } from "@/lib/supabase/database.types";
+import type { TranslationKey } from "@/i18n/translator";
 
-const ROLE_LABELS: Record<string, string> = {
-  admin: "Admin",
-  operator: "Operatore",
-  viewer: "Osservatore",
-};
+// DB enum (organization_members.role) -> translation-key dictionary, never
+// an if/else per locale -- same pattern as status-badge.tsx.
+const ROLE_LABEL_KEYS = {
+  admin: "settings.team.roles.admin",
+  operator: "settings.team.roles.operator",
+  viewer: "settings.team.roles.viewer",
+} as const satisfies Record<string, TranslationKey>;
 
 type SettingsTab = "company" | "localization" | "branding" | "clientPortal";
 
@@ -34,6 +37,7 @@ export default async function SettingsPage({
   const membership = await requireMembership();
   const { t, formatDate } = await getPageContext(membership.organizationId);
   const isAdmin = membership.role === "admin";
+  const roleKey = ROLE_LABEL_KEYS[membership.role as keyof typeof ROLE_LABEL_KEYS];
   const supabase = await createClient();
 
   const [{ data: organization }, { data: userData }, { count: memberCount }, branding, welcomeMessageLocalizations] =
@@ -81,38 +85,38 @@ export default async function SettingsPage({
     <div className="shell" style={{ maxWidth: 1040 }}>
       <div className="header">
         <div className="page-heading">
-          <div className="eyebrow">Workspace</div>
+          <div className="eyebrow">{t("settings.eyebrow")}</div>
           <h1 className="page-title">{t("settings.title")}</h1>
-          <div className="page-subtitle">Identità organizzazione, account e modello di accesso corrente.</div>
+          <div className="page-subtitle">{t("settings.subtitle")}</div>
         </div>
       </div>
 
       <div className="section-grid equal">
         <section className="panel">
           <div className="panel-header">
-            <div><h2 className="panel-title">Organizzazione</h2><div className="panel-subtitle">Workspace che isola dati e operazioni.</div></div>
+            <div><h2 className="panel-title">{t("settings.overview.organization.title")}</h2><div className="panel-subtitle">{t("settings.overview.organization.subtitle")}</div></div>
             <Building2 size={17} color="var(--muted)" />
           </div>
           <div className="panel-body">
             <dl className="definition-list">
-              <dt>Nome</dt><dd>{organization?.name ?? membership.organizationName}</dd>
-              <dt>Slug</dt><dd>{organization?.slug ?? "—"}</dd>
-              <dt>Creata il</dt><dd>{formatDate(organization?.created_at)}</dd>
-              <dt>Membri</dt><dd>{memberCount ?? "—"}</dd>
+              <dt>{t("settings.overview.organization.name")}</dt><dd>{organization?.name ?? membership.organizationName}</dd>
+              <dt>{t("settings.overview.organization.slug")}</dt><dd>{organization?.slug ?? "—"}</dd>
+              <dt>{t("settings.overview.organization.createdAt")}</dt><dd>{formatDate(organization?.created_at)}</dd>
+              <dt>{t("settings.team.members")}</dt><dd>{memberCount ?? "—"}</dd>
             </dl>
           </div>
         </section>
 
         <section className="panel">
           <div className="panel-header">
-            <div><h2 className="panel-title">Il tuo account</h2><div className="panel-subtitle">Sessione e ruolo nel workspace.</div></div>
+            <div><h2 className="panel-title">{t("settings.overview.account.title")}</h2><div className="panel-subtitle">{t("settings.overview.account.subtitle")}</div></div>
             <UserRound size={17} color="var(--muted)" />
           </div>
           <div className="panel-body">
             <dl className="definition-list">
-              <dt>Email</dt><dd>{userData.user?.email ?? "—"}</dd>
-              <dt>Ruolo</dt><dd>{ROLE_LABELS[membership.role] ?? membership.role}</dd>
-              <dt>Sicurezza</dt><dd><span className="badge badge-closed"><ShieldCheck size={11} />RLS attiva</span></dd>
+              <dt>{t("settings.overview.account.email")}</dt><dd>{userData.user?.email ?? "—"}</dd>
+              <dt>{t("settings.team.role")}</dt><dd>{roleKey ? t(roleKey) : membership.role}</dd>
+              <dt>{t("settings.overview.account.security")}</dt><dd><span className="badge badge-closed"><ShieldCheck size={11} />{t("settings.overview.account.rlsActive")}</span></dd>
             </dl>
           </div>
         </section>
@@ -227,7 +231,7 @@ export default async function SettingsPage({
 
           {activeTab === "clientPortal" ? (
             <p className="muted" style={{ fontSize: 12 }}>
-              Gestisci l&apos;accesso al portale clienti dalla scheda di ogni singola controparte.
+              {t("settings.clientPortalTab.description")}
             </p>
           ) : null}
         </div>
