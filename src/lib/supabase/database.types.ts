@@ -1163,6 +1163,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_add_organization_member: {
+        Args: { p_email: string; p_organization_id: string; p_role: string }
+        Returns: {
+          created_at: string
+          display_name: string
+          email: string
+          id: string
+          role: string
+          user_id: string
+        }[]
+      }
       admin_grant_client_portal_access: {
         Args: { p_counterparty_id: string; p_email: string }
         Returns: {
@@ -1171,6 +1182,10 @@ export type Database = {
           id: string
           user_id: string
         }[]
+      }
+      admin_remove_organization_member: {
+        Args: { p_member_id: string; p_organization_id: string }
+        Returns: undefined
       }
       admin_update_organization_branding: {
         Args: {
@@ -1310,6 +1325,17 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      admin_update_organization_member_role: {
+        Args: { p_member_id: string; p_organization_id: string; p_role: string }
+        Returns: {
+          created_at: string
+          display_name: string
+          email: string
+          id: string
+          role: string
+          user_id: string
+        }[]
       }
       bootstrap_organization: {
         Args: { p_name: string }

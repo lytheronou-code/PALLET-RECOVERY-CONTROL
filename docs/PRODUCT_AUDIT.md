@@ -213,3 +213,56 @@ English" is not yet literally true end to end. Also not started, as
 explicitly scoped out of V4: Stripe/plans/billing, custom domain
 provisioning, SMTP-backed Client Portal invitation emails, full
 internal-app white-labeling.
+
+## Premium V5 status update (2026-09-19) — team management role UI (P1 #3)
+
+Product thesis for this pass: Pallet Recovery Control evolves from a
+pallet-recovery platform toward a pallet-operations platform a paying
+tenant can run as its daily workspace, without becoming a generic ERP.
+This first V5 slice stays inside that boundary: team/role management is
+operational tooling every multi-person tenant needs, not accounting,
+HR, a marketing CRM, or anything AI-driven — none of which this pass
+touches.
+
+Delivered on `claude/team-management-roles`: a real Settings > Team tab
+(previously the `role`/`roles.*` i18n keys and member count existed, but
+there was no team UI at all — role changes and removal had no Server
+Action, RPC, or RLS write-path of any kind, and `organization_members`
+still has, by design, no client-facing INSERT/UPDATE/DELETE RLS policy,
+same threat model as the original bootstrap RPC).
+
+Three new admin-gated `SECURITY DEFINER` RPCs, matching every other
+`admin_*` RPC's existing shape (org-membership-and-role check as the
+first statement, translated `raise exception` per failure case):
+`admin_add_organization_member`, `admin_update_organization_member_role`,
+`admin_remove_organization_member`. A caller can never target their own
+membership row for a role change or removal — a deliberate
+simplification that also makes a separate "don't demote/remove the last
+admin" check unnecessary, since the caller (always an admin) can never
+be the target, so at least one admin always remains after either call
+succeeds.
+
+Adding a team member reuses the same "look up an already-registered
+account by email" design as the existing
+`admin_grant_client_portal_access` (Client Portal invites): real invite
+emails to a stranger remain blocked on missing SMTP configuration, same
+as every prior pass, but an admin can add anyone who has already signed
+up via `/signup` (any organization) to their own team with a chosen role.
+
+Adversarial QA (12 scenarios, raw SQL against `rizeeehngwbregoxqksy`
+inside `BEGIN...ROLLBACK`) caught one real bug before it ever shipped:
+`admin_update_organization_member_role`'s `RETURNS TABLE (id uuid, ...)`
+implicitly declares `id` as a plpgsql variable for the whole function
+body, which made its own `UPDATE ... WHERE id = ...` statement ambiguous
+between that variable and the table's `id` column — Postgres raised
+`42702: column reference "id" is ambiguous` on the very first live role-
+change attempt. Fixed with an explicit table alias, re-verified, and all
+12 scenarios (operator/viewer/cross-org blocked from every mutation;
+nonexistent-email, already-a-member, and invalid-role rejected;
+self-role-change and self-removal blocked; legitimate add/promote/remove
+all succeed with the removed member's row immediately gone) pass.
+
+Still not built from the P1 list: **#4 Recovery planning/trips**, **#7
+notification digests** (blocked on SMTP, unchanged). Real
+email-invite-a-stranger-to-your-org flow remains out of scope for the
+same SMTP reason as Client Portal invites and notification digests.

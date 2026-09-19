@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Building2, ShieldCheck, UserRound } from "lucide-react";
-import { requireMembership } from "@/lib/data/organization";
+import { requireMembership, listOrganizationMembersWithRoles } from "@/lib/data/organization";
 import { createClient } from "@/lib/supabase/server";
 import { getPageContext } from "@/i18n/server";
 import { getOrganizationBranding, getOrganizationBrandingLocalizations, getBrandingImageUrl } from "@/lib/data/branding";
@@ -11,6 +11,7 @@ import { listTimezones } from "@/lib/timezones";
 import { OrganizationCompanyForm } from "@/components/organization-company-form";
 import { OrganizationLocalizationForm } from "@/components/organization-localization-form";
 import { OrganizationBrandingForm } from "@/components/organization-branding-form";
+import { TeamMembersPanel } from "@/components/team-members-panel";
 import type { Tables } from "@/lib/supabase/database.types";
 import type { TranslationKey } from "@/i18n/translator";
 
@@ -22,10 +23,16 @@ const ROLE_LABEL_KEYS = {
   viewer: "settings.team.roles.viewer",
 } as const satisfies Record<string, TranslationKey>;
 
-type SettingsTab = "company" | "localization" | "branding" | "clientPortal";
+type SettingsTab = "company" | "localization" | "branding" | "team" | "clientPortal";
 
 function isSettingsTab(value: string | undefined): value is SettingsTab {
-  return value === "company" || value === "localization" || value === "branding" || value === "clientPortal";
+  return (
+    value === "company" ||
+    value === "localization" ||
+    value === "branding" ||
+    value === "team" ||
+    value === "clientPortal"
+  );
 }
 
 export default async function SettingsPage({
@@ -37,19 +44,26 @@ export default async function SettingsPage({
   const activeTab: SettingsTab = isSettingsTab(tabParam) ? tabParam : "company";
 
   const membership = await requireMembership();
-  const { t, formatDate, locale } = await getPageContext(membership.organizationId);
+  const { t, formatDate, locale, currency, timeZone } = await getPageContext(membership.organizationId);
   const isAdmin = membership.role === "admin";
   const roleKey = ROLE_LABEL_KEYS[membership.role as keyof typeof ROLE_LABEL_KEYS];
   const supabase = await createClient();
 
-  const [{ data: organization }, { data: userData }, { count: memberCount }, branding, welcomeMessageLocalizations] =
-    await Promise.all([
-      supabase.from("organizations").select("*").eq("id", membership.organizationId).maybeSingle(),
-      supabase.auth.getUser(),
-      supabase.from("organization_members").select("id", { count: "exact", head: true }).eq("organization_id", membership.organizationId),
-      getOrganizationBranding(membership.organizationId),
-      getOrganizationBrandingLocalizations(membership.organizationId),
-    ]);
+  const [
+    { data: organization },
+    { data: userData },
+    { count: memberCount },
+    branding,
+    welcomeMessageLocalizations,
+    teamMembers,
+  ] = await Promise.all([
+    supabase.from("organizations").select("*").eq("id", membership.organizationId).maybeSingle(),
+    supabase.auth.getUser(),
+    supabase.from("organization_members").select("id", { count: "exact", head: true }).eq("organization_id", membership.organizationId),
+    getOrganizationBranding(membership.organizationId),
+    getOrganizationBrandingLocalizations(membership.organizationId),
+    listOrganizationMembersWithRoles(membership.organizationId),
+  ]);
 
   const [logoUrl, compactLogoUrl] = await Promise.all([
     getBrandingImageUrl(branding?.logo_path ?? null),
@@ -133,6 +147,9 @@ export default async function SettingsPage({
         </Link>
         <Link href={tabHref("branding")} className={"filter-pill" + (activeTab === "branding" ? " active" : "")}>
           {t("settings.tabs.branding")}
+        </Link>
+        <Link href={tabHref("team")} className={"filter-pill" + (activeTab === "team" ? " active" : "")}>
+          {t("settings.tabs.team")}
         </Link>
         <Link href={tabHref("clientPortal")} className={"filter-pill" + (activeTab === "clientPortal" ? " active" : "")}>
           {t("settings.tabs.clientPortal")}
@@ -229,6 +246,39 @@ export default async function SettingsPage({
                 <dt>{t("settings.branding.primaryColor")}</dt><dd>{branding?.primary_color ?? "—"}</dd>
               </dl>
             )
+          ) : null}
+
+          {activeTab === "team" ? (
+            <TeamMembersPanel
+              members={teamMembers}
+              isAdmin={isAdmin}
+              currentUserId={membership.userId}
+              locale={locale}
+              currency={currency}
+              timeZone={timeZone}
+              labels={{
+                emailLabel: t("settings.team.emailLabel"),
+                emailPlaceholder: t("settings.team.emailPlaceholder"),
+                roleLabel: t("settings.team.role"),
+                roleLabels: {
+                  admin: t("settings.team.roles.admin"),
+                  operator: t("settings.team.roles.operator"),
+                  viewer: t("settings.team.roles.viewer"),
+                },
+                adding: t("common.actions.saving"),
+                addButton: t("settings.team.addButton"),
+                addSectionHint: t("settings.team.addSectionHint"),
+                empty: t("settings.team.empty"),
+                tableEmail: t("settings.team.tableEmail"),
+                tableName: t("settings.team.tableName"),
+                tableRole: t("settings.team.role"),
+                tableJoined: t("settings.team.tableJoined"),
+                you: t("settings.team.you"),
+                remove: t("settings.team.remove"),
+                removing: t("settings.team.removing"),
+                removeConfirm: t("settings.team.removeConfirm"),
+              }}
+            />
           ) : null}
 
           {activeTab === "clientPortal" ? (
